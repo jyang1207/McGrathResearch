@@ -76,7 +76,7 @@ while line:
 		WP.write("# IMAGE and GALFIT CONTROL PARAMETERS\n")
 		WP.write("A)" + " broadband_" + image + "_cam" + camera +"_g.fits" + " 			#Input data image block\n")
 		WP.write("B)" + " bb" + image + "_c" + camera + "_multi.fits" + "					#Output data image block\n")
-		WP.write("C)" + " none" + "									#Sigma image name (made from data if blank or 'none')\n")
+		WP.write("C)" + " none" + "									#Siga image name (made from data if blank or 'none')\n")
 		WP.write("D)" + " ps4.fits" + "								#Input PSF image and (optional) diffusion kernel\n")
 		WP.write("E)" + " 1" + "									#PSF fine sampling factor relative to data\n")
 		WP.write("F)" + " none" + "									#Bad pixel mask (FITS file or ASCIIcoord list)\n")
