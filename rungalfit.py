@@ -10,41 +10,88 @@ import imexam					#works
 import dimensions
 import readin
 
+# create a txt file for the result data of the lower half of the picture in this directory
 os.system("touch " + "data_lower.txt")
+
+# open the result stroing file in write mode
 format = open("data_lower.txt", "w")
-format.write("Input Image" + "	" + "Time Step" + "	" + "X Value" + "	" + "X Error" + "	" + "Y Value" + "	" + "Y Error" + "	" + "Magnitude" + "	" + "Magnitude Error" + "	" + "Radius" + "	" + "Radius Error" + "	" + "Sersic" + "	" + "Sersic Error" + "	" + "BA Value" + "	" + "BA Error" + "	" + "Position Angle" + "	" + "Position Angle Error" + "	" + "Chi Squared" + "	" + "ndof" + "	" + "Chi Squared/nu" + "\n")
+
+# write a header line to define what will go in the result file
+format.write("Input Image" + "	" + "Time Step" + "	" + "X Value" + 
+				"	" + "X Error" + "	" + "Y Value" + "	" + "Y Error" + 
+				"	" + "Magnitude" + "	" + "Magnitude Error" + "	" + "Radius" + 
+				"	" + "Radius Error" + "	" + "Sersic" + "	" + "Sersic Error" + 
+				"	" + "BA Value" + "	" + "BA Error" + "	" + "Position Angle" + 
+				"	" + "Position Angle Error" + "	" + "Chi Squared" + "	" + "ndof" + 
+				"	" + "Chi Squared/nu" + "\n")
+
+# close the result file
 format.close()
 
+# create a txt file for the result data of the upper half of the picture in this directory
 os.system("touch " + "data_upper.txt")
-format2 = open("data_upper.txt", "w")
-format2.write("Input Image" + "	" + "Time Step" + "	" + "X Value" + "	" + "X Error" + "	" + "Y Value" + "	" + "Y Error" + "	" + "Magnitude" + "	" + "Magnitude Error" + "	" + "Radius" + "	" + "Radius Error" + "	" + "Sersic" + "	" + "Sersic Error" + "	" + "BA Value" + "	" + "BA Error" + "	" + "Position Angle" + "	" + "Position Angle Error" + "	" + "Chi Squared" + "	" + "ndof" + "	" + "Chi Squared/nu" + "\n")
-format2.close()
 
-f = open("images.txt")		#this will be the file that will contain the images
+# open the result stroing file in write mode
+format = open("data_upper.txt", "w")
+
+# write a header line to define what will go in the result file
+format.write("Input Image" + "	" + "Time Step" + "	" + "X Value" + 
+				"	" + "X Error" + "	" + "Y Value" + "	" + "Y Error" + 
+				"	" + "Magnitude" + "	" + "Magnitude Error" + "	" + "Radius" + 
+				"	" + "Radius Error" + "	" + "Sersic" + "	" + "Sersic Error" + 
+				"	" + "BA Value" + "	" + "BA Error" + "	" + "Position Angle" + 
+				"	" + "Position Angle Error" + "	" + "Chi Squared" + "	" + "ndof" + 
+				"	" + "Chi Squared/nu" + "\n")
+
+# close the result file
+format.close()
+
+#this will be the file that will contain the images
+f = open("images.txt")		
+
+# the first line of file containing images
 line = f.readline()
 
+# this loops through every image in images file and
 while line:
+
+	# this variable will hold the image filename, which is the first line of the images file
+	# stripped of all whitespace on the right of the string
 	filename = line.rstrip()
+	
+	# read the next line for the next iteration of the loop
+	# NOTE: line is not used below
 	line = f.readline()
 	
-	dimensions.run_imhead([filename])
+	dimensions.run_imhead(filename)
 	
+	# after the above method is done executing, these global parameters have their correct values
+	# store the values of dimensions global variables into local variables
 	camera = dimensions.cam_number					
 	image = dimensions.image_number
 	height = dimensions.frame_height
 	width = dimensions.frame_width
 	
-	imexam.run_imexam([filename + '[1:' + width + ',1:' + str(int(height)/2) + ']'])
+	# calls a method of the imexam.py file, passing filename (with width and height) as a parameter
+	# imexam gets the coordinates of the max pixel and uses iraf.imexam to set global
+	# variables detailing the results of iraf's examination of the max coordinate
+	imexam.run_imexam(filename + '[1:' + width + ',1:' + str(int(height)/2) + ']')
 	
-	angle = imexam.PA																		#redefine variables in this script for convenience
+	# stores the global results of imexam into local fields
+	angle = imexam.PA
 	BA = imexam.b_a
 	rad = imexam.radius
 	magnitude = imexam.mag
 	X = imexam.col
 	Y = imexam.line
 	
-	imexam.run_imexam([filename + '[1:' + width + ',' + str((int(height)/2)+1) + ':' + height + ']'])
+	print imexam.col
+	print X
+	exit()
+	# same as above, but for the 'top' of the image
+	imexam.run_imexam(filename + '[1:' + width + ',' + str((int(height)/2)+1) + ':' + height + ']')
 	
+	# stores the global results of imexam into local 'top' fields
 	angle_top = imexam.PA
 	BA_top = imexam.b_a
 	rad_top = imexam.radius
@@ -52,7 +99,8 @@ while line:
 	X_top = imexam.col
 	Y_top = imexam.line
 	
-	delta_x = float(X_top) - float(X)														#this block computes the distance between objects
+	#this block computes the distance between objects
+	delta_x = float(X_top) - float(X)														
 	delta_y = float(Y_top) - float(Y)
 	delta_x_square = int(delta_x)**2
 	delta_y_square = int(delta_y)**2
@@ -65,12 +113,15 @@ while line:
 	write_dist.write(str(distance))
 	write_dist.close()
 	
-	if distance <= 20:																		#adjustable parameter for when to run galfit on second component						
+	#adjustable parameter for when to run galfit on second component	
+	if distance <= 20:																							
 		Z = "# "
 	else:
 		Z = " "
 
-	os.system('touch' + ' bb' + image + '_c' + str(camera) + '.txt')								#below this writes the galfit parameter file
+	#write the galfit parameter file
+	os.system('touch' + ' bb' + image + '_c' + str(camera) + '.txt')								
+	
 	def make_galfit(line):
 		WP = open('bb' + image + '_c' + str(camera) + '.txt','w')
 		WP.write("# IMAGE and GALFIT CONTROL PARAMETERS\n")
@@ -141,10 +192,14 @@ while line:
 	
 		WP.close()
 	
+		# run galfit on paramter file
 		os.system('galfit ' + 'bb' + image + '_c' + str(camera) + '.txt')
+		
+		# open logfile and use readin.py to write data_lower and data_upper
 		logfile = open('fit.log') 
 		readin.read_param(logfile)
 	
+		# remove temp files
 		os.system("rm " + "dist.tmp")
 		os.system("rm " + "fit.log")
 	
