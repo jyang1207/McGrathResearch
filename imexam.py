@@ -62,7 +62,7 @@ def run_imexam(input):
 if __name__ == "__main__":
 	run_imexam(sys.argv[1:])
 
-#to initiate program, type IRAF, cd into correct directory then type statement below
+#to initiate program, type 'iraf', cd into correct directory then type statement below
 #in terminal import python pyraftest.py "broadband_xxx_cam0_g.fits[1:946,1:473]"
 
 

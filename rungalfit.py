@@ -20,7 +20,7 @@ format2 = open("data_upper.txt", "w")
 format2.write("Input Image" + "	" + "Time Step" + "	" + "X Value" + "	" + "X Error" + "	" + "Y Value" + "	" + "Y Error" + "	" + "Magnitude" + "	" + "Magnitude Error" + "	" + "Radius" + "	" + "Radius Error" + "	" + "Sersic" + "	" + "Sersic Error" + "	" + "BA Value" + "	" + "BA Error" + "	" + "Position Angle" + "	" + "Position Angle Error" + "	" + "Chi Squared" + "	" + "ndof" + "	" + "Chi Squared/nu" + "\n")
 format2.close()
 
-f = open("images.txt")																		#this will be the file that will contain the images
+f = open("images.txt")		#this will be the file that will contain the images
 line = f.readline()
 
 while line:
@@ -70,17 +70,17 @@ while line:
 	else:
 		Z = " "
 
-	os.system('touch' + ' bb' + image + '_c' + camera + '.txt')								#below this writes the galfit parameter file
+	os.system('touch' + ' bb' + image + '_c' + str(camera) + '.txt')								#below this writes the galfit parameter file
 	def make_galfit(line):
-		WP = open('bb' + image + '_c' + camera + '.txt','w')
+		WP = open('bb' + image + '_c' + str(camera) + '.txt','w')
 		WP.write("# IMAGE and GALFIT CONTROL PARAMETERS\n")
-		WP.write("A)" + " broadband_" + image + "_cam" + camera +"_g.fits" + " 			#Input data image block\n")
-		WP.write("B)" + " bb" + image + "_c" + camera + "_multi.fits" + "					#Output data image block\n")
+		WP.write("A)" + " broadband_" + image + "_cam" + str(camera) +"_g.fits" + " 			#Input data image block\n")
+		WP.write("B)" + " bb" + image + "_c" + str(camera) + "_multi.fits" + "					#Output data image block\n")
 		WP.write("C)" + " none" + "									#Sigma image name (made from data if blank or 'none')\n")
 		WP.write("D)" + " ps4.fits" + "								#Input PSF image and (optional) diffusion kernel\n")
 		WP.write("E)" + " 1" + "									#PSF fine sampling factor relative to data\n")
 		WP.write("F)" + " none" + "									#Bad pixel mask (FITS file or ASCIIcoord list)\n")
-		WP.write("#G)" + " bb" + image + "_c" + camera + "_constraint.txt" + "				#File with parameter constraints (ASCII file)\n")
+		WP.write("#G)" + " bb" + image + "_c" + str(camera) + "_constraint.txt" + "				#File with parameter constraints (ASCII file)\n")
 		WP.write("H)" + " 1	" + width + "  1	" + height + "						#Image region to fit (xmin xmax ymin ymax)\n")
 		WP.write("I)" + " 200	" + "200" + "								#Size of the concolution box (x y)\n")
 		WP.write("J)" + " 25.0" + "								#Magnitude photometric zeropoint\n")			#this will be user inputed 
@@ -141,7 +141,7 @@ while line:
 	
 		WP.close()
 	
-		os.system('galfit ' + 'bb' + image + '_c' + camera + '.txt')
+		os.system('galfit ' + 'bb' + image + '_c' + str(camera) + '.txt')
 		logfile = open('fit.log') 
 		readin.read_param(logfile)
 	
