@@ -43,7 +43,7 @@ def run_imexam(image):
 	
 	#writes the output of the minmax function of iraf to a file for later use. 
 	# TODO why append? might be a bad thing
-	write_coords = open('coords.tmp', 'a')
+	write_coords = open('coords.tmp', 'w')
 	
 	#call iraf's minmax function
 	X = str(iraf.minmax(image, Stdout=1, update=0)) #[0].lstrip()
