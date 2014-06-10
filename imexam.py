@@ -46,35 +46,34 @@ def run_imexam(image):
 	write_coords = open('coords.tmp', 'w')
 	
 	#call iraf's minmax function
-	X = str(iraf.minmax(image, Stdout=1, update=0)) #[0].lstrip()
+	maxCoords = iraf.minmax(image, Stdout=1, update=0
+		)[0].strip().split(" ")[3].replace("[", "").replace("]", "").split(",")
+
 	# "broadband_200_cam0_g.fits[1:1893,1:946] [1765,691] -0.2845799624919891 [1283,692] 19.96048927307129"
-	
-	xnew=str.split(X," ")
+	#xnew=str.split(X," ")
 	# ["broadband_200_cam0_g.fits[1:1893,1:946]", "[1765,691]", "-0.2845799624919891", "[1283,692]", "19.96048927307129"]
-	
-	x1 = (xnew[7])[1:]	
-	# "1283, 692]"		
-	
-	x2 = x1[:-1]	
+	#x1 = (xnew[7])[1:]	
+	# "1283, 692]"	
+	#x2 = x1[:-1]	
 	# "1283, 692"	
-	
-	x3 = str.split(x2,",")		
-	# ["1283", "692"]		
-	
-	x4 = x3[0]		
+	#x3 = str.split(x2,",")		
+	# ["1283", "692"]	
+	#x4 = x3[0]		
 	# "1283"
-	
-	x5 = int(x3[1]) # + offset
+	#x5 = int(x3[1]) # + offset
 	# 692
 	
-	write_coords.write(str(x4)) 				
-	write_coords.write(" " + str(x5))
+	write_coords.write(maxCoords[0]) 				
+	write_coords.write(" " + maxCoords[1])
 	write_coords.close()						
 	imexam_out = str(iraf.imexam(image, use_display=0, imagecur="coords.tmp", Stdout=1))
+	os.system('rm' + ' coords.tmp')		
 	# "display frame (1:) (1): ['#   COL    LINE    COORDINATES', '#     " +
 	# "R    MAG    FLUX     SKY    PEAK    E   PA BETA ENCLOSED   MOFFAT DIRECT', " +
 	# "'1283.40  692.16 1283.40 692.16', '  63.22  14.53  15461.  0.1202   19.53 0.52    " +
 	# "1 1.75    21.58    18.85  21.39']"	
+	
+	# TODO: this should probably just return the above string, allowing the caller to parse for info
 	
 	imexam_array = str.split(imexam_out, "'")
 	# ["display frame (1:) (1): [", 
@@ -106,8 +105,7 @@ def run_imexam(image):
 # 	print b_a
 # 	print PA
 	#exit()	
-	
-	os.system('rm' + ' coords.tmp')				
+			
 	
 if __name__ == "__main__":
 	run_imexam(sys.argv[1:])
