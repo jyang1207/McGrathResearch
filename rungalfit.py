@@ -63,12 +63,13 @@ def init_galfit_parameter_files():
 
 def run_imhead(imageFilename):
 	'''
-	returns a list of the form [cam_number, image_number, frame_height, frame_width]
+	returns a list of the form [galaxy_id, filter, cam_number, image_number, frame_height, frame_width]
 	'''
 	
 	imhead_return = iraf.imhead(imageFilename, Stdout=1)[0].strip()
 
 	# "VELA01_a0.110_0006317__skipir_CAMERA0-BROADBAND_F125W_simulation.fits[600,600][real]:" 
+	
 	
 	frame_dimensions = imhead_return.split("[")[1].replace("]", "").split(",")
 	# ["600","600"]
@@ -79,8 +80,15 @@ def run_imhead(imageFilename):
 	frame_height = frame_dimensions[1]
 	# "600"
 	
-	image_number = imhead_return.split("_")[1]
-	# "a0.110"
+	galaxy_id = imhead_return.split("_")[0]
+	#"VELA01"
+	
+	filter = imhead_return.split("_")[6]
+	#"F125W"	
+	
+	image_number = imhead_return.split("_")[1].split(".")[1]
+	# "110"
+
 
 	
 	cam_str = imhead_return.split("_")[5].split("-")[0]
@@ -99,7 +107,7 @@ def run_imhead(imageFilename):
 		cam_number = cam_str[-1]					
 	#print cam_number
 	
-	return [cam_number, image_number, frame_height, frame_width]
+	return [galaxy_id, filter, cam_number, image_number, frame_height, frame_width]
 	
 				
 def run_imexam(image):
@@ -112,10 +120,10 @@ def run_imexam(image):
 	write_coords = open('coords.tmp', 'w')
 	
 	#call iraf's minmax function
-	maxCoords = iraf.minmax(image, Stdout=1, update=0
-		)[0].strip().split(" ")#[3].replace("[", "").replace("]", "").split(",")
+	maxCoords = iraf.minmax(image, Stdout=1, update=0, force=1
+		)[0].strip().split(" ")[3].replace("[", "").replace("]", "").split(",")
 		
-	print maxCoords
+	#print maxCoords
 	#['VELA01_a0.110_0006317__skipir_CAMERA0-BROADBAND_F125W_simulation.fits[1:600,1:300]', '[1,1]', 
 	#'0.', '[363,285]', '0.1987768709659576']
 	write_coords.write(maxCoords[0]) 				
@@ -316,7 +324,7 @@ def run_galfit(imageListFilename):
 		imageFilename = imageFilename.strip()
 		
 		# run the method of dimensions.py
-		[camera, image, height, width] = run_imhead(imageFilename)
+		[galaxy_id, filter, cam_number, image_number, height, width] = run_imhead(imageFilename)
 		
 		# calls a method of the imexam.py file, passing filename (with width and height) as a parameter
 		# imexam gets the coordinates of the max pixel and uses iraf.imexam to set global
@@ -324,26 +332,12 @@ def run_galfit(imageListFilename):
 		[Y, X, magnitude, rad, BA, angle] = run_imexam(
 			imageFilename + '[1:' + width + ',1:' + height + ']')
 		
-		# same as above, but for the 'top' of the image
-		[Y_top, X_top, magnitude_top, rad_top, BA_top, angle_top] = run_imexam(
-			imageFilename + '[1:' + width + ',1:' + height + ']')
-		
-		distance = int(compute_distance([X, Y], [X_top, Y_top]))
-		print distance
-		print str(distance)
-		
-		#adjustable parameter for when to run galfit on second component	
-		if distance <= 20:																							
-			Z = "# "
-		else:
-			Z = " "
-	
 		#write the galfit parameter file
-		galfit_parameter_filename = 'bb' + image + '_c' + str(camera) + '.txt'
-		galfit_output_filename = 'bb' + image + '_c' + str(camera) + "_multi.fits"
-		galfit_constraint_filename = 'bb' + image + '_c' + str(camera) + "_constraint.txt"
+		filename = 'bb' + image_number + '_c' + str(cam_number) + '_f' + filter
+		galfit_parameter_filename = filename + '.txt'
+		galfit_output_filename = filename + "_multi.fits"
+		galfit_constraint_filename = filename + "_constraint.txt"
 		os.system('touch ' + galfit_parameter_filename)								
-	
 	
 ######### writes gathered galfit parameters to file ###########################
 		WP = open(galfit_parameter_filename,'w')
@@ -406,21 +400,8 @@ def run_galfit(imageListFilename):
 		WP.write(" Z) 0							#Leave in [1] or subtract [0] this comp from data?\n")
 		WP.write("\n")
 	
-		WP.write("# Componenet number: 2\n")
-		WP.write(Z + "0) sersic					#Component type\n")
-		WP.write(Z + "1) " + str(X_top) + "	" + str(Y_top) + "	1	1			#Position x,y\n")
-		WP.write(Z + "3) " + str(magnitude_top) + "	1			#Integrated Magnitude\n")
-		WP.write(Z + "4) " + str(rad_top) + "		1			#R_e (half-light radius)	[pix]\n")
-		WP.write(Z + "5) " + "1.0000		1			#Sersic index n (de Vaucouleurs n=4)\n")
-		WP.write(Z + "6) 0.0000		0			#	-----\n")
-		WP.write(Z + "7) 0.0000		0			#	-----\n")
-		WP.write(Z + "8) 0.0000		0			#	-----\n")
-		WP.write(Z + "9) " + str(BA_top) + "			1			#Axis ratio (b/a)\n")
-		WP.write(Z + "10) " + str(angle_top) + "		1			#Position angle (PA) [deg: Up=0, left=90]\n")
-		WP.write(Z + "Z) 0						#Leave in [1] or subtract [0] this comp from data?\n")
-		WP.write("\n")
 	
-		WP.write("# Componenet number: 3\n")
+		WP.write("# Componenet number: 2\n")
 		WP.write(" 0) sky						#Component type\n")
 		WP.write(" 1) 0.0000		0			#	Sky background at center of fitting region [ADUs]\n")
 		WP.write(" 2) 0.0000		0			#	dsky/dx (sky gradient in x) [ADUs/pix]\n")
@@ -429,17 +410,17 @@ def run_galfit(imageListFilename):
 	
 		WP.close()
 	
-		'''
+
 		# run galfit on paramter file
 		os.system('galfit ' + galfit_parameter_filename)
 		
 		# open logfile and use readin.py to append galfit result summaries to data_lower and data_upper
-		logfile = open('fit.log') 
-		read_param(logfile, int(distance))
+# 		logfile = open('fit.log') 
+# 		read_param(logfile, int(distance))
 	
 		# remove temp files
 		os.system("rm " + "fit.log")
-		'''
+
 
 if __name__ == "__main__":
 
