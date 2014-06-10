@@ -85,9 +85,6 @@ while line:
 	X = imexam.col
 	Y = imexam.line
 	
-	print imexam.col
-	print X
-	exit()
 	# same as above, but for the 'top' of the image
 	imexam.run_imexam(filename + '[1:' + width + ',' + str((int(height)/2)+1) + ':' + height + ']')
 	
@@ -195,7 +192,7 @@ while line:
 		# run galfit on paramter file
 		os.system('galfit ' + 'bb' + image + '_c' + str(camera) + '.txt')
 		
-		# open logfile and use readin.py to write data_lower and data_upper
+		# open logfile and use readin.py to append galfit result summaries to data_lower and data_upper
 		logfile = open('fit.log') 
 		readin.read_param(logfile)
 	
