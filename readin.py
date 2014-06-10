@@ -101,14 +101,14 @@ def read_param(logfile):
 		split36 = str.split(split35, " ")
 		chi_square = split36[3]
 		ndof = split36[7]
-		print chi_square
-		print ndof
+		print (chi_square)
+		print (ndof)
 
 		split37 = line8.rstrip()
 		split38 = split37.replace(",", "")
 		split39 = str.split(split38, " ")
 		chi_square_nu = split39[3]
-		print chi_square_nu
+		print (chi_square_nu)
 	
 	
 	data_lower = open("data_lower.txt", "a")

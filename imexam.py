@@ -9,7 +9,7 @@ from pyraf import iraf
 
 os.system('touch'+' coords.tmp')			
 def run_imexam(input):
-	print input
+	print (input)
 	inputstring = str(input)
 	input1 = str.split(inputstring, ",")[1]
 	input2 = str.split(input1, ":")[0]
