@@ -6,9 +6,9 @@ import os
 import sys
 import re
 from pyraf import iraf
-import imexam					#works
-import dimensions
-import readin
+#import imexam					#works
+#import dimensions
+#import readin
 import math
 
 
@@ -67,29 +67,32 @@ def run_imhead(imageFilename):
 	'''
 	
 	imhead_return = iraf.imhead(imageFilename, Stdout=1)[0].strip()
-	# "broadband_200_cam0_g.fits[1893,1893][real]:" 
+
+	# "VELA01_a0.110_0006317__skipir_CAMERA0-BROADBAND_F125W_simulation.fits[600,600][real]:" 
 	
 	frame_dimensions = imhead_return.split("[")[1].replace("]", "").split(",")
-	# ["1893","1893"]
+	# ["600","600"]
 
 	frame_width = frame_dimensions[0]
-	# "1893"
+	# "600"
 	
 	frame_height = frame_dimensions[1]
-	# "1893"
+	# "600"
 	
 	image_number = imhead_return.split("_")[1]
-	# "200"
+	# "a0.110"
+
 	
-	cam_str = imhead_return.split("_")[2]
-	# "cam0"
+	cam_str = imhead_return.split("_")[5].split("-")[0]
+	# "CAMERA0"
+
 	
 	#these statements accomodate for camera numbers greater than 9
 	conditions = ["1","2","3","4","5","6","7","8","9"]			
 	
 	#determines if camera number is greater than 10, does not allow greater than 99
-	# ex: "cam0" -> M6[-2] = "m"
-	# ex: "cam12" -> M6[-2] = "1"
+	# ex: "CAMERA0" -> cam_str[-2] = "M"
+	# ex: "CAMERA12" -> cam_str[-2] = "1"
 	if cam_str[-2] in conditions:										
 		cam_number = cam_str[-2:]
 	else:
@@ -110,15 +113,18 @@ def run_imexam(image):
 	
 	#call iraf's minmax function
 	maxCoords = iraf.minmax(image, Stdout=1, update=0
-		)[0].strip().split(" ")[3].replace("[", "").replace("]", "").split(",")
-	# "broadband_200_cam0_g.fits[1:1893,1:946] [1765,691] -0.2845799624919891 [1283,692] 19.96048927307129"
-	# ["1283","692"]
+		)[0].strip().split(" ")#[3].replace("[", "").replace("]", "").split(",")
+		
+	print maxCoords
+	#['VELA01_a0.110_0006317__skipir_CAMERA0-BROADBAND_F125W_simulation.fits[1:600,1:300]', '[1,1]', 
+	#'0.', '[363,285]', '0.1987768709659576']
 	write_coords.write(maxCoords[0]) 				
 	write_coords.write(" " + maxCoords[1])
 	write_coords.close()	
 	
 	#run imexam passing coords.tmp
 	imexam_out = str(iraf.imexam(image, use_display=0, imagecur="coords.tmp", Stdout=1))
+
 	# "display frame (1:) (1): ['#   COL    LINE    COORDINATES', '#     " +
 	# "R    MAG    FLUX     SKY    PEAK    E   PA BETA ENCLOSED   MOFFAT DIRECT', " +
 	# "'1283.40  692.16 1283.40 692.16', '  63.22  14.53  15461.  0.1202   19.53 0.52    " +
@@ -156,7 +162,7 @@ def run_imexam(image):
 # 	print radius
 # 	print b_a
 # 	print PA
-	#exit()	
+# 	exit()	
 	
 	return [line, col, mag, radius, b_a, PA]
 	
@@ -316,11 +322,11 @@ def run_galfit(imageListFilename):
 		# imexam gets the coordinates of the max pixel and uses iraf.imexam to set global
 		# variables detailing the results of iraf's examination of the max coordinate
 		[Y, X, magnitude, rad, BA, angle] = run_imexam(
-			imageFilename + '[1:' + width + ',1:' + str(int(height)/2) + ']')
+			imageFilename + '[1:' + width + ',1:' + height + ']')
 		
 		# same as above, but for the 'top' of the image
 		[Y_top, X_top, magnitude_top, rad_top, BA_top, angle_top] = run_imexam(
-			imageFilename + '[1:' + width + ',' + str((int(height)/2)+1) + ':' + height + ']')
+			imageFilename + '[1:' + width + ',1:' + height + ']')
 		
 		distance = int(compute_distance([X, Y], [X_top, Y_top]))
 		print distance
@@ -437,7 +443,7 @@ def run_galfit(imageListFilename):
 
 if __name__ == "__main__":
 
-	filePatternToMatch = "*_g.fits"
+	filePatternToMatch = "*_simulation.fits"
 	imageListFilename = "images.txt"
 
 	'''
@@ -459,7 +465,7 @@ if __name__ == "__main__":
 		
 	os.system("ls " + filePatternToMatch + " > " + imageListFilename)
 	#init_galfit_parameter_files()
-	#run_galfit(imageListFilename)
+	run_galfit(imageListFilename)
 	os.system("rm " + imageListFilename)
 
 
