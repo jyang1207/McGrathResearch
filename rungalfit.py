@@ -333,7 +333,7 @@ def run_galfit(imageListFilename):
 			imageFilename + '[1:' + width + ',1:' + height + ']')
 		
 		#write the galfit parameter file
-		filename = 'bb' + image_number + '_c' + str(cam_number) + '_f' + filter
+		filename = galaxy_id + "_" + image_number + '_cam' + str(cam_number) + '_' + filter
 		galfit_parameter_filename = filename + '.txt'
 		galfit_output_filename = filename + "_multi.fits"
 		galfit_constraint_filename = filename + "_constraint.txt"
@@ -348,8 +348,8 @@ def run_galfit(imageListFilename):
 				"						#Output data image block\n")
 		WP.write("C)" + " none" + 
 				"						#Sigma image name (made from data if blank or 'none')\n")
-		WP.write("D)" + " ps4.fits" + 
-				"						#Input PSF image and (optional) diffusion kernel\n")
+		WP.write("D)" + " none" + 
+				"						#Input PSF image and (optional) diffusion kernel\n")#command line TODO
 		WP.write("E)" + " 1" + 
 				"						#PSF fine sampling factor relative to data\n")
 		WP.write("F)" + " none" + 							
@@ -361,9 +361,9 @@ def run_galfit(imageListFilename):
 		WP.write("I)" + " 200 200" + 
 				"						#Size of the concolution box (x y)\n")
 		WP.write("J)" + " 25.0" + 
-				"						#Magnitude photometric zeropoint\n")			#this will be user inputed 
+				"						#Magnitude photometric zeropoint\n")#command line TODO 
 		WP.write("K)" + " 0.038" + "  0.038" + 
-				"						#Plate scale (dx dy)  [arcsec per pixel]\n")
+				"						#Plate scale (dx dy)  [arcsec per pixel]\n")#command line TODO 
 		WP.write("O)" + " regular" + 
 				"						#display type (regular, curses, both\n")
 		WP.write("P)" + " 0" + 
