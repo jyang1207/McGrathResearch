@@ -10,6 +10,9 @@ from pyraf import iraf
 #import dimensions
 #import readin
 import math
+import time
+import argparse
+
 
 
 def compute_distance(p0, p1):
@@ -303,9 +306,11 @@ def read_param(logfile, distance):
 	logfile.close()
 	
 	
-def run_galfit(imageListFilename):
+def run_galfit(imageListFilename, includeBulgeComponent):
 	'''
 	opens file (parameter) containing list of images and loops over every image, running galfit
+	
+	includeBulgeComponent - parameter indicating if a bulge should be fit after first pass by galfit
 	'''
 
 	#this will be the file that will contain the images
@@ -332,11 +337,13 @@ def run_galfit(imageListFilename):
 		[Y, X, magnitude, rad, BA, angle] = run_imexam(
 			imageFilename + '[1:' + width + ',1:' + height + ']')
 		
-		#write the galfit parameter file
+		# define filenames, galaxy_id has full path if any
 		filename = galaxy_id + "_" + image_number + '_cam' + str(cam_number) + '_' + filter
-		galfit_parameter_filename = filename + '.txt'
+		galfit_parameter_filename = filename + '_init_param.txt'
 		galfit_output_filename = filename + "_multi.fits"
 		galfit_constraint_filename = filename + "_constraint.txt"
+		galfit_result_filename = filename + "_result_param.txt"
+		galfit_bulge_filename = filename + "_bulge_param.txt"
 		os.system('touch ' + galfit_parameter_filename)								
 	
 ######### writes gathered galfit parameters to file ###########################
@@ -407,6 +414,7 @@ def run_galfit(imageListFilename):
 		WP.write(" 2) 0.0000		0			#	dsky/dx (sky gradient in x) [ADUs/pix]\n")
 		WP.write(" 3) 0.0000		0			#	dsky/dy (sky gradient in y) [ADUs/pix]\n")
 		WP.write(" Z) 0						#Leave in [1] or subtract [0] this comp from data?\n")
+		WP.write("\n")
 	
 		WP.close()
 	
@@ -420,35 +428,199 @@ def run_galfit(imageListFilename):
 	
 		# remove temp files
 		os.system("rm " + "fit.log")
+		os.system("mv galfit.01 " + galfit_result_filename)
+		
+		
+		if includeBulgeComponent:
+			# here we would write the third component to the end of galfit_result_filename
+			WP = open(galfit_result_filename, "r")
+			
+			#gather info about first fit
+			
+			resultContents = WP.readlines()
+			
+			positionLine = ""
+			magnitudeLine = ""
+			for result in resultContents:
+				if not positionLine and result.strip()[:2] == "1)":
+					positionLine = result.strip().split(" ")
+					
+				if not magnitudeLine and result.strip()[:2] == "3)":
+					magnitudeLine = result.strip().split(" ")
+			
+			resultX = positionLine[1]
+			resultY = positionLine[2]
+			
+			resultMag = magnitudeLine[1]
+			
+			WP.close()
+			
+			#append bulge component using above info
+			
+			WP = open(galfit_result_filename, "a")
+			
+			WP.write("# Componenet number: 3\n")
+			WP.write(" 0) sersic					#Component type\n")
+			WP.write(" 1) " + resultX + "	" + resultY + "	1	1			#Position x,y\n")
+			WP.write(" 3) " + resultMag + "	1			#Integrated Magnitude\n")
+			WP.write(" 4) " + str(rad) + "			1			#R_e (half-light radius)	[pix]\n")
+			WP.write(" 5) " + "1.0000		1			#Sersic index n (de Vaucouleurs n=4)\n")
+			WP.write(" 6) 0.0000		0			#	-----\n")
+			WP.write(" 7) 0.0000		0			#	-----\n")
+			WP.write(" 8) 0.0000		0			#	-----\n")
+			WP.write(" 9) 1" + "			1			#Axis ratio (b/a)\n")
+			WP.write(" 10) 0" + "		1			#Position angle (PA) [deg: Up=0, left=90]\n")
+			WP.write(" Z) 0							#Leave in [1] or subtract [0] this comp from data?\n")
+			WP.write("\n")
+	
+			WP.close()
+			
+			# run galfit on paramter file
+			os.system('galfit ' + galfit_result_filename)
+		
+			# remove temp files
+			os.system("rm " + "fit.log")
+			os.system("mv galfit.01 " + galfit_bulge_filename)
 
+def parseDirectory(d):
+	if not os.path.isdir(d):
+		msg = "directory {} either does not exist or in not accessible".format(d)
+		raise argparse.ArgumentTypeError(msg)
+	elif d[-1] != "/":
+		d = d + "/"
+		
+	return d
+	
+def parseFile(f):
+	if not os.path.isfile(f):
+		msg = "file {} either does not exist or in not accessible".format(f)
+		raise argparse.ArgumentTypeError(msg)
+		
+	return f
 
 if __name__ == "__main__":
 
-	filePatternToMatch = "*_simulation.fits"
-	imageListFilename = "images.txt"
+	filePatternToMatch = "*_simulation.fits"	
 
+	# used to parse command line arguments
+	parser = argparse.ArgumentParser()
+	
+	# directory and file are mutually exclusive parameters
+	group = parser.add_mutually_exclusive_group()
+	
+	# directory specifies the directory where the images are
+	group.add_argument("-d","--directory", 
+						help="set the directory containing the images on which to run galfit",
+						type=parseDirectory, default="./")
+	
+	# file specifies the full path filename of the list of images to run
+	group.add_argument("-f","--file", 
+						help="set the file containing the list of full path image filenames",
+						type=parseFile)
+						
+	# bulge is a boolean (true or false) specifying if the simulation should fit
+	# an additional component after the initial fit from imexam results
+	parser.add_argument("-b","--bulge", 
+						help="turn on to include a bulge fit after the initial galaxy fit",
+						action="store_true")
+						
+	# Magnitude photometric zeropoint					
+	# Plate scale
+	# PSF
+	
+	# parse the command line using above parameter rules
+	args = parser.parse_args()
+	
+	# set the filename of the image list by the command line argument
+	if args.file:
+		imageListFilename = args.file
+		
+	# set the filename of the image list by piping all images in directory into text file
+	else:
+		imageListFilename = args.directory + "images" + time.strftime("%m-%d-%Y") + ".txt"
+		os.system("ls " + args.directory + filePatternToMatch + " > " + imageListFilename)
+
+######################### run galfit ##########################################
+	
+	#init_galfit_parameter_files()
+	run_galfit(imageListFilename, args.bulge)
+
+######################### done ################################################
+
+######################### obsolete ############################################
+
+# for command line input without the directory
 	'''
+	# reads command line input and uses to set filename of images list
 	usageStr = ("Usage: command line should be 'python <full path>/rungalfit.py " +
 				"<full path to directory containing images>")
-	if len(sys.argv) != 2:
+	if len(sys.argv) > 2:
 		print usageStr
-	elif not os.path.isdir(sys.argv[1]):
-		print "directory given on command line does not exist or is not accessible\n" + usageStr
+		exit()
+	elif len(sys.argv) == 2 and os.path.isfile(sys.argv[1]):
+		imageListFilename = sys.argv[1]
+	elif len(sys.argv) == 2: #  and not os.path.isfile(sys.argv[1])
+		print "filename given on command line does not exist or is not accessible\n" + usageStr
+		exit()
 	else:
-		imagesDirectory = sys.argv[1]
-	
-		print "input files exist in the directory {}".format(imagesDirectory)
-		if imagesDirectory[-1] != "/":
-			imagesDirectory = imagesDirectory + "/"
-			
-		os.system("ls " + sys.argv[1] + filePatternToMatch + " > " + imageListFilename)
-	'''
+		imageListFilename = "images" + time.strftime("%m-%d-%Y") + ".txt"
+		os.system("ls " + filePatternToMatch + " > " + imageListFilename)
 		
-	os.system("ls " + filePatternToMatch + " > " + imageListFilename)
-	#init_galfit_parameter_files()
-	run_galfit(imageListFilename)
-	os.system("rm " + imageListFilename)
+	'''
 
-
-
-
+# for command line input with the directory
+'''
+	usageStr = ("USAGE: command line should be:\n" +
+				"python <full path>/rungalfit.py\n" +
+				"(optional)<full path to directory containing images>\n" +
+				"(optional)<filename of list of images>.txt (e.g. images.txt)\n")
+	
+	# print usage and exit if more than 2 arguments given on command line
+	if len(sys.argv) > 3:
+		print usageStr
+		exit()
+		
+######################### directory variable ##################################
+	
+	# set directory variable according to command line input
+	if len(sys.argv) > 1:
+		
+		# print usage and exit if first argument is not a directory
+		if not os.path.isdir(sys.argv[1]):
+			print ("ERROR: directory given as first command line argument " + 
+					"does not exist or is not accessible. " + 
+					"Use '.' for current directory.\n" + usageStr)
+			exit()
+			
+		# parse the directory into variable
+		else: 
+			imagesDirectory = sys.argv[1]
+			print "input files exist in the directory {}".format(imagesDirectory)
+			if imagesDirectory[-1] != "/":
+				imagesDirectory = imagesDirectory + "/"
+				
+	# set directory variable to default (blank, current directory)
+	else:
+		imagesDirectory = ""	
+		
+######################### image list filename #################################
+	
+	# set image list filename variable according to command line input
+	if len(sys.argv) > 2:
+	
+		# print usage and exit if second argument is not a file
+		if not os.path.isfile(imagesDirectory + sys.argv[2]):
+			print ("ERROR: filename given as second command line argument " + 
+					"does not exist or is not accessible. " + 
+					"Leave blank for default, includes all images.\n" + usageStr)
+			exit()
+		
+		# parse the image list filename into variable
+		else: 
+			imageListFilename = imagesDirectory + sys.argv[2]
+	
+	# set image list filename variable to default
+	else:
+		imageListFilename = imagesDirectory + "images" + time.strftime("%m-%d-%Y") + ".txt"
+		os.system("ls " + imagesDirectory + filePatternToMatch + " > " + imageListFilename)
+'''
