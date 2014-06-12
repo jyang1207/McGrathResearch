@@ -134,7 +134,6 @@ def sum_galfit(resultFilename):
 	
 	# component seperation of greater than 5 is bad 
 	dist = compute_distance([px1, py1], [px2, py2])
-	print dist
 	if dist > 5:
 		posFlag = "*"
 		errorFlag1 = "*"
@@ -170,7 +169,7 @@ def sum_galfit(resultFilename):
 				mag1 + ", " + rad1 + ", " + ba1 + ", " + pa1 + "\n")
 	result2 = (errorFlag2 + galaxyID + ", " + timeStep + ", " + camera + ", " + filter + ", " +
 				type1 + ", " + posFlag + px2 + ", " + py2 + ", " + sersFlag2 + sersIndex2 + ", " + 
-				mag2 + ", " + rad2 + ", " + ba2 + ", " + pa2 + "\n")
+				mag2 + ", " + rad2 + ", " + ba2 + ", " + pa2 + " distance = {} \n".format(dist))
 	return result1 + result2
 
 def parseDirectory(d):
