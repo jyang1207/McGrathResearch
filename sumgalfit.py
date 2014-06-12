@@ -5,10 +5,18 @@
 import os
 import sys
 import re
+import math
 import fnmatch
 import time
 import argparse
+import redShiftConverter
 
+def compute_distance(p0, p1):
+	'''
+	http://stackoverflow.com/questions/5407969/distance-formula-between-two-points-in-a-list
+	'''
+	
+	return math.sqrt((float(p0[0]) - float(p1[0]))**2 + (float(p0[1]) - float(p1[1]))**2)
 
 def sum_galfit(resultFilename):
 	'''
@@ -96,12 +104,52 @@ def sum_galfit(resultFilename):
 				
 			elif not pa2 and resultLine.strip()[:3] == "10)":
 				pa2 = resultLine.strip().split(" ")[1]
-				
+	
+	# a = 1/(1+z)
+	# z = 1/a - 1
+	timeStep = str(redShiftConverter.red_shift_to_gyr(1/(float(timeStep)/1000) - 1))
+	
+	
+	errorFlag1 = ""
+	errorFlag2 = ""
+	
+	# sersic index of 0.5 < si < 10 is good
+	if float(sersIndex1) < 0.5 or float(sersIndex1) > 10:
+		sersFlag1 = "*"
+		errorFlag1 = "*"
+	else:
+		sersFlag1 = ""
+
+	
 	if not px2:
-		return (galaxyID + ", " + timeStep + ", " + camera + ", " + filter + ", " +
-				"disk, " + px1 + ", " + py1 + ", " + sersIndex1 + ", " + mag1 + ", " + 
+		if float(sersIndex1) > 2.5:
+			type = "bulge"
+		else:
+			type = "disk"
+			
+		return (errorFlag1 + galaxyID + ", " + timeStep + ", " + camera + ", " + filter + ", " +
+				type + ", " + px1 + ", " + py1 + ", " + sersIndex1 + ", " + mag1 + ", " + 
 				rad1 + ", " + ba1 + ", " + pa1 + "\n")
 				
+	
+	# component seperation of greater than 5 is bad 
+	dist = compute_distance([px1, py1], [px2, py2])
+	print dist
+	if dist > 5:
+		posFlag = "*"
+		errorFlag1 = "*"
+		errorFlag2 = "*"
+	else:
+		posFlag = ""
+		
+		
+	# sersic index of 0.5 < si < 10 is good
+	if float(sersIndex2) < 0.5 or float(sersIndex2) > 10:
+		sersFlag2 = "*"
+		errorFlag2 = "*"
+	else:
+		sersFlag2 = ""
+		
 	# test for type (bulge or disk)
 	if float(sersIndex1) > 2.5 and float(sersIndex2) < 2.5:
 		type1 = "bulge"
@@ -117,12 +165,12 @@ def sum_galfit(resultFilename):
 			type2 = "bulge"
 			type1 = "disk"
 			
-	result1 = (galaxyID + ", " + timeStep + ", " + camera + ", " + filter + ", " +
-				type1 + ", " + px1 + ", " + py1 + ", " + sersIndex1 + ", " + mag1 + ", " + 
-				rad1 + ", " + ba1 + ", " + pa1 + "\n")
-	result2 = (galaxyID + ", " + timeStep + ", " + camera + ", " + filter + ", " +
-				type2 + ", " + px2 + ", " + py2 + ", " + sersIndex2 + ", " + mag2 + ", " + 
-				rad2 + ", " + ba2 + ", " + pa2 + "\n")
+	result1 = (errorFlag1 + galaxyID + ", " + timeStep + ", " + camera + ", " + filter + ", " +
+				type1 + ", " + posFlag + px1 + ", " + py1 + ", " + sersFlag1 + sersIndex1 + ", " + 
+				mag1 + ", " + rad1 + ", " + ba1 + ", " + pa1 + "\n")
+	result2 = (errorFlag2 + galaxyID + ", " + timeStep + ", " + camera + ", " + filter + ", " +
+				type1 + ", " + posFlag + px2 + ", " + py2 + ", " + sersFlag2 + sersIndex2 + ", " + 
+				mag2 + ", " + rad2 + ", " + ba2 + ", " + pa2 + "\n")
 	return result1 + result2
 
 def parseDirectory(d):
@@ -222,12 +270,12 @@ if __name__ == "__main__":
 	else:
 		outFileStr = args.output
 		
-	outFile = open(outFileStr, 'w')
+	#outFile = open(outFileStr, 'w')
 	
-	outFile.write("galfit result file\n" +
-				"galaxy ID, time step, camera, filter, type, px, py, sersic, mag, rad, b/a, angle\n")
+	#outFile.write("galfit result file\n" +
+	#			"galaxy ID, time step, camera, filter, type, px, py, sersic, mag, rad, b/a, angle\n")
 	
-	outFile.close()
+	#outFile.close()
 	
 	outFile = open(outFileStr, 'a')
 	
