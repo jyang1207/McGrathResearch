@@ -17,7 +17,113 @@ def sum_galfit(resultFilename):
 	parameter resultFilename - the result filename from running galfit to be summarized
 	return - a string summarizing the results, ending in a new line
 	'''
-	return resultFilename + "\n"
+	
+	resultFile = open(resultFilename, 'r')
+	
+	resultLines = resultFile.readlines()
+	
+	resultFile.close()
+	
+	skipSky = False
+	galaxyID = ""
+	px1 = ""
+	px2 = ""
+	mag1 = ""
+	mag2 = ""
+	rad1 = ""
+	rad2 = ""
+	sersIndex1 = ""
+	sersIndex2 = ""
+	ba1 = ""
+	ba2 = ""
+	pa1 = ""
+	pa2 = ""
+	
+	for resultLine in resultLines:
+		
+		if not galaxyID and resultLine.strip()[:2] == "B)":
+		
+			# B) a0.220/VELA01_220_cam0_F160W_multi.fits      # Output data image block
+			galaxyID = resultLine.split("_")[0].split("/")[1]
+			timeStep = resultLine.split("_")[1]
+			camera = resultLine.split("_")[2]
+			filter = resultLine.split("_")[3]
+	
+					
+		if resultLine.strip()[:6] == "0) sky":
+			skipSky = True
+		elif resultLine.strip()[:6] == "0) ser":
+			skipSky = False
+			
+	
+		if not skipSky:
+			if not px1 and resultLine.strip()[:2] == "1)":
+			
+				#1) 301.6210 299.7872 1 1  #  Position x, y
+				px1 = resultLine.strip().split(" ")[1]
+				py1 = resultLine.strip().split(" ")[2]
+	
+			elif not px2 and resultLine.strip()[:2] == "1)":
+				px2 = resultLine.strip().split(" ")[1]
+				py2 = resultLine.strip().split(" ")[2]
+	
+			elif not mag1 and resultLine.strip()[:2] == "3)":
+				mag1 = resultLine.strip().split(" ")[1]
+				
+			elif not mag2 and resultLine.strip()[:2] == "3)":
+				mag2 = resultLine.strip().split(" ")[1]
+	
+			elif not rad1 and resultLine.strip()[:2] == "4)":
+				rad1 = resultLine.strip().split(" ")[1]
+				
+			elif not rad2 and resultLine.strip()[:2] == "4)":
+				rad2 = resultLine.strip().split(" ")[1]
+				
+			elif not sersIndex1 and resultLine.strip()[:2] == "5)":
+				sersIndex1 = resultLine.strip().split(" ")[1]
+				
+			elif not sersIndex2 and resultLine.strip()[:2] == "5)":
+				sersIndex2 = resultLine.strip().split(" ")[1]
+				
+			elif not ba1 and resultLine.strip()[:2] == "9)":
+				ba1 = resultLine.strip().split(" ")[1]
+				
+			elif not ba2 and resultLine.strip()[:2] == "9)":
+				ba2 = resultLine.strip().split(" ")[1]
+				
+			elif not pa1 and resultLine.strip()[:3] == "10)":
+				pa1 = resultLine.strip().split(" ")[1]
+				
+			elif not pa2 and resultLine.strip()[:3] == "10)":
+				pa2 = resultLine.strip().split(" ")[1]
+				
+	if not px2:
+		return (galaxyID + ", " + timeStep + ", " + camera + ", " + filter + ", " +
+				"disk, " + px1 + ", " + py1 + ", " + sersIndex1 + ", " + mag1 + ", " + 
+				rad1 + ", " + ba1 + ", " + pa1 + "\n")
+				
+	# test for type (bulge or disk)
+	if float(sersIndex1) > 2.5 and float(sersIndex2) < 2.5:
+		type1 = "bulge"
+		type2 = "disk"
+	elif float(sersIndex1) < 2.5 and float(sersIndex2) > 2.5:
+		type2 = "bulge"
+		type1 = "disk"
+	else:
+		if rad1 < rad2:
+			type1 = "bulge"
+			type2 = "disk"
+		else:
+			type2 = "bulge"
+			type1 = "disk"
+			
+	result1 = (galaxyID + ", " + timeStep + ", " + camera + ", " + filter + ", " +
+				type1 + ", " + px1 + ", " + py1 + ", " + sersIndex1 + ", " + mag1 + ", " + 
+				rad1 + ", " + ba1 + ", " + pa1 + "\n")
+	result2 = (galaxyID + ", " + timeStep + ", " + camera + ", " + filter + ", " +
+				type2 + ", " + px2 + ", " + py2 + ", " + sersIndex2 + ", " + mag2 + ", " + 
+				rad2 + ", " + ba2 + ", " + pa2 + "\n")
+	return result1 + result2
 
 def parseDirectory(d):
 	'''	
@@ -118,7 +224,8 @@ if __name__ == "__main__":
 		
 	outFile = open(outFileStr, 'w')
 	
-	outFile.write("galfit result file\n")
+	outFile.write("galfit result file\n" +
+				"galaxy ID, time step, camera, filter, type, px, py, sersic, mag, rad, b/a, angle\n")
 	
 	outFile.close()
 	
