@@ -107,7 +107,7 @@ def sum_galfit(resultFilename):
 	
 	# a = 1/(1+z)
 	# z = 1/a - 1
-	timeStep = str(redShiftConverter.red_shift_to_gyr(1/(float(timeStep)/1000) - 1))
+	age_gyr = str(redShiftConverter.red_shift_to_gyr(1/(float(timeStep)/1000) - 1))
 	
 	
 	errorFlag1 = ""
@@ -156,6 +156,9 @@ def sum_galfit(resultFilename):
 	elif float(sersIndex1) < 2.5 and float(sersIndex2) > 2.5:
 		type2 = "bulge"
 		type1 = "disk"
+	elif float(sersIndex1) > 2.5 and float(sersIndex2) > 2.5:
+		type1 = "bulge"
+		type2 = "bulge"
 	else:
 		if rad1 < rad2:
 			type1 = "bulge"
@@ -164,12 +167,12 @@ def sum_galfit(resultFilename):
 			type2 = "bulge"
 			type1 = "disk"
 			
-	result1 = (errorFlag1 + galaxyID + ", " + timeStep + ", " + camera + ", " + filter + ", " +
-				type1 + ", " + posFlag + px1 + ", " + py1 + ", " + sersFlag1 + sersIndex1 + ", " + 
+	result1 = (errorFlag1 + galaxyID + ", " + timeStep + ", " + age_gyr ", " + camera + ", " + filter + ", " +
+				type1 + ", " + posFlag + ", " + px1 + ", " + py1 + ", " + sersFlag1 + ", " + sersIndex1 + ", " + 
 				mag1 + ", " + rad1 + ", " + ba1 + ", " + pa1 + "\n")
 	result2 = (errorFlag2 + galaxyID + ", " + timeStep + ", " + camera + ", " + filter + ", " +
-				type1 + ", " + posFlag + px2 + ", " + py2 + ", " + sersFlag2 + sersIndex2 + ", " + 
-				mag2 + ", " + rad2 + ", " + ba2 + ", " + pa2 + " distance = {} \n".format(dist))
+				type2 + ", " + posFlag + ", " + px2 + ", " + py2 + ", " + sersFlag2 + ", " + sersIndex2 + ", " + 
+				mag2 + ", " + rad2 + ", " + ba2 + ", " + pa2 + ", " + dist + "\n")
 	return result1 + result2
 
 def parseDirectory(d):
