@@ -140,7 +140,7 @@ def run_imexam(image):
 	return [line, col, mag, radius, b_a, PA]
 	
 
-def run_galfit(imageListFilename, includeBulgeComponent):
+def run_galfit(imageFilename, includeBulgeComponent):
 	'''
 	opens file (parameter) containing list of images and loops over every image, 
 	running galfit and writing the results to the same directory as the images
@@ -155,180 +155,164 @@ def run_galfit(imageListFilename, includeBulgeComponent):
 	parameter includeBulgeComponent - 
 		boolean indicating if a bulge should be fit after first pass by galfit
 	'''
+	
+	# run the method of dimensions.py
+	[galaxy_id, filter, cam_number, image_number, height, width] = run_imhead(imageFilename)
+	
+	# calls a method of the imexam.py file, passing filename (with width and height) as a parameter
+	# imexam gets the coordinates of the max pixel and uses iraf.imexam to set global
+	# variables detailing the results of iraf's examination of the max coordinate
+	[Y, X, magnitude, rad, BA, angle] = run_imexam(
+		imageFilename + '[1:' + width + ',1:' + height + ']')
+	
+	# define filenames, galaxy_id has full path if any
+	filename = galaxy_id + "_" + image_number + '_cam' + str(cam_number) + '_' + filter
+	
+	galfit_constraint_filename = filename + "_constraint.txt"
+	galfit_output_filename = filename + "_multi.fits"
+	galfit_single_parameter_filename = 	filename + '_single_param.txt'
+	galfit_single_output_filename = 	filename + "_single_multi.fits"
+	galfit_single_result_filename = 	filename + "_single_result.txt"
+	galfit_bulge_parameter_filename = 	filename + '_bulge_param.txt'
+	galfit_bulge_output_filename = 		filename + "_bulge_multi.fits"
+	galfit_bulge_result_filename = 		filename + "_bulge_result.txt"
+	
+	os.system('touch ' + galfit_single_parameter_filename)								
 
-	#this will be the file that will contain the images
-	f = open(imageListFilename)		
-	
-	# the first line of file containing images
-	imageFilenames = f.readlines()
-	
-	# close the file now that it has been read
-	f.close()
-	
-	# this loops through every image in images file and
-	for imageFilename in imageFilenames:
-		
-		# remove the "\n" on the end of filename
-		imageFilename = imageFilename.strip()
-		
-		# run the method of dimensions.py
-		[galaxy_id, filter, cam_number, image_number, height, width] = run_imhead(imageFilename)
-		
-		# calls a method of the imexam.py file, passing filename (with width and height) as a parameter
-		# imexam gets the coordinates of the max pixel and uses iraf.imexam to set global
-		# variables detailing the results of iraf's examination of the max coordinate
-		[Y, X, magnitude, rad, BA, angle] = run_imexam(
-			imageFilename + '[1:' + width + ',1:' + height + ']')
-		
-		# define filenames, galaxy_id has full path if any
-		filename = galaxy_id + "_" + image_number + '_cam' + str(cam_number) + '_' + filter
-		galfit_single_parameter_filename = filename + '_single_param.txt'
-		galfit_output_filename = filename + "_multi.fits"
-		galfit_single_output_filename = filename + "_single_multi.fits"
-		galfit_constraint_filename = filename + "_constraint.txt"
-		galfit_single_result_filename = filename + "_single_result.txt"
-		galfit_bulge_result_filename = filename + "_bulge_result.txt"
-		galfit_bulge_output_filename = filename + "_bulge_multi.fits"
-		
-		os.system('touch ' + galfit_single_parameter_filename)								
-	
 ######### writes gathered galfit parameters to file ###########################
-		WP = open(galfit_single_parameter_filename,'w')
-		WP.write("# IMAGE and GALFIT CONTROL PARAMETERS\n")
-		WP.write("A) " + imageFilename + 
-				"						#Input data image block\n")
-		WP.write("B) " + galfit_output_filename +
-				"						#Output data image block\n")
-		WP.write("C)" + " none" + 
-				"						#Sigma image name (made from data if blank or 'none')\n")
-		WP.write("D)" + " none" + 
-				"						#Input PSF image and (optional) diffusion kernel\n")#command line TODO
-		WP.write("E)" + " 1" + 
-				"						#PSF fine sampling factor relative to data\n")
-		WP.write("F)" + " none" + 							
-				"						#Bad pixel mask (FITS file or ASCIIcoord list)\n")
-		WP.write("#G) " + galfit_constraint_filename + 		
-				"						#File with parameter constraints (ASCII file)\n")
-		WP.write("H)" + " 1	" + width + " 1	" + height + 
-				"						#Image region to fit (xmin xmax ymin ymax)\n")
-		WP.write("I)" + " 200 200" + 
-				"						#Size of the concolution box (x y)\n")
-		WP.write("J)" + " 25.0" + 
-				"						#Magnitude photometric zeropoint\n")#command line TODO 
-		WP.write("K)" + " 0.038" + "  0.038" + 
-				"						#Plate scale (dx dy)  [arcsec per pixel]\n")#command line TODO 
-		WP.write("O)" + " regular" + 
-				"						#display type (regular, curses, both\n")
-		WP.write("P)" + " 0" + 
-				"						#Options: 0=normal run; 1,2=make model/imgblock & quit\n")
-		WP.write("S)" + " 0" + 
-				"						#Modify/create components interactively?\n")
-		WP.write("\n")
-		WP.write("# INITIAL FITTING PARAMETERS\n")
-		WP.write("#\n")
-		WP.write("#	For component type, the allowed functions are:\n")
-		WP.write("#		nuker, sersic, expdisk, devauc, king, psf, gaussian, moffat,\n")
-		WP.write("#		ferrer, coresersic, sky and isophote.\n")
-		WP.write("#\n")
-		WP.write("#	Hidden parameters will only appear when they are specified:\n")
-		WP.write("#		C0 (diskyness/boxyness),\n")
-		WP.write("#		Fn (n=interger, Azimuthal Fourier Modes).\n")
-		WP.write("#		R0-R10 (PA rotation, for creating spiral structures).\n")
-		WP.write("#\n")
-		WP.write("# ------------------------------------------------------------------------------\n")
-		WP.write("#		par)	par value(s)	fit toggle(s)	# parameter description\n")
-		WP.write("# ------------------------------------------------------------------------------\n")
-		WP.write("\n")
-		WP.write("# Componenet number: 1\n")
+	WP = open(galfit_single_parameter_filename,'w')
+	WP.write("# IMAGE and GALFIT CONTROL PARAMETERS\n")
+	WP.write("A) " + imageFilename + 
+			"						#Input data image block\n")
+	WP.write("B) " + galfit_output_filename +
+			"						#Output data image block\n")
+	WP.write("C)" + " none" + 
+			"						#Sigma image name (made from data if blank or 'none')\n")
+	WP.write("D)" + " none" + 
+			"						#Input PSF image and (optional) diffusion kernel\n")#command line TODO
+	WP.write("E)" + " 1" + 
+			"						#PSF fine sampling factor relative to data\n")
+	WP.write("F)" + " none" + 							
+			"						#Bad pixel mask (FITS file or ASCIIcoord list)\n")
+	WP.write("#G) " + galfit_constraint_filename + 		
+			"						#File with parameter constraints (ASCII file)\n")
+	WP.write("H)" + " 1	" + width + " 1	" + height + 
+			"						#Image region to fit (xmin xmax ymin ymax)\n")
+	WP.write("I)" + " 200 200" + 
+			"						#Size of the concolution box (x y)\n")
+	WP.write("J)" + " 25.0" + 
+			"						#Magnitude photometric zeropoint\n")#command line TODO 
+	WP.write("K)" + " 0.038" + "  0.038" + 
+			"						#Plate scale (dx dy)  [arcsec per pixel]\n")#command line TODO 
+	WP.write("O)" + " regular" + 
+			"						#display type (regular, curses, both\n")
+	WP.write("P)" + " 0" + 
+			"						#Options: 0=normal run; 1,2=make model/imgblock & quit\n")
+	WP.write("S)" + " 0" + 
+			"						#Modify/create components interactively?\n")
+	WP.write("\n")
+	WP.write("# INITIAL FITTING PARAMETERS\n")
+	WP.write("#\n")
+	WP.write("#	For component type, the allowed functions are:\n")
+	WP.write("#		nuker, sersic, expdisk, devauc, king, psf, gaussian, moffat,\n")
+	WP.write("#		ferrer, coresersic, sky and isophote.\n")
+	WP.write("#\n")
+	WP.write("#	Hidden parameters will only appear when they are specified:\n")
+	WP.write("#		C0 (diskyness/boxyness),\n")
+	WP.write("#		Fn (n=interger, Azimuthal Fourier Modes).\n")
+	WP.write("#		R0-R10 (PA rotation, for creating spiral structures).\n")
+	WP.write("#\n")
+	WP.write("# ------------------------------------------------------------------------------\n")
+	WP.write("#		par)	par value(s)	fit toggle(s)	# parameter description\n")
+	WP.write("# ------------------------------------------------------------------------------\n")
+	WP.write("\n")
+	WP.write("# Componenet number: 1\n")
+	WP.write(" 0) sersic					#Component type\n")
+	WP.write(" 1) " + str(X) + "	" + str(Y) + "	1	1			#Position x,y\n")
+	WP.write(" 3) " + str(magnitude) + "	1			#Integrated Magnitude\n")
+	WP.write(" 4) " + str(rad) + "			1			#R_e (half-light radius)	[pix]\n")
+	WP.write(" 5) " + "1.0000		1			#Sersic index n (de Vaucouleurs n=4)\n")
+	WP.write(" 6) 0.0000		0			#	-----\n")
+	WP.write(" 7) 0.0000		0			#	-----\n")
+	WP.write(" 8) 0.0000		0			#	-----\n")
+	WP.write(" 9) " + str(BA) + "			1			#Axis ratio (b/a)\n")
+	WP.write(" 10) " + str(angle) + "		1			#Position angle (PA) [deg: Up=0, left=90]\n")
+	WP.write(" Z) 0							#Leave in [1] or subtract [0] this comp from data?\n")
+	WP.write("\n")
+
+
+	WP.write("# Componenet number: 2\n")
+	WP.write(" 0) sky						#Component type\n")
+	WP.write(" 1) 0.0000		0			#	Sky background at center of fitting region [ADUs]\n")
+	WP.write(" 2) 0.0000		0			#	dsky/dx (sky gradient in x) [ADUs/pix]\n")
+	WP.write(" 3) 0.0000		0			#	dsky/dy (sky gradient in y) [ADUs/pix]\n")
+	WP.write(" Z) 0						#Leave in [1] or subtract [0] this comp from data?\n")
+	WP.write("\n")
+
+	WP.close()
+
+
+	# run galfit on paramter file
+	os.system('galfit ' + galfit_single_parameter_filename)
+
+	# remove temp files
+	os.system("rm " + "fit.log")
+	os.system("mv galfit.01 " + galfit_single_result_filename)
+	os.system("mv " + galfit_output_filename + " " + galfit_single_output_filename)
+	
+	
+	if includeBulgeComponent:
+		# here we would write the third component to the end of galfit_result_filename
+		os.system("cp " + galfit_single_result_filename + " " + galfit_bulge_parameter_filename)
+		WP = open(galfit_bulge_parameter_filename, "r")
+		
+		#gather info about first fit
+		
+		resultContents = WP.readlines()
+		
+		positionLine = ""
+		magnitudeLine = ""
+		for result in resultContents:
+			if not positionLine and result.strip()[:2] == "1)":
+				positionLine = result.strip().split(" ")
+				
+			if not magnitudeLine and result.strip()[:2] == "3)":
+				magnitudeLine = result.strip().split(" ")
+		
+		resultX = positionLine[1]
+		resultY = positionLine[2]
+		
+		resultMag = magnitudeLine[1]
+		
+		WP.close()
+		
+		#append bulge component using above info
+		
+		WP = open(galfit_bulge_parameter_filename, "a")
+		
+		WP.write("# Componenet number: 3\n")
 		WP.write(" 0) sersic					#Component type\n")
-		WP.write(" 1) " + str(X) + "	" + str(Y) + "	1	1			#Position x,y\n")
-		WP.write(" 3) " + str(magnitude) + "	1			#Integrated Magnitude\n")
+		WP.write(" 1) " + resultX + "	" + resultY + "	1	1			#Position x,y\n")
+		WP.write(" 3) " + resultMag + "	1			#Integrated Magnitude\n")
 		WP.write(" 4) " + str(rad) + "			1			#R_e (half-light radius)	[pix]\n")
 		WP.write(" 5) " + "1.0000		1			#Sersic index n (de Vaucouleurs n=4)\n")
 		WP.write(" 6) 0.0000		0			#	-----\n")
 		WP.write(" 7) 0.0000		0			#	-----\n")
 		WP.write(" 8) 0.0000		0			#	-----\n")
-		WP.write(" 9) " + str(BA) + "			1			#Axis ratio (b/a)\n")
-		WP.write(" 10) " + str(angle) + "		1			#Position angle (PA) [deg: Up=0, left=90]\n")
+		WP.write(" 9) 1" + "			1			#Axis ratio (b/a)\n")
+		WP.write(" 10) 0" + "		1			#Position angle (PA) [deg: Up=0, left=90]\n")
 		WP.write(" Z) 0							#Leave in [1] or subtract [0] this comp from data?\n")
 		WP.write("\n")
-	
-	
-		WP.write("# Componenet number: 2\n")
-		WP.write(" 0) sky						#Component type\n")
-		WP.write(" 1) 0.0000		0			#	Sky background at center of fitting region [ADUs]\n")
-		WP.write(" 2) 0.0000		0			#	dsky/dx (sky gradient in x) [ADUs/pix]\n")
-		WP.write(" 3) 0.0000		0			#	dsky/dy (sky gradient in y) [ADUs/pix]\n")
-		WP.write(" Z) 0						#Leave in [1] or subtract [0] this comp from data?\n")
-		WP.write("\n")
-	
-		WP.close()
-	
 
-		# run galfit on paramter file
-		os.system('galfit ' + galfit_single_parameter_filename)
+		WP.close()
 		
-		# open logfile and use readin.py to append galfit result summaries to data_lower and data_upper
-# 		logfile = open('fit.log') 
-# 		read_param(logfile, int(distance))
+		# run galfit on paramter file
+		os.system('galfit ' + galfit_bulge_parameter_filename)
 	
 		# remove temp files
 		os.system("rm " + "fit.log")
-		os.system("mv galfit.01 " + galfit_single_result_filename)
-		os.system("mv " + galfit_output_filename + " " + galfit_single_output_filename)
-		
-		
-		if includeBulgeComponent:
-			# here we would write the third component to the end of galfit_result_filename
-			WP = open(galfit_single_result_filename, "r")
-			
-			#gather info about first fit
-			
-			resultContents = WP.readlines()
-			
-			positionLine = ""
-			magnitudeLine = ""
-			for result in resultContents:
-				if not positionLine and result.strip()[:2] == "1)":
-					positionLine = result.strip().split(" ")
-					
-				if not magnitudeLine and result.strip()[:2] == "3)":
-					magnitudeLine = result.strip().split(" ")
-			
-			resultX = positionLine[1]
-			resultY = positionLine[2]
-			
-			resultMag = magnitudeLine[1]
-			
-			WP.close()
-			
-			#append bulge component using above info
-			
-			WP = open(galfit_single_result_filename, "a")
-			
-			WP.write("# Componenet number: 3\n")
-			WP.write(" 0) sersic					#Component type\n")
-			WP.write(" 1) " + resultX + "	" + resultY + "	1	1			#Position x,y\n")
-			WP.write(" 3) " + resultMag + "	1			#Integrated Magnitude\n")
-			WP.write(" 4) " + str(rad) + "			1			#R_e (half-light radius)	[pix]\n")
-			WP.write(" 5) " + "1.0000		1			#Sersic index n (de Vaucouleurs n=4)\n")
-			WP.write(" 6) 0.0000		0			#	-----\n")
-			WP.write(" 7) 0.0000		0			#	-----\n")
-			WP.write(" 8) 0.0000		0			#	-----\n")
-			WP.write(" 9) 1" + "			1			#Axis ratio (b/a)\n")
-			WP.write(" 10) 0" + "		1			#Position angle (PA) [deg: Up=0, left=90]\n")
-			WP.write(" Z) 0							#Leave in [1] or subtract [0] this comp from data?\n")
-			WP.write("\n")
-	
-			WP.close()
-			
-			# run galfit on paramter file
-			os.system('galfit ' + galfit_single_result_filename)
-		
-			# remove temp files
-			os.system("rm " + "fit.log")
-			os.system("mv galfit.01 " + galfit_bulge_result_filename)
-			os.system('mv ' + galfit_output_filename + ' ' + galfit_bulge_output_filename)
+		os.system("mv galfit.01 " + galfit_bulge_result_filename)
+		os.system('mv ' + galfit_output_filename + ' ' + galfit_bulge_output_filename)
 
 
 def parseDirectory(d):
@@ -401,13 +385,23 @@ if __name__ == "__main__":
 		
 	# set the filename of the image list by piping all images in directory into text file
 	else:
-		imageListFilename = args.directory + "images" + time.strftime("%m-%d-%Y") + ".txt"
+		imageListFilename = args.directory + "all_cam_images_" + time.strftime("%m-%d-%Y") + ".txt"
 		os.system("ls " + args.directory + filePatternToMatch + " > " + imageListFilename)
 
-######################### run galfit ##########################################
+	#this will be the file that will contain the images
+	f = open(imageListFilename, 'r')		
 	
-	#init_galfit_parameter_files()
-	run_galfit(imageListFilename, args.bulge)
+	# the first line of file containing images
+	imageFilenames = f.readlines()
+	
+	# close the file now that it has been read
+	f.close()
+	
+	# this loops through every image in images file and
+	for imageFilename in imageFilenames:
+	
+		# run galfit
+		run_galfit(imageFilename.strip(), args.bulge)
 
 ######################### done ################################################
 
