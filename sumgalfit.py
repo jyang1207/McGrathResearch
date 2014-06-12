@@ -172,7 +172,7 @@ def sum_galfit(resultFilename):
 				mag1 + ", " + rad1 + ", " + ba1 + ", " + pa1 + "\n")
 	result2 = (errorFlag2 + galaxyID + ", " + timeStep + ", " + age_gyr + ", " + camera + ", " + filter + ", " +
 				type2 + ", " + posFlag + ", " + px2 + ", " + py2 + ", " + sersFlag2 + ", " + sersIndex2 + ", " + 
-				mag2 + ", " + rad2 + ", " + ba2 + ", " + pa2 + ", " + dist + "\n")
+				mag2 + ", " + rad2 + ", " + ba2 + ", " + pa2 + ", " + str(dist) + "\n")
 	return result1 + result2
 
 def parseDirectory(d):
