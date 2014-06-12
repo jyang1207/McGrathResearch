@@ -167,10 +167,10 @@ def sum_galfit(resultFilename):
 			type2 = "bulge"
 			type1 = "disk"
 			
-	result1 = (errorFlag1 + galaxyID + ", " + timeStep + ", " + age_gyr ", " + camera + ", " + filter + ", " +
+	result1 = (errorFlag1 + galaxyID + ", " + timeStep + ", " + age_gyr + ", " + camera + ", " + filter + ", " +
 				type1 + ", " + posFlag + ", " + px1 + ", " + py1 + ", " + sersFlag1 + ", " + sersIndex1 + ", " + 
 				mag1 + ", " + rad1 + ", " + ba1 + ", " + pa1 + "\n")
-	result2 = (errorFlag2 + galaxyID + ", " + timeStep + ", " + camera + ", " + filter + ", " +
+	result2 = (errorFlag2 + galaxyID + ", " + timeStep + ", " + age_gyr + ", " + camera + ", " + filter + ", " +
 				type2 + ", " + posFlag + ", " + px2 + ", " + py2 + ", " + sersFlag2 + ", " + sersIndex2 + ", " + 
 				mag2 + ", " + rad2 + ", " + ba2 + ", " + pa2 + ", " + dist + "\n")
 	return result1 + result2
