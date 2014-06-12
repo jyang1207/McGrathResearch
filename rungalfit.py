@@ -14,59 +14,16 @@ import time
 import argparse
 
 
-
-def compute_distance(p0, p1):
-	'''
-	http://stackoverflow.com/questions/5407969/distance-formula-between-two-points-in-a-list
-	'''
-	return math.sqrt((float(p0[0]) - float(p1[0]))**2 + (float(p0[1]) - float(p1[1]))**2)
-
-
-def init_galfit_parameter_files():
-	'''
-	creates and writes header to data lower and upper
-	'''
-	
-	# create a txt file for the result data of the lower half of the picture in this directory
-	os.system("touch " + "data_lower.txt")
-	
-	# open the result stroing file in write mode
-	format = open("data_lower.txt", "w")
-	
-	# write a header line to define what will go in the result file
-	format.write("Input Image" + "	" + "Time Step" + "	" + "X Value" + 
-					"	" + "X Error" + "	" + "Y Value" + "	" + "Y Error" + 
-					"	" + "Magnitude" + "	" + "Magnitude Error" + "	" + "Radius" + 
-					"	" + "Radius Error" + "	" + "Sersic" + "	" + "Sersic Error" + 
-					"	" + "BA Value" + "	" + "BA Error" + "	" + "Position Angle" + 
-					"	" + "Position Angle Error" + "	" + "Chi Squared" + "	" + "ndof" + 
-					"	" + "Chi Squared/nu" + "\n")
-	
-	# close the result file
-	format.close()
-	
-	# create a txt file for the result data of the upper half of the picture in this directory
-	os.system("touch " + "data_upper.txt")
-	
-	# open the result stroing file in write mode
-	format = open("data_upper.txt", "w")
-	
-	# write a header line to define what will go in the result file
-	format.write("Input Image" + "	" + "Time Step" + "	" + "X Value" + 
-					"	" + "X Error" + "	" + "Y Value" + "	" + "Y Error" + 
-					"	" + "Magnitude" + "	" + "Magnitude Error" + "	" + "Radius" + 
-					"	" + "Radius Error" + "	" + "Sersic" + "	" + "Sersic Error" + 
-					"	" + "BA Value" + "	" + "BA Error" + "	" + "Position Angle" + 
-					"	" + "Position Angle Error" + "	" + "Chi Squared" + "	" + "ndof" + 
-					"	" + "Chi Squared/nu" + "\n")
-	
-	# close the result file
-	format.close()
-
-
 def run_imhead(imageFilename):
 	'''
-	returns a list of the form [galaxy_id, filter, cam_number, image_number, frame_height, frame_width]
+	invokes the iraf method imhead on the given image filename
+	parses the result to be returned as a list of string values
+	
+	parameter imageFilename - the full path filename of the image on which to invoke imexam
+	
+	returns - 
+		a string list of image info in the form 
+		[galaxy_id, filter, cam_number, image_number, frame_height, frame_width]
 	'''
 	
 	imhead_return = iraf.imhead(imageFilename, Stdout=1)[0].strip()
@@ -115,7 +72,12 @@ def run_imhead(imageFilename):
 				
 def run_imexam(image):
 	'''
-	returns list of info in the form [line, col, mag, radius, b_a, PA]
+	invokes the iraf method imexam on the given image filename
+	parses the result to be returned as a list of string values
+	
+	parameter image - the full path filename of the image on which to invoke imexam
+	
+	returns - list of string image info in the form [line, col, mag, radius, b_a, PA]
 	'''
 	
 	#writes the output of the minmax function of iraf to a file for later use. 
@@ -178,11 +140,426 @@ def run_imexam(image):
 	return [line, col, mag, radius, b_a, PA]
 	
 
+def run_galfit(imageListFilename, includeBulgeComponent):
+	'''
+	opens file (parameter) containing list of images and loops over every image, 
+	running galfit and writing the results to the same directory as the images
+	
+	calls methods to invoke iraf methods to write the initial galfit param file
+	for each image
+	
+	parameter imageListFilename -
+		the string of the full path filename of the text file holding the list
+		of images on which galfit will be run
+		
+	parameter includeBulgeComponent - 
+		boolean indicating if a bulge should be fit after first pass by galfit
+	'''
+
+	#this will be the file that will contain the images
+	f = open(imageListFilename)		
+	
+	# the first line of file containing images
+	imageFilenames = f.readlines()
+	
+	# close the file now that it has been read
+	f.close()
+	
+	# this loops through every image in images file and
+	for imageFilename in imageFilenames:
+		
+		# remove the "\n" on the end of filename
+		imageFilename = imageFilename.strip()
+		
+		# run the method of dimensions.py
+		[galaxy_id, filter, cam_number, image_number, height, width] = run_imhead(imageFilename)
+		
+		# calls a method of the imexam.py file, passing filename (with width and height) as a parameter
+		# imexam gets the coordinates of the max pixel and uses iraf.imexam to set global
+		# variables detailing the results of iraf's examination of the max coordinate
+		[Y, X, magnitude, rad, BA, angle] = run_imexam(
+			imageFilename + '[1:' + width + ',1:' + height + ']')
+		
+		# define filenames, galaxy_id has full path if any
+		filename = galaxy_id + "_" + image_number + '_cam' + str(cam_number) + '_' + filter
+		galfit_single_parameter_filename = filename + '_single_param.txt'
+		galfit_output_filename = filename + "_multi.fits"
+		galfit_single_output_filename = filename + "_single_multi.fits"
+		galfit_constraint_filename = filename + "_constraint.txt"
+		galfit_single_result_filename = filename + "_single_result.txt"
+		galfit_bulge_result_filename = filename + "_bulge_result.txt"
+		galfit_bulge_output_filename = filename + "_bulge_multi.fits"
+		
+		os.system('touch ' + galfit_single_parameter_filename)								
+	
+######### writes gathered galfit parameters to file ###########################
+		WP = open(galfit_single_parameter_filename,'w')
+		WP.write("# IMAGE and GALFIT CONTROL PARAMETERS\n")
+		WP.write("A) " + imageFilename + 
+				"						#Input data image block\n")
+		WP.write("B) " + galfit_output_filename +
+				"						#Output data image block\n")
+		WP.write("C)" + " none" + 
+				"						#Sigma image name (made from data if blank or 'none')\n")
+		WP.write("D)" + " none" + 
+				"						#Input PSF image and (optional) diffusion kernel\n")#command line TODO
+		WP.write("E)" + " 1" + 
+				"						#PSF fine sampling factor relative to data\n")
+		WP.write("F)" + " none" + 							
+				"						#Bad pixel mask (FITS file or ASCIIcoord list)\n")
+		WP.write("#G) " + galfit_constraint_filename + 		
+				"						#File with parameter constraints (ASCII file)\n")
+		WP.write("H)" + " 1	" + width + " 1	" + height + 
+				"						#Image region to fit (xmin xmax ymin ymax)\n")
+		WP.write("I)" + " 200 200" + 
+				"						#Size of the concolution box (x y)\n")
+		WP.write("J)" + " 25.0" + 
+				"						#Magnitude photometric zeropoint\n")#command line TODO 
+		WP.write("K)" + " 0.038" + "  0.038" + 
+				"						#Plate scale (dx dy)  [arcsec per pixel]\n")#command line TODO 
+		WP.write("O)" + " regular" + 
+				"						#display type (regular, curses, both\n")
+		WP.write("P)" + " 0" + 
+				"						#Options: 0=normal run; 1,2=make model/imgblock & quit\n")
+		WP.write("S)" + " 0" + 
+				"						#Modify/create components interactively?\n")
+		WP.write("\n")
+		WP.write("# INITIAL FITTING PARAMETERS\n")
+		WP.write("#\n")
+		WP.write("#	For component type, the allowed functions are:\n")
+		WP.write("#		nuker, sersic, expdisk, devauc, king, psf, gaussian, moffat,\n")
+		WP.write("#		ferrer, coresersic, sky and isophote.\n")
+		WP.write("#\n")
+		WP.write("#	Hidden parameters will only appear when they are specified:\n")
+		WP.write("#		C0 (diskyness/boxyness),\n")
+		WP.write("#		Fn (n=interger, Azimuthal Fourier Modes).\n")
+		WP.write("#		R0-R10 (PA rotation, for creating spiral structures).\n")
+		WP.write("#\n")
+		WP.write("# ------------------------------------------------------------------------------\n")
+		WP.write("#		par)	par value(s)	fit toggle(s)	# parameter description\n")
+		WP.write("# ------------------------------------------------------------------------------\n")
+		WP.write("\n")
+		WP.write("# Componenet number: 1\n")
+		WP.write(" 0) sersic					#Component type\n")
+		WP.write(" 1) " + str(X) + "	" + str(Y) + "	1	1			#Position x,y\n")
+		WP.write(" 3) " + str(magnitude) + "	1			#Integrated Magnitude\n")
+		WP.write(" 4) " + str(rad) + "			1			#R_e (half-light radius)	[pix]\n")
+		WP.write(" 5) " + "1.0000		1			#Sersic index n (de Vaucouleurs n=4)\n")
+		WP.write(" 6) 0.0000		0			#	-----\n")
+		WP.write(" 7) 0.0000		0			#	-----\n")
+		WP.write(" 8) 0.0000		0			#	-----\n")
+		WP.write(" 9) " + str(BA) + "			1			#Axis ratio (b/a)\n")
+		WP.write(" 10) " + str(angle) + "		1			#Position angle (PA) [deg: Up=0, left=90]\n")
+		WP.write(" Z) 0							#Leave in [1] or subtract [0] this comp from data?\n")
+		WP.write("\n")
+	
+	
+		WP.write("# Componenet number: 2\n")
+		WP.write(" 0) sky						#Component type\n")
+		WP.write(" 1) 0.0000		0			#	Sky background at center of fitting region [ADUs]\n")
+		WP.write(" 2) 0.0000		0			#	dsky/dx (sky gradient in x) [ADUs/pix]\n")
+		WP.write(" 3) 0.0000		0			#	dsky/dy (sky gradient in y) [ADUs/pix]\n")
+		WP.write(" Z) 0						#Leave in [1] or subtract [0] this comp from data?\n")
+		WP.write("\n")
+	
+		WP.close()
+	
+
+		# run galfit on paramter file
+		os.system('galfit ' + galfit_single_parameter_filename)
+		
+		# open logfile and use readin.py to append galfit result summaries to data_lower and data_upper
+# 		logfile = open('fit.log') 
+# 		read_param(logfile, int(distance))
+	
+		# remove temp files
+		os.system("rm " + "fit.log")
+		os.system("mv galfit.01 " + galfit_single_result_filename)
+		os.system("mv " + galfit_output_filename + " " + galfit_single_output_filename)
+		
+		
+		if includeBulgeComponent:
+			# here we would write the third component to the end of galfit_result_filename
+			WP = open(galfit_single_result_filename, "r")
+			
+			#gather info about first fit
+			
+			resultContents = WP.readlines()
+			
+			positionLine = ""
+			magnitudeLine = ""
+			for result in resultContents:
+				if not positionLine and result.strip()[:2] == "1)":
+					positionLine = result.strip().split(" ")
+					
+				if not magnitudeLine and result.strip()[:2] == "3)":
+					magnitudeLine = result.strip().split(" ")
+			
+			resultX = positionLine[1]
+			resultY = positionLine[2]
+			
+			resultMag = magnitudeLine[1]
+			
+			WP.close()
+			
+			#append bulge component using above info
+			
+			WP = open(galfit_single_result_filename, "a")
+			
+			WP.write("# Componenet number: 3\n")
+			WP.write(" 0) sersic					#Component type\n")
+			WP.write(" 1) " + resultX + "	" + resultY + "	1	1			#Position x,y\n")
+			WP.write(" 3) " + resultMag + "	1			#Integrated Magnitude\n")
+			WP.write(" 4) " + str(rad) + "			1			#R_e (half-light radius)	[pix]\n")
+			WP.write(" 5) " + "1.0000		1			#Sersic index n (de Vaucouleurs n=4)\n")
+			WP.write(" 6) 0.0000		0			#	-----\n")
+			WP.write(" 7) 0.0000		0			#	-----\n")
+			WP.write(" 8) 0.0000		0			#	-----\n")
+			WP.write(" 9) 1" + "			1			#Axis ratio (b/a)\n")
+			WP.write(" 10) 0" + "		1			#Position angle (PA) [deg: Up=0, left=90]\n")
+			WP.write(" Z) 0							#Leave in [1] or subtract [0] this comp from data?\n")
+			WP.write("\n")
+	
+			WP.close()
+			
+			# run galfit on paramter file
+			os.system('galfit ' + galfit_single_result_filename)
+		
+			# remove temp files
+			os.system("rm " + "fit.log")
+			os.system("mv galfit.01 " + galfit_bulge_result_filename)
+			os.system('mv ' + galfit_output_filename + ' ' + galfit_bulge_output_filename)
+
+
+def parseDirectory(d):
+	'''	
+	raises an argument exception if the string d is not a directory
+	modifies d to ensure that the directory ends with a forward slash
+	
+	parameter d - the string to be checked as a directory
+	returns - parameter d with an appended forward slash
+	'''
+	if not os.path.isdir(d):
+		msg = "directory {} either does not exist or in not accessible".format(d)
+		raise argparse.ArgumentTypeError(msg)
+	elif d[-1] != "/":
+		d = d + "/"
+		
+	return d
+	
+	
+def parseFile(f):
+	'''	
+	raises an argument exception if the string f is not a file
+	
+	parameter f - the string to be checked as a file
+	returns - parameter f, unchanged
+	'''
+	if not os.path.isfile(f):
+		msg = "file {} either does not exist or in not accessible".format(f)
+		raise argparse.ArgumentTypeError(msg)
+		
+	return f
+
+
+if __name__ == "__main__":
+
+	filePatternToMatch = "*_simulation.fits"	
+
+	# used to parse command line arguments
+	parser = argparse.ArgumentParser()
+	
+	# directory and file are mutually exclusive parameters
+	group = parser.add_mutually_exclusive_group()
+	
+	# directory specifies the directory where the images are
+	group.add_argument("-d","--directory", 
+						help="set the directory containing the images on which to run galfit",
+						type=parseDirectory, default="./")
+	
+	# file specifies the full path filename of the list of images to run
+	group.add_argument("-f","--file", 
+						help="set the file containing the list of full path image filenames",
+						type=parseFile)
+						
+	# bulge is a boolean (true or false) specifying if the simulation should fit
+	# an additional component after the initial fit from imexam results
+	parser.add_argument("-b","--bulge", 
+						help="turn on to include a bulge fit after the initial galaxy fit",
+						action="store_true")
+						
+	# Magnitude photometric zeropoint					
+	# Plate scale
+	# PSF
+	
+	# parse the command line using above parameter rules
+	args = parser.parse_args()
+	
+	# set the filename of the image list by the command line argument
+	if args.file:
+		imageListFilename = args.file
+		
+	# set the filename of the image list by piping all images in directory into text file
+	else:
+		imageListFilename = args.directory + "images" + time.strftime("%m-%d-%Y") + ".txt"
+		os.system("ls " + args.directory + filePatternToMatch + " > " + imageListFilename)
+
+######################### run galfit ##########################################
+	
+	#init_galfit_parameter_files()
+	run_galfit(imageListFilename, args.bulge)
+
+######################### done ################################################
+
+
+
+
+
+
+
+
+
+######################### obsolete ############################################
+
+
+
+
+
+
+
+
+# for command line input without the directory
+	'''
+	# reads command line input and uses to set filename of images list
+	usageStr = ("Usage: command line should be 'python <full path>/rungalfit.py " +
+				"<full path to directory containing images>")
+	if len(sys.argv) > 2:
+		print usageStr
+		exit()
+	elif len(sys.argv) == 2 and os.path.isfile(sys.argv[1]):
+		imageListFilename = sys.argv[1]
+	elif len(sys.argv) == 2: #  and not os.path.isfile(sys.argv[1])
+		print "filename given on command line does not exist or is not accessible\n" + usageStr
+		exit()
+	else:
+		imageListFilename = "images" + time.strftime("%m-%d-%Y") + ".txt"
+		os.system("ls " + filePatternToMatch + " > " + imageListFilename)
+		
+	'''
+
+# for command line input with the directory
+'''
+	usageStr = ("USAGE: command line should be:\n" +
+				"python <full path>/rungalfit.py\n" +
+				"(optional)<full path to directory containing images>\n" +
+				"(optional)<filename of list of images>.txt (e.g. images.txt)\n")
+	
+	# print usage and exit if more than 2 arguments given on command line
+	if len(sys.argv) > 3:
+		print usageStr
+		exit()
+		
+######################### directory variable ##################################
+	
+	# set directory variable according to command line input
+	if len(sys.argv) > 1:
+		
+		# print usage and exit if first argument is not a directory
+		if not os.path.isdir(sys.argv[1]):
+			print ("ERROR: directory given as first command line argument " + 
+					"does not exist or is not accessible. " + 
+					"Use '.' for current directory.\n" + usageStr)
+			exit()
+			
+		# parse the directory into variable
+		else: 
+			imagesDirectory = sys.argv[1]
+			print "input files exist in the directory {}".format(imagesDirectory)
+			if imagesDirectory[-1] != "/":
+				imagesDirectory = imagesDirectory + "/"
+				
+	# set directory variable to default (blank, current directory)
+	else:
+		imagesDirectory = ""	
+		
+######################### image list filename #################################
+	
+	# set image list filename variable according to command line input
+	if len(sys.argv) > 2:
+	
+		# print usage and exit if second argument is not a file
+		if not os.path.isfile(imagesDirectory + sys.argv[2]):
+			print ("ERROR: filename given as second command line argument " + 
+					"does not exist or is not accessible. " + 
+					"Leave blank for default, includes all images.\n" + usageStr)
+			exit()
+		
+		# parse the image list filename into variable
+		else: 
+			imageListFilename = imagesDirectory + sys.argv[2]
+	
+	# set image list filename variable to default
+	else:
+		imageListFilename = imagesDirectory + "images" + time.strftime("%m-%d-%Y") + ".txt"
+		os.system("ls " + imagesDirectory + filePatternToMatch + " > " + imageListFilename)
+'''
+
+# for parsing fit.log
+'''
+def compute_distance(p0, p1):
+
+	http://stackoverflow.com/questions/5407969/distance-formula-between-two-points-in-a-list
+
+	return math.sqrt((float(p0[0]) - float(p1[0]))**2 + (float(p0[1]) - float(p1[1]))**2)
+
+
+def init_galfit_parameter_files():
+
+	creates and writes header to data lower and upper
+
+	
+	# create a txt file for the result data of the lower half of the picture in this directory
+	os.system("touch " + "data_lower.txt")
+	
+	# open the result stroing file in write mode
+	format = open("data_lower.txt", "w")
+	
+	# write a header line to define what will go in the result file
+	format.write("Input Image" + "	" + "Time Step" + "	" + "X Value" + 
+					"	" + "X Error" + "	" + "Y Value" + "	" + "Y Error" + 
+					"	" + "Magnitude" + "	" + "Magnitude Error" + "	" + "Radius" + 
+					"	" + "Radius Error" + "	" + "Sersic" + "	" + "Sersic Error" + 
+					"	" + "BA Value" + "	" + "BA Error" + "	" + "Position Angle" + 
+					"	" + "Position Angle Error" + "	" + "Chi Squared" + "	" + "ndof" + 
+					"	" + "Chi Squared/nu" + "\n")
+	
+	# close the result file
+	format.close()
+	
+	# create a txt file for the result data of the upper half of the picture in this directory
+	os.system("touch " + "data_upper.txt")
+	
+	# open the result stroing file in write mode
+	format = open("data_upper.txt", "w")
+	
+	# write a header line to define what will go in the result file
+	format.write("Input Image" + "	" + "Time Step" + "	" + "X Value" + 
+					"	" + "X Error" + "	" + "Y Value" + "	" + "Y Error" + 
+					"	" + "Magnitude" + "	" + "Magnitude Error" + "	" + "Radius" + 
+					"	" + "Radius Error" + "	" + "Sersic" + "	" + "Sersic Error" + 
+					"	" + "BA Value" + "	" + "BA Error" + "	" + "Position Angle" + 
+					"	" + "Position Angle Error" + "	" + "Chi Squared" + "	" + "ndof" + 
+					"	" + "Chi Squared/nu" + "\n")
+	
+	# close the result file
+	format.close()
+
+
 def read_param(logfile, distance):
-	'''
-	logfile is the filename of galfits log file (e.g. fit.log)
-	distance is an integer
-	'''
+	
+	#logfile is the filename of galfits log file (e.g. fit.log)
+	#distance is an integer
+	
 
 	lines = logfile.readlines()
 	
@@ -304,323 +681,4 @@ def read_param(logfile, distance):
 		data_upper.write(imagename + "	" + timestep + "	" + X_fin2 + "	" + X_err2 + "	" + Y_fin2 + "	" + Y_err2 + "	" + mag_fin2 + "	" + mag_err2 + "	" + rad_fin2 + "	" + rad_err2 + "	" + sersic_fin2 + "	" + sersic_err2 + "	" + BA_fin2 + "	" + BA_err2 + "	" + PA_fin2 + "	" + PA_err2 + "	" + chi_square + "	" + ndof + "	" + chi_square_nu + "\n")
 		data_upper.close()
 	logfile.close()
-	
-	
-def run_galfit(imageListFilename, includeBulgeComponent):
-	'''
-	opens file (parameter) containing list of images and loops over every image, running galfit
-	
-	includeBulgeComponent - parameter indicating if a bulge should be fit after first pass by galfit
-	'''
-
-	#this will be the file that will contain the images
-	f = open(imageListFilename)		
-	
-	# the first line of file containing images
-	imageFilenames = f.readlines()
-	
-	# close the file now that it has been read
-	f.close()
-	
-	# this loops through every image in images file and
-	for imageFilename in imageFilenames:
-		
-		# remove the "\n" on the end of filename
-		imageFilename = imageFilename.strip()
-		
-		# run the method of dimensions.py
-		[galaxy_id, filter, cam_number, image_number, height, width] = run_imhead(imageFilename)
-		
-		# calls a method of the imexam.py file, passing filename (with width and height) as a parameter
-		# imexam gets the coordinates of the max pixel and uses iraf.imexam to set global
-		# variables detailing the results of iraf's examination of the max coordinate
-		[Y, X, magnitude, rad, BA, angle] = run_imexam(
-			imageFilename + '[1:' + width + ',1:' + height + ']')
-		
-		# define filenames, galaxy_id has full path if any
-		filename = galaxy_id + "_" + image_number + '_cam' + str(cam_number) + '_' + filter
-		galfit_parameter_filename = filename + '_init_param.txt'
-		galfit_output_filename = filename + "_multi.fits"
-		galfit_constraint_filename = filename + "_constraint.txt"
-		galfit_result_filename = filename + "_result_param.txt"
-		galfit_bulge_filename = filename + "_bulge_param.txt"
-		os.system('touch ' + galfit_parameter_filename)								
-	
-######### writes gathered galfit parameters to file ###########################
-		WP = open(galfit_parameter_filename,'w')
-		WP.write("# IMAGE and GALFIT CONTROL PARAMETERS\n")
-		WP.write("A) " + imageFilename + 
-				"						#Input data image block\n")
-		WP.write("B) " + galfit_output_filename + 
-				"						#Output data image block\n")
-		WP.write("C)" + " none" + 
-				"						#Sigma image name (made from data if blank or 'none')\n")
-		WP.write("D)" + " none" + 
-				"						#Input PSF image and (optional) diffusion kernel\n")#command line TODO
-		WP.write("E)" + " 1" + 
-				"						#PSF fine sampling factor relative to data\n")
-		WP.write("F)" + " none" + 							
-				"						#Bad pixel mask (FITS file or ASCIIcoord list)\n")
-		WP.write("#G) " + galfit_constraint_filename + 		
-				"						#File with parameter constraints (ASCII file)\n")
-		WP.write("H)" + " 1	" + width + " 1	" + height + 
-				"						#Image region to fit (xmin xmax ymin ymax)\n")
-		WP.write("I)" + " 200 200" + 
-				"						#Size of the concolution box (x y)\n")
-		WP.write("J)" + " 25.0" + 
-				"						#Magnitude photometric zeropoint\n")#command line TODO 
-		WP.write("K)" + " 0.038" + "  0.038" + 
-				"						#Plate scale (dx dy)  [arcsec per pixel]\n")#command line TODO 
-		WP.write("O)" + " regular" + 
-				"						#display type (regular, curses, both\n")
-		WP.write("P)" + " 0" + 
-				"						#Options: 0=normal run; 1,2=make model/imgblock & quit\n")
-		WP.write("S)" + " 0" + 
-				"						#Modify/create components interactively?\n")
-		WP.write("\n")
-		WP.write("# INITIAL FITTING PARAMETERS\n")
-		WP.write("#\n")
-		WP.write("#	For component type, the allowed functions are:\n")
-		WP.write("#		nuker, sersic, expdisk, devauc, king, psf, gaussian, moffat,\n")
-		WP.write("#		ferrer, coresersic, sky and isophote.\n")
-		WP.write("#\n")
-		WP.write("#	Hidden parameters will only appear when they are specified:\n")
-		WP.write("#		C0 (diskyness/boxyness),\n")
-		WP.write("#		Fn (n=interger, Azimuthal Fourier Modes).\n")
-		WP.write("#		R0-R10 (PA rotation, for creating spiral structures).\n")
-		WP.write("#\n")
-		WP.write("# ------------------------------------------------------------------------------\n")
-		WP.write("#		par)	par value(s)	fit toggle(s)	# parameter description\n")
-		WP.write("# ------------------------------------------------------------------------------\n")
-		WP.write("\n")
-		WP.write("# Componenet number: 1\n")
-		WP.write(" 0) sersic					#Component type\n")
-		WP.write(" 1) " + str(X) + "	" + str(Y) + "	1	1			#Position x,y\n")
-		WP.write(" 3) " + str(magnitude) + "	1			#Integrated Magnitude\n")
-		WP.write(" 4) " + str(rad) + "			1			#R_e (half-light radius)	[pix]\n")
-		WP.write(" 5) " + "1.0000		1			#Sersic index n (de Vaucouleurs n=4)\n")
-		WP.write(" 6) 0.0000		0			#	-----\n")
-		WP.write(" 7) 0.0000		0			#	-----\n")
-		WP.write(" 8) 0.0000		0			#	-----\n")
-		WP.write(" 9) " + str(BA) + "			1			#Axis ratio (b/a)\n")
-		WP.write(" 10) " + str(angle) + "		1			#Position angle (PA) [deg: Up=0, left=90]\n")
-		WP.write(" Z) 0							#Leave in [1] or subtract [0] this comp from data?\n")
-		WP.write("\n")
-	
-	
-		WP.write("# Componenet number: 2\n")
-		WP.write(" 0) sky						#Component type\n")
-		WP.write(" 1) 0.0000		0			#	Sky background at center of fitting region [ADUs]\n")
-		WP.write(" 2) 0.0000		0			#	dsky/dx (sky gradient in x) [ADUs/pix]\n")
-		WP.write(" 3) 0.0000		0			#	dsky/dy (sky gradient in y) [ADUs/pix]\n")
-		WP.write(" Z) 0						#Leave in [1] or subtract [0] this comp from data?\n")
-		WP.write("\n")
-	
-		WP.close()
-	
-
-		# run galfit on paramter file
-		os.system('galfit ' + galfit_parameter_filename)
-		
-		# open logfile and use readin.py to append galfit result summaries to data_lower and data_upper
-# 		logfile = open('fit.log') 
-# 		read_param(logfile, int(distance))
-	
-		# remove temp files
-		os.system("rm " + "fit.log")
-		os.system("mv galfit.01 " + galfit_result_filename)
-		
-		
-		if includeBulgeComponent:
-			# here we would write the third component to the end of galfit_result_filename
-			WP = open(galfit_result_filename, "r")
-			
-			#gather info about first fit
-			
-			resultContents = WP.readlines()
-			
-			positionLine = ""
-			magnitudeLine = ""
-			for result in resultContents:
-				if not positionLine and result.strip()[:2] == "1)":
-					positionLine = result.strip().split(" ")
-					
-				if not magnitudeLine and result.strip()[:2] == "3)":
-					magnitudeLine = result.strip().split(" ")
-			
-			resultX = positionLine[1]
-			resultY = positionLine[2]
-			
-			resultMag = magnitudeLine[1]
-			
-			WP.close()
-			
-			#append bulge component using above info
-			
-			WP = open(galfit_result_filename, "a")
-			
-			WP.write("# Componenet number: 3\n")
-			WP.write(" 0) sersic					#Component type\n")
-			WP.write(" 1) " + resultX + "	" + resultY + "	1	1			#Position x,y\n")
-			WP.write(" 3) " + resultMag + "	1			#Integrated Magnitude\n")
-			WP.write(" 4) " + str(rad) + "			1			#R_e (half-light radius)	[pix]\n")
-			WP.write(" 5) " + "1.0000		1			#Sersic index n (de Vaucouleurs n=4)\n")
-			WP.write(" 6) 0.0000		0			#	-----\n")
-			WP.write(" 7) 0.0000		0			#	-----\n")
-			WP.write(" 8) 0.0000		0			#	-----\n")
-			WP.write(" 9) 1" + "			1			#Axis ratio (b/a)\n")
-			WP.write(" 10) 0" + "		1			#Position angle (PA) [deg: Up=0, left=90]\n")
-			WP.write(" Z) 0							#Leave in [1] or subtract [0] this comp from data?\n")
-			WP.write("\n")
-	
-			WP.close()
-			
-			# run galfit on paramter file
-			os.system('galfit ' + galfit_result_filename)
-		
-			# remove temp files
-			os.system("rm " + "fit.log")
-			os.system("mv galfit.01 " + galfit_bulge_filename)
-
-def parseDirectory(d):
-	if not os.path.isdir(d):
-		msg = "directory {} either does not exist or in not accessible".format(d)
-		raise argparse.ArgumentTypeError(msg)
-	elif d[-1] != "/":
-		d = d + "/"
-		
-	return d
-	
-def parseFile(f):
-	if not os.path.isfile(f):
-		msg = "file {} either does not exist or in not accessible".format(f)
-		raise argparse.ArgumentTypeError(msg)
-		
-	return f
-
-if __name__ == "__main__":
-
-	filePatternToMatch = "*_simulation.fits"	
-
-	# used to parse command line arguments
-	parser = argparse.ArgumentParser()
-	
-	# directory and file are mutually exclusive parameters
-	group = parser.add_mutually_exclusive_group()
-	
-	# directory specifies the directory where the images are
-	group.add_argument("-d","--directory", 
-						help="set the directory containing the images on which to run galfit",
-						type=parseDirectory, default="./")
-	
-	# file specifies the full path filename of the list of images to run
-	group.add_argument("-f","--file", 
-						help="set the file containing the list of full path image filenames",
-						type=parseFile)
-						
-	# bulge is a boolean (true or false) specifying if the simulation should fit
-	# an additional component after the initial fit from imexam results
-	parser.add_argument("-b","--bulge", 
-						help="turn on to include a bulge fit after the initial galaxy fit",
-						action="store_true")
-						
-	# Magnitude photometric zeropoint					
-	# Plate scale
-	# PSF
-	
-	# parse the command line using above parameter rules
-	args = parser.parse_args()
-	
-	# set the filename of the image list by the command line argument
-	if args.file:
-		imageListFilename = args.file
-		
-	# set the filename of the image list by piping all images in directory into text file
-	else:
-		imageListFilename = args.directory + "images" + time.strftime("%m-%d-%Y") + ".txt"
-		os.system("ls " + args.directory + filePatternToMatch + " > " + imageListFilename)
-
-######################### run galfit ##########################################
-	
-	#init_galfit_parameter_files()
-	run_galfit(imageListFilename, args.bulge)
-
-######################### done ################################################
-
-######################### obsolete ############################################
-
-# for command line input without the directory
-	'''
-	# reads command line input and uses to set filename of images list
-	usageStr = ("Usage: command line should be 'python <full path>/rungalfit.py " +
-				"<full path to directory containing images>")
-	if len(sys.argv) > 2:
-		print usageStr
-		exit()
-	elif len(sys.argv) == 2 and os.path.isfile(sys.argv[1]):
-		imageListFilename = sys.argv[1]
-	elif len(sys.argv) == 2: #  and not os.path.isfile(sys.argv[1])
-		print "filename given on command line does not exist or is not accessible\n" + usageStr
-		exit()
-	else:
-		imageListFilename = "images" + time.strftime("%m-%d-%Y") + ".txt"
-		os.system("ls " + filePatternToMatch + " > " + imageListFilename)
-		
-	'''
-
-# for command line input with the directory
-'''
-	usageStr = ("USAGE: command line should be:\n" +
-				"python <full path>/rungalfit.py\n" +
-				"(optional)<full path to directory containing images>\n" +
-				"(optional)<filename of list of images>.txt (e.g. images.txt)\n")
-	
-	# print usage and exit if more than 2 arguments given on command line
-	if len(sys.argv) > 3:
-		print usageStr
-		exit()
-		
-######################### directory variable ##################################
-	
-	# set directory variable according to command line input
-	if len(sys.argv) > 1:
-		
-		# print usage and exit if first argument is not a directory
-		if not os.path.isdir(sys.argv[1]):
-			print ("ERROR: directory given as first command line argument " + 
-					"does not exist or is not accessible. " + 
-					"Use '.' for current directory.\n" + usageStr)
-			exit()
-			
-		# parse the directory into variable
-		else: 
-			imagesDirectory = sys.argv[1]
-			print "input files exist in the directory {}".format(imagesDirectory)
-			if imagesDirectory[-1] != "/":
-				imagesDirectory = imagesDirectory + "/"
-				
-	# set directory variable to default (blank, current directory)
-	else:
-		imagesDirectory = ""	
-		
-######################### image list filename #################################
-	
-	# set image list filename variable according to command line input
-	if len(sys.argv) > 2:
-	
-		# print usage and exit if second argument is not a file
-		if not os.path.isfile(imagesDirectory + sys.argv[2]):
-			print ("ERROR: filename given as second command line argument " + 
-					"does not exist or is not accessible. " + 
-					"Leave blank for default, includes all images.\n" + usageStr)
-			exit()
-		
-		# parse the image list filename into variable
-		else: 
-			imageListFilename = imagesDirectory + sys.argv[2]
-	
-	# set image list filename variable to default
-	else:
-		imageListFilename = imagesDirectory + "images" + time.strftime("%m-%d-%Y") + ".txt"
-		os.system("ls " + imagesDirectory + filePatternToMatch + " > " + imageListFilename)
 '''
