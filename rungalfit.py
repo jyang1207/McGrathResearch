@@ -140,7 +140,7 @@ def run_imexam(image):
 	return [line, col, mag, radius, b_a, PA]
 	
 
-def run_galfit(imageFilename, includeBulgeComponent):
+def run_galfit(imageFilename, constraintFilename, includeBulgeComponent):
 	'''
 	opens file (parameter) containing list of images and loops over every image, 
 	running galfit and writing the results to the same directory as the images
@@ -162,13 +162,18 @@ def run_galfit(imageFilename, includeBulgeComponent):
 	# calls a method of the imexam.py file, passing filename (with width and height) as a parameter
 	# imexam gets the coordinates of the max pixel and uses iraf.imexam to set global
 	# variables detailing the results of iraf's examination of the max coordinate
+	print width
+	print height
 	[Y, X, magnitude, rad, BA, angle] = run_imexam(
-		imageFilename + '[1:' + width + ',1:' + height + ']')
+		imageFilename + '[' + str(int(width)/2 - 75) + ':' + str(int(width)/2 + 75) + "," +
+							  str(int(height)/2 - 75) + ':' + str(int(height)/2 + 75) + ']')
+	
+	Y = str(float(Y) + float(height)/2 - 75.0)
+	X = str(float(X) + float(width)/2 - 75.0)
 	
 	# define filenames, galaxy_id has full path if any
 	filename = galaxy_id + "_" + image_number + '_cam' + str(cam_number) + '_' + filter
 	
-	galfit_constraint_filename = filename + "_constraint.txt"
 	galfit_output_filename = filename + "_multi.fits"
 	galfit_single_parameter_filename = 	filename + '_single_param.txt'
 	galfit_single_output_filename = 	filename + "_single_multi.fits"
@@ -194,15 +199,15 @@ def run_galfit(imageFilename, includeBulgeComponent):
 			"						#PSF fine sampling factor relative to data\n")
 	WP.write("F)" + " none" + 							
 			"						#Bad pixel mask (FITS file or ASCIIcoord list)\n")
-	WP.write("#G) " + galfit_constraint_filename + 		
+	WP.write("G) " + constraintFilename + 		
 			"						#File with parameter constraints (ASCII file)\n")
 	WP.write("H)" + " 1	" + width + " 1	" + height + 
 			"						#Image region to fit (xmin xmax ymin ymax)\n")
 	WP.write("I)" + " 200 200" + 
 			"						#Size of the concolution box (x y)\n")
-	WP.write("J)" + " 25.0" + 
+	WP.write("J)" + " 26.3" + 
 			"						#Magnitude photometric zeropoint\n")#command line TODO 
-	WP.write("K)" + " 0.038" + "  0.038" + 
+	WP.write("K)" + " 0.06" + "  0.06" + 
 			"						#Plate scale (dx dy)  [arcsec per pixel]\n")#command line TODO 
 	WP.write("O)" + " regular" + 
 			"						#display type (regular, curses, both\n")
@@ -371,6 +376,11 @@ if __name__ == "__main__":
 	parser.add_argument("-b","--bulge", 
 						help="turn on to include a bulge fit after the initial galaxy fit",
 						action="store_true")
+					
+	# file specifies the full path filename of the list of images to run
+	parser.add_argument("-c","--constraint", 
+						help="set the file containing the galfit constraints",
+						type=parseFile)
 						
 	# Magnitude photometric zeropoint					
 	# Plate scale
@@ -379,6 +389,11 @@ if __name__ == "__main__":
 	# parse the command line using above parameter rules
 	args = parser.parse_args()
 	
+	if not args.constraint:
+		constraintFilename = "none"
+	else:
+		constraintFilename = args.constraint
+		
 	# set the filename of the image list by the command line argument
 	if args.file:
 		imageListFilename = args.file
@@ -401,7 +416,7 @@ if __name__ == "__main__":
 	for imageFilename in imageFilenames:
 	
 		# run galfit
-		run_galfit(imageFilename.strip(), args.bulge)
+		run_galfit(imageFilename.strip(), constraintFilename, args.bulge)
 
 ######################### done ################################################
 
