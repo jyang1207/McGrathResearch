@@ -169,7 +169,7 @@ def sum_galfit(resultFilename):
 			
 	result1 = (errorFlag1 + galaxyID + ", " + timeStep + ", " + age_gyr + ", " + camera + ", " + filter + ", " +
 				type1 + ", " + posFlag + ", " + px1 + ", " + py1 + ", " + sersFlag1 + ", " + sersIndex1 + ", " + 
-				mag1 + ", " + rad1 + ", " + ba1 + ", " + pa1 + "\n")
+				mag1 + ", " + rad1 + ", " + ba1 + ", " + pa1 + ", " + str(dist) + "\n")
 	result2 = (errorFlag2 + galaxyID + ", " + timeStep + ", " + age_gyr + ", " + camera + ", " + filter + ", " +
 				type2 + ", " + posFlag + ", " + px2 + ", " + py2 + ", " + sersFlag2 + ", " + sersIndex2 + ", " + 
 				mag2 + ", " + rad2 + ", " + ba2 + ", " + pa2 + ", " + str(dist) + "\n")
@@ -183,10 +183,7 @@ def parseDirectory(d):
 	parameter d - the string to be checked as a directory
 	returns - parameter d with an appended forward slash
 	'''
-	if not os.path.isdir(d):
-		msg = "directory {} either does not exist or in not accessible".format(d)
-		raise argparse.ArgumentTypeError(msg)
-	elif d[-1] != "/":
+	if d[-1] != "/":
 		d = d + "/"
 		
 	return d
@@ -208,35 +205,23 @@ def parseFile(f):
 
 if __name__ == "__main__":
 
-	singlePattern = "*_single_result.txt"	
-	bulgePattern = "*_bulge_result.txt"	
-
 	# used to parse command line arguments
 	parser = argparse.ArgumentParser()
 	
-	# directory and file are mutually exclusive parameters
-	group = parser.add_mutually_exclusive_group()
-	
 	# directory specifies the directory where the images are
-	group.add_argument("-d","--directory", 
+	parser.add_argument("-d","--directory", 
 						help="set the directory containing the galfit results to summarize",
 						type=parseDirectory, default="./")
 	
 	# file specifies the full path filename of the list of images to run
-	group.add_argument("-f","--file", 
+	parser.add_argument("-f","--file", 
 						help="set the file containing the list of full galfit result filenames",
-						type=parseFile)
-						
-	# bulge is a boolean (true or false) specifying if the simulation should fit
-	# an additional component after the initial fit from imexam results
-	parser.add_argument("-b","--bulge", 
-						help="turn on to summarize galfit bulge fit results (off for single)",
-						action="store_true")
+						default = "*_result.txt")
 						
 	# file specifies the full path filename of the list of images to run
 	parser.add_argument("-o","--output", 
 						help="set the output file where summary will be stored",
-						type=parseFile)
+						default="galfit_result_summary.txt")
 						
 	# Magnitude photometric zeropoint					
 	# Plate scale
@@ -246,16 +231,9 @@ if __name__ == "__main__":
 	args = parser.parse_args()
 	
 	# set the list of results by the command line argument
-	if args.file:
-		resultListFilename = args.file
-		
-	# set the list of results by filtering in the specified directory (default current)
-	elif args.bulge:
-		resultListFilename = args.directory + "all_cam_bulge_results_" + time.strftime("%m-%d-%Y") + ".txt"
-		os.system("ls " + args.directory + bulgePattern + " > " + resultListFilename)
-	else:
-		resultListFilename = args.directory + "all_cam_single_results_" + time.strftime("%m-%d-%Y") + ".txt"
-		os.system("ls " + args.directory + singlePattern + " > " + resultListFilename)
+	resultListFilename = ("all_results_" + 
+							time.strftime("%m-%d-%Y") + ".txt")
+	os.system("ls " + args.directory + args.file + " > " + resultListFilename)
 		
 	#this will be the file that will contain the images
 	r = open(resultListFilename, 'r')		
@@ -265,21 +243,17 @@ if __name__ == "__main__":
 	
 	# close the file now that it has been read
 	r.close()
-	
-	# the output file
-	if not args.output:
-		outFileStr = "galfit_result_summary.txt"
-	else:
-		outFileStr = args.output
 		
-	#outFile = open(outFileStr, 'w')
+	outFile = open(args.output, 'w')
 	
-	#outFile.write("galfit result file\n" +
-	#			"galaxy ID, time step, camera, filter, type, px, py, sersic, mag, rad, b/a, angle\n")
+	outFile.write("galfit result file\n" +
+				"galaxy ID, time step, age (GYr), camera, filter, type, " + 
+				"pos error, px, py, sers error, sersic, mag, rad, b/a, angle" + 
+				"[, component seperation distance]\n")
 	
-	#outFile.close()
+	outFile.close()
 	
-	outFile = open(outFileStr, 'a')
+	outFile = open(args.output, 'a')
 	
 	# this loops through every image in images file and
 	for resultFilename in resultFilenames:
@@ -288,5 +262,5 @@ if __name__ == "__main__":
 		outFile.write( sum_galfit(resultFilename.strip()) )
 		
 	outFile.close()
-
+	
 ######################### done ################################################
