@@ -230,7 +230,7 @@ if __name__ == "__main__":
 	args = parser.parse_args()
 	
 	# set the list of results by the command line argument
-	resultListFilename = ("all_results_" + 
+	resultListFilename = ("all_result_filenames_" + 
 							time.strftime("%m-%d-%Y") + ".txt")
 	os.system("ls " + args.directory + args.file + " > " + resultListFilename)
 		
