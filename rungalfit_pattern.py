@@ -138,7 +138,7 @@ def run_imexam(image):
 	return [line, col, mag, radius, b_a, PA]
 	
 
-def run_galfit(imageFilename, includeBulgeComponent):
+def run_galfit(imageFilename, galfit_constraint_filename, includeBulgeComponent):
 	'''
 	opens file (parameter) containing list of images and loops over every image, 
 	running galfit and writing the results to the same directory as the images
@@ -166,7 +166,6 @@ def run_galfit(imageFilename, includeBulgeComponent):
 	# define filenames, galaxy_id has full path if any
 	filename = galaxy_id + "_" + image_number + '_cam' + str(cam_number) + '_' + filter
 	
-	galfit_constraint_filename = filename + "_constraint.txt"
 	galfit_output_filename = filename + "_multi.fits"
 	galfit_single_parameter_filename = 	filename + '_single_param.txt'
 	galfit_single_output_filename = 	filename + "_single_multi.fits"
@@ -192,7 +191,7 @@ def run_galfit(imageFilename, includeBulgeComponent):
 			"						#PSF fine sampling factor relative to data\n")
 	WP.write("F)" + " none" + 							
 			"						#Bad pixel mask (FITS file or ASCIIcoord list)\n")
-	WP.write("#G) " + galfit_constraint_filename + 		
+	WP.write("G) " + galfit_constraint_filename + 		
 			"						#File with parameter constraints (ASCII file)\n")
 	WP.write("H)" + " 1	" + width + " 1	" + height + 
 			"						#Image region to fit (xmin xmax ymin ymax)\n")
@@ -348,6 +347,9 @@ if __name__ == "__main__":
 
 	# used to parse command line arguments
 	parser = argparse.ArgumentParser()
+
+	# directory and file are mutually exclusive parameters
+	exclusive_group = parser.add_mutually_exclusive_group()
 	
 	# directory specifies the directory where the images are
 	parser.add_argument("-d","--directory", 
@@ -355,9 +357,13 @@ if __name__ == "__main__":
 						type=parseDirectory, default="./")
 	
 	# file specifies the full path filename of the list of images to run
-	parser.add_argument("-f","--file", 
-						help="set the file containing the list of full path image filenames",
+	exclusive_group.add_argument("-f","--file", 
+						help="set the file pattern to match image filenames in given directory",
 						default="*_simulation.fits")
+						
+	exclusive_group.add_argument("-i","--input", 
+						help="set the file containing the list of full path image filenames",
+						type=parseFile)
 						
 	# bulge is a boolean (true or false) specifying if the simulation should fit
 	# an additional component after the initial fit from imexam results
@@ -365,23 +371,43 @@ if __name__ == "__main__":
 						help="turn on to include a bulge fit after the initial galaxy fit",
 						action="store_true")
 						
+	parser.add_argument("-c","--constraint", 
+						help="set the file containing the galfit constraints",
+						type=parseFile)
+						
 	# Magnitude photometric zeropoint					
 	# Plate scale
 	# PSF
 	
 	# parse the command line using above parameter rules
 	args = parser.parse_args()
-	
-	imageFilenames = fnmatch.filter(os.listdir(args.directory), args.file)
-	if len(imageFilenames) == 0:
-		print "file pattern {} in directory {} does not match any files".format(
-							args.file, args.directory)
-		parser.print_help()
+	if not args.input:
+		imageFilenames = fnmatch.filter(os.listdir(args.directory), args.file)
+		if len(imageFilenames) == 0:
+			print "file pattern {} in directory {} does not match any files".format(
+								args.file, args.directory)
+			parser.print_help()
 		
+		# this loops through every image in images file and remove \n
+		imageFilenames = [args.directory + imageFilename.strip() for imageFilename in imageFilenames ]
+	else:
+		inputFile = open(args.directory + args.input, 'r')
+		imageFilenames = inputFile.readlines()
+		inputFile.close()
+		
+		# this loops through every image in images file and prefixes with directory
+		imageFilenames = [imageFilename.strip() for imageFilename in imageFilenames ]
+		
+
+	if not args.constraint:
+		constraintFilename = "none"
+	else:
+		constraintFilename = args.constraint
+	
 	# this loops through every image in images file and
 	for imageFilename in imageFilenames:
 	
 		# run galfit
-		run_galfit(args.directory + imageFilename.strip(), args.bulge)
-
+		run_galfit(imageFilename, constraintFilename, args.bulge)
+	
 ######################### done ################################################

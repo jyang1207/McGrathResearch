@@ -112,6 +112,7 @@ def sum_galfit(resultFilename):
 	
 	errorFlag1 = ""
 	errorFlag2 = ""
+	posFlag = ""
 	
 	# sersic index of 0.5 < si < 10 is good
 	if float(sersIndex1) < 0.5 or float(sersIndex1) > 10:
@@ -127,8 +128,8 @@ def sum_galfit(resultFilename):
 		else:
 			type = "disk"
 			
-		return (errorFlag1 + galaxyID + ", " + timeStep + ", " + camera + ", " + filter + ", " +
-				type + ", " + px1 + ", " + py1 + ", " + sersIndex1 + ", " + mag1 + ", " + 
+		return (errorFlag1 + galaxyID + ", " + timeStep + ", " + age_gyr + ", " + camera + ", " + filter + ", " +
+				type + ", " + posFlag + ", " + px1 + ", " + py1 + ", " + sersFlag1 + ", " + sersIndex1 + ", " + mag1 + ", " + 
 				rad1 + ", " + ba1 + ", " + pa1 + "\n")
 				
 	
@@ -138,8 +139,6 @@ def sum_galfit(resultFilename):
 		posFlag = "*"
 		errorFlag1 = "*"
 		errorFlag2 = "*"
-	else:
-		posFlag = ""
 		
 		
 	# sersic index of 0.5 < si < 10 is good
@@ -210,12 +209,12 @@ if __name__ == "__main__":
 	
 	# directory specifies the directory where the images are
 	parser.add_argument("-d","--directory", 
-						help="set the directory containing the galfit results to summarize",
+						help="set the directory containing the galfit results to summarize (wildcard characters allowed)",
 						type=parseDirectory, default="./")
 	
 	# file specifies the full path filename of the list of images to run
 	parser.add_argument("-f","--file", 
-						help="set the file containing the list of full galfit result filenames",
+						help="set the file pattern for galfit result filenames",
 						default = "*_result.txt")
 						
 	# file specifies the full path filename of the list of images to run
