@@ -329,6 +329,7 @@ def run_galfit(imageFilename, galfit_constraint_filename, includeBulgeComponent)
 		os.system("mv galfit.01 " + galfit_bulge_result_filename)
 		#os.system('mv ' + galfit_output_filename + ' ' + galfit_bulge_output_filename)
 
+	return "success"
 
 def parseDirectory(d):
 	'''	
@@ -422,10 +423,23 @@ if __name__ == "__main__":
 	else:
 		constraintFilename = args.constraint
 	
+	logMsg = "run on {} for images {}\n".format(time.strftime("%m-%d-%Y"), imageFilenames)
 	# this loops through every image in images file and
 	for imageFilename in imageFilenames:
-	
+		logMsg = logMsg + imageFilename + ": "
+		
 		# run galfit
-		run_galfit(imageFilename, constraintFilename, args.bulge)
+		try:
+			logMsg = logMsg + run_galfit(imageFilename, constraintFilename, args.bulge)
+		except KeyboardInterrupt:
+			break
+		except:
+			logMsg = logMsg + str(sys.exc_info()[0]) + str(sys.exc_info()[1])
+		logMsg = logMsg + "\n"
 	
+	logFilename = ("rungalfit_log_" + 
+					time.strftime("%m-%d-%Y") + ".txt")
+	log = open(logFilename, 'w')
+	log.write(logMsg)
+	log.close()
 ######################### done ################################################
