@@ -18,7 +18,7 @@ def compute_distance(p0, p1):
 	
 	return math.sqrt((float(p0[0]) - float(p1[0]))**2 + (float(p0[1]) - float(p1[1]))**2)
 
-def sum_galfit(resultFilename):
+def sum_galfit(resultFilename, maxDist, minSersIndex, maxSersIndex):
 	'''
 	returns a string summary of the result specified by the parameter result filename
 	
@@ -115,7 +115,7 @@ def sum_galfit(resultFilename):
 	posFlag = ""
 	
 	# sersic index of 0.5 < si < 10 is good
-	if float(sersIndex1) < 0.5 or float(sersIndex1) > 10:
+	if float(sersIndex1) < minSersIndex or float(sersIndex1) > maxSersIndex:
 		sersFlag1 = "*"
 		errorFlag1 = "*"
 	else:
@@ -135,14 +135,14 @@ def sum_galfit(resultFilename):
 	
 	# component seperation of greater than 5 is bad 
 	dist = compute_distance([px1, py1], [px2, py2])
-	if dist > 5:
+	if dist > maxDist:
 		posFlag = "*"
 		errorFlag1 = "*"
 		errorFlag2 = "*"
 		
 		
 	# sersic index of 0.5 < si < 10 is good
-	if float(sersIndex2) < 0.5 or float(sersIndex2) > 10:
+	if float(sersIndex2) < minSersIndex or float(sersIndex2) > maxSersIndex:
 		sersFlag2 = "*"
 		errorFlag2 = "*"
 	else:
@@ -186,20 +186,6 @@ def parseDirectory(d):
 		d = d + "/"
 		
 	return d
-	
-	
-def parseFile(f):
-	'''	
-	raises an argument exception if the string f is not a file
-	
-	parameter f - the string to be checked as a file
-	returns - parameter f, unchanged
-	'''
-	if not os.path.isfile(f):
-		msg = "file {} either does not exist or in not accessible".format(f)
-		raise argparse.ArgumentTypeError(msg)
-		
-	return f
 
 
 if __name__ == "__main__":
@@ -221,6 +207,21 @@ if __name__ == "__main__":
 	parser.add_argument("-o","--output", 
 						help="set the output file where summary will be stored",
 						default="galfit_result_summary.txt")
+						
+	# file specifies the full path filename of the list of images to run
+	parser.add_argument("-mad","--maxDistance", 
+						help="set the threshold for distance between multiple components of the same image, beyond which a * will indicate the error",
+						type=float, default=5.0)
+						
+	# file specifies the full path filename of the list of images to run
+	parser.add_argument("-mis","--minSersicIndex", 
+						help="set the min threshold for sersic index, below which a * will indicate the error",
+						type=float, default=0.5)
+						
+	# file specifies the full path filename of the list of images to run
+	parser.add_argument("-mas","--maxSersicIndex", 
+						help="set the max threshold for sersic index, above which a * will indicate the error",
+						type=float, default=10.0)
 						
 	# Magnitude photometric zeropoint					
 	# Plate scale
@@ -253,12 +254,15 @@ if __name__ == "__main__":
 	outFile.close()
 	
 	outFile = open(args.output, 'a')
-	
+
 	# this loops through every image in images file and
 	for resultFilename in resultFilenames:
 	
 		# summarize galfit and write to output
-		outFile.write( sum_galfit(resultFilename.strip()) )
+		outFile.write( sum_galfit(resultFilename.strip(), 
+									args.maxDistance, 
+									args.minSersicIndex, 
+									args.maxSersicIndex) )
 		
 	outFile.close()
 	
