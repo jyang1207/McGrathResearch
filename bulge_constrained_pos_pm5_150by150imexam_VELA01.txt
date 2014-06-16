@@ -1,5 +1,5 @@
 galfit result file
-galaxy ID, time step, age (GYr), camera, filter, type, pos error, px, py, sers error, sersic, mag, rad, b/a, angle[, component seperation distance]
+galaxy ID, time step, age (GYr), camera, filter, type, pos error, px, py, sers error, sersic, mag, rad, b/a, angle, [component seperation distance]
 VELA01, 300, 2.842, cam0, F160W, disk, , 297.8712, 298.4103, , 0.5961, 19.1537, 29.1109, 0.9743, 74.3842, 5.36096960353
 VELA01, 300, 2.842, cam0, F160W, bulge, , 302.4734, 301.1598, , 2.1895, 19.7831, 14.2687, 0.9129, 22.2017, 5.36096960353
 VELA01, 300, 2.842, cam1, F160W, disk, , 296.1559, 299.9399, , 0.6123, 20.1900, 39.6036, 0.5220, 86.9211, 5.01450186659

@@ -249,7 +249,7 @@ if __name__ == "__main__":
 	outFile.write("galfit result file\n" +
 				"galaxy ID, time step, age (GYr), camera, filter, type, " + 
 				"pos error, px, py, sers error, sersic, mag, rad, b/a, angle" + 
-				"[, component seperation distance]\n")
+				", [component seperation distance]\n")
 	
 	outFile.close()
 	
