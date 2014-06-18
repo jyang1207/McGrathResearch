@@ -6,10 +6,9 @@ import os
 import sys
 import re
 from pyraf import iraf
-import math
 import time
-import argparse
 import fnmatch
+from optparse import OptionParser
 
 
 def run_imhead(imageFilename):
@@ -25,11 +24,12 @@ def run_imhead(imageFilename):
 	'''
 	
 	imhead_return = iraf.imhead(imageFilename, Stdout=1)[0].strip()
-
+	imhead_info = imhead_return.split("/")[-1]
+	directory_location = imhead_return.replace(imhead_info, "")
 	# "VELA01_a0.110_0006317__skipir_CAMERA0-BROADBAND_F125W_simulation.fits[600,600][real]:" 
 	
 	
-	frame_dimensions = imhead_return.split("[")[1].replace("]", "").split(",")
+	frame_dimensions = imhead_info.split("[")[1].replace("]", "").split(",")
 	# ["600","600"]
 
 	frame_width = frame_dimensions[0]
@@ -38,34 +38,32 @@ def run_imhead(imageFilename):
 	frame_height = frame_dimensions[1]
 	# "600"
 	
-	galaxy_id = imhead_return.split("_")[0]
+	galaxy_id = imhead_info.split("_")[0]
 	#"VELA01"
 	
-	filter = imhead_return.split("_")[6]
+	filter = imhead_info.split("_")[6]
 	#"F125W"	
 	
-	image_number = imhead_return.split("_")[1].split(".")[1]
+	image_number = imhead_info.split("_")[1].split(".")[1]
 	# "110"
-
-
 	
-	cam_str = imhead_return.split("_")[5].split("-")[0]
+	cam_str = imhead_info.split("_")[5].split("-")[0]
 	# "CAMERA0"
 
 	
 	#these statements accomodate for camera numbers greater than 9
-	conditions = ["1","2","3","4","5","6","7","8","9"]			
+	digits = ["1","2","3","4","5","6","7","8","9"]			
 	
 	#determines if camera number is greater than 10, does not allow greater than 99
 	# ex: "CAMERA0" -> cam_str[-2] = "M"
 	# ex: "CAMERA12" -> cam_str[-2] = "1"
-	if cam_str[-2] in conditions:										
+	if cam_str[-2] in digits:										
 		cam_number = cam_str[-2:]
 	else:
 		cam_number = cam_str[-1]					
 	#print cam_number
 	
-	return [galaxy_id, filter, cam_number, image_number, frame_height, frame_width]
+	return [directory_location, galaxy_id, filter, cam_number, image_number, frame_height, frame_width]
 	
 				
 def run_imexam(image):
@@ -77,63 +75,66 @@ def run_imexam(image):
 	
 	returns - list of string image info in the form [line, col, mag, radius, b_a, PA]
 	'''
-	
-	#writes the output of the minmax function of iraf to a file for later use. 
-	os.system('touch'+' coords.tmp')
-	write_coords = open('coords.tmp', 'w')
-	
 	#call iraf's minmax function
 	maxCoords = iraf.minmax(image, Stdout=1, update=0, force=1
 		)[0].strip().split(" ")[3].replace("[", "").replace("]", "").split(",")
 		
-	#print maxCoords
-	#['VELA01_a0.110_0006317__skipir_CAMERA0-BROADBAND_F125W_simulation.fits[1:600,1:300]', '[1,1]', 
-	#'0.', '[363,285]', '0.1987768709659576']
-	write_coords.write(maxCoords[0]) 				
+	#writes the output of the minmax function of iraf to a file for later use. 
+	coordsFilename = "coords"
+	
+	# this is t prevent parallel processes from overwriting the coords.tmp file
+	while os.path.isfile(coordsFilename + ".tmp"):
+		coordsFilename = coordsFilename + "x"
+	coordsFilename = coordsFilename + ".tmp"
+	
+	# create coords[x*].tmp for writing max coordinate to pass to imexam
+	os.system('touch '+ coordsFilename)
+	write_coords = open(coordsFilename, 'w')
+	write_coords.write(maxCoords[0])				
 	write_coords.write(" " + maxCoords[1])
 	write_coords.close()	
 	
 	#run imexam passing coords.tmp
-	imexam_out = str(iraf.imexam(image, use_display=0, imagecur="coords.tmp", Stdout=1))
+	imexam_out = str(iraf.imexam(image, use_display=0, imagecur=coordsFilename, Stdout=1))
 
-	# "display frame (1:) (1): ['#   COL    LINE    COORDINATES', '#     " +
-	# "R    MAG    FLUX     SKY    PEAK    E   PA BETA ENCLOSED   MOFFAT DIRECT', " +
-	# "'1283.40  692.16 1283.40 692.16', '  63.22  14.53  15461.  0.1202   19.53 0.52    " +
-	# "1 1.75    21.58    18.85  21.39']"	
+	# "display frame (1:) (1): ['#	 COL	LINE	COORDINATES', '#	 " +
+	# "R	MAG	   FLUX		SKY	   PEAK	   E   PA BETA ENCLOSED	  MOFFAT DIRECT', " +
+	# "'1283.40	 692.16 1283.40 692.16', '	63.22  14.53  15461.  0.1202   19.53 0.52	 " +
+	# "1 1.75	 21.58	  18.85	 21.39']"	
 	
 	# delete coords.tmp, no longer needed
-	os.system('rm' + ' coords.tmp')	
+	os.system('rm ' + coordsFilename) 
 	
 	imexam_array = str.split(imexam_out, "'")
 	# ["display frame (1:) (1): [", 
-	# "#   COL    LINE    COORDINATES", 
-	# ", ", "#     " +
-	# "R    MAG    FLUX     SKY    PEAK    E   PA BETA ENCLOSED   MOFFAT DIRECT", ", ",
-	# "1283.40  692.16 1283.40 692.16", ", ", "  63.22  14.53  15461.  0.1202   19.53 0.52    " +
-	# "1 1.75    21.58    18.85  21.39']"			
+	# "#   COL	  LINE	  COORDINATES", 
+	# ", ", "#	   " +
+	# "R	MAG	   FLUX		SKY	   PEAK	   E   PA BETA ENCLOSED	  MOFFAT DIRECT", ", ",
+	# "1283.40	692.16 1283.40 692.16", ", ", "	 63.22	14.53  15461.  0.1202	19.53 0.52	  " +
+	# "1 1.75	 21.58	  18.85	 21.39']"			
 	
 	#print imexam_out
-	#print imexam_array	
+	#print imexam_array 
 	
 	xy = imexam_array[5].strip()
 	data = imexam_array[7].strip()
 	data = str.split(data)
 	xy = str.split(xy)
 	
-	col = xy[0] 									#this gives x value	
+	col = xy[0]										#this gives x value 
 	line = xy[1]									#this gives y value
 	mag = data[1]									#this prints the magnitude
 	radius = data[0]								#this prints the radius
 	b_a = int(1) - float(data[5])					#this prints the E variable that relates to b/a. note b/a=1-e
 	PA = float(data[6]) - int(90)					#this gives the position angle. iraf measures up from x. Galfit down from y
 
-# 	print col
-# 	print line
-# 	print mag
-# 	print radius
-# 	print b_a
-# 	print PA
-# 	exit()	
+#	print col
+#	print line
+#	print mag
+#	print radius
+#	print b_a
+#	print PA
+#	exit()	
 	
 	return [line, col, mag, radius, b_a, PA]
 	
@@ -153,10 +154,12 @@ def run_galfit(imageFilename, galfit_constraint_filename, includeBulgeComponent)
 	parameter includeBulgeComponent - 
 		boolean indicating if a bulge should be fit after first pass by galfit
 	'''
+	returnStr = ""
 	
 	# run the method of dimensions.py
-	[galaxy_id, filter, cam_number, image_number, height, width] = run_imhead(imageFilename)
-	
+	[directory_location, galaxy_id, filter, cam_number, image_number, height, width] = run_imhead(imageFilename)
+
+	print directory_location
 	# calls a method of the imexam.py file, passing filename (with width and height) as a parameter
 	# imexam gets the coordinates of the max pixel and uses iraf.imexam to set global
 	# variables detailing the results of iraf's examination of the max coordinate
@@ -168,15 +171,15 @@ def run_galfit(imageFilename, galfit_constraint_filename, includeBulgeComponent)
 	X = str(float(X) + float(width)/2 - 75.0)
 	
 	# define filenames, galaxy_id has full path if any
-	filename = galaxy_id + "_" + image_number + '_cam' + str(cam_number) + '_' + filter
+	filename = directory_location + galaxy_id + "_" + image_number + '_cam' + str(cam_number) + '_' + filter
 	
 	#galfit_output_filename = filename + "_multi.fits"
-	galfit_single_parameter_filename = 	filename + '_single_param.txt'
-	galfit_single_output_filename = 	filename + "_single_multi.fits"
-	galfit_single_result_filename = 	filename + "_single_result.txt"
-	galfit_bulge_parameter_filename = 	filename + '_bulge_param.txt'
-	galfit_bulge_output_filename = 		filename + "_bulge_multi.fits"
-	galfit_bulge_result_filename = 		filename + "_bulge_result.txt"
+	galfit_single_parameter_filename =	filename + '_single_param.txt'
+	galfit_single_output_filename =		filename + "_single_multi.fits"
+	galfit_single_result_filename =		filename + "_single_result.txt"
+	galfit_bulge_parameter_filename =	filename + '_bulge_param.txt'
+	galfit_bulge_output_filename =		filename + "_bulge_multi.fits"
+	galfit_bulge_result_filename =		filename + "_bulge_result.txt"
 	
 	os.system('touch ' + galfit_single_parameter_filename)								
 
@@ -193,17 +196,17 @@ def run_galfit(imageFilename, galfit_constraint_filename, includeBulgeComponent)
 			"						#Input PSF image and (optional) diffusion kernel\n")#command line TODO
 	WP.write("E)" + " 1" + 
 			"						#PSF fine sampling factor relative to data\n")
-	WP.write("F)" + " none" + 							
+	WP.write("F)" + " none" +							
 			"						#Bad pixel mask (FITS file or ASCIIcoord list)\n")
 	WP.write("G)" + " none" + 
 			"						#File with parameter constraints (ASCII file)\n")
-	WP.write("H)" + " 1	" + width + " 1	" + height + 
+	WP.write("H)" + " 1 " + width + " 1 " + height + 
 			"						#Image region to fit (xmin xmax ymin ymax)\n")
 	WP.write("I)" + " 200 200" + 
 			"						#Size of the concolution box (x y)\n")
 	WP.write("J)" + " 26.3" + 
 			"						#Magnitude photometric zeropoint\n")#command line TODO 
-	WP.write("K)" + " 0.06" + "  0.06" + 
+	WP.write("K)" + " 0.06" + "	 0.06" + 
 			"						#Plate scale (dx dy)  [arcsec per pixel]\n")#command line TODO 
 	WP.write("O)" + " regular" + 
 			"						#display type (regular, curses, both\n")
@@ -214,11 +217,11 @@ def run_galfit(imageFilename, galfit_constraint_filename, includeBulgeComponent)
 	WP.write("\n")
 	WP.write("# INITIAL FITTING PARAMETERS\n")
 	WP.write("#\n")
-	WP.write("#	For component type, the allowed functions are:\n")
+	WP.write("# For component type, the allowed functions are:\n")
 	WP.write("#		nuker, sersic, expdisk, devauc, king, psf, gaussian, moffat,\n")
 	WP.write("#		ferrer, coresersic, sky and isophote.\n")
 	WP.write("#\n")
-	WP.write("#	Hidden parameters will only appear when they are specified:\n")
+	WP.write("# Hidden parameters will only appear when they are specified:\n")
 	WP.write("#		C0 (diskyness/boxyness),\n")
 	WP.write("#		Fn (n=interger, Azimuthal Fourier Modes).\n")
 	WP.write("#		R0-R10 (PA rotation, for creating spiral structures).\n")
@@ -252,14 +255,16 @@ def run_galfit(imageFilename, galfit_constraint_filename, includeBulgeComponent)
 
 	WP.close()
 
-
 	# run galfit on paramter file
 	os.system('galfit ' + galfit_single_parameter_filename)
 
-	# remove temp files
-	os.system("rm " + "fit.log")
-	os.system("mv galfit.01 " + galfit_single_result_filename)
-	#os.system("mv " + galfit_output_filename + " " + galfit_single_output_filename)
+	if os.path.isfile(galfit_single_output_filename):
+		# remove temp files
+		os.system("rm " + "fit.log")
+		os.system("mv galfit.01 " + galfit_single_result_filename)
+		#os.system("mv " + galfit_output_filename + " " + galfit_single_output_filename)
+	else:
+		return "galfit failed on single component, probably mushroom"
 	
 	if includeBulgeComponent:
 		# here we would write the third component to the end of galfit_result_filename
@@ -304,7 +309,7 @@ def run_galfit(imageFilename, galfit_constraint_filename, includeBulgeComponent)
 		
 		bulgeParam = bulgeParam + ("# Componenet number: 3\n")
 		bulgeParam = bulgeParam + (" 0) sersic					#Component type\n")
-		bulgeParam = bulgeParam + (" 1) " + resultX + "	" + resultY + "	1	1			#Position x,y\n")
+		bulgeParam = bulgeParam + (" 1) " + resultX + " " + resultY + " 1	1			#Position x,y\n")
 		bulgeParam = bulgeParam + (" 3) " + resultMag + "	1			#Integrated Magnitude\n")
 		bulgeParam = bulgeParam + (" 4) " + str(rad) + "			1			#R_e (half-light radius)	[pix]\n")
 		bulgeParam = bulgeParam + (" 5) " + "1.0000		1			#Sersic index n (de Vaucouleurs n=4)\n")
@@ -324,122 +329,97 @@ def run_galfit(imageFilename, galfit_constraint_filename, includeBulgeComponent)
 		# run galfit on paramter file
 		os.system('galfit ' + galfit_bulge_parameter_filename)
 	
-		# remove temp files
-		os.system("rm " + "fit.log")
-		os.system("mv galfit.01 " + galfit_bulge_result_filename)
-		#os.system('mv ' + galfit_output_filename + ' ' + galfit_bulge_output_filename)
+	
+		if os.path.isfile(galfit_bulge_output_filename):
+			# remove temp files
+			os.system("rm " + "fit.log")
+			os.system("mv galfit.01 " + galfit_bulge_result_filename)
+			#os.system('mv ' + galfit_output_filename + ' ' + galfit_bulge_output_filename)
+		else:
+			return "galfit failed on bulge component, probably mushroom"
 
 	return "success"
-
-def parseDirectory(d):
-	'''	
-	raises an argument exception if the string d is not a directory
-	modifies d to ensure that the directory ends with a forward slash
-	
-	parameter d - the string to be checked as a directory
-	returns - parameter d with an appended forward slash
-	'''
-	if not os.path.isdir(d):
-		msg = "directory {} either does not exist or in not accessible".format(d)
-		raise argparse.ArgumentTypeError(msg)
-	elif d[-1] != "/":
-		d = d + "/"
-		
-	return d
-	
-	
-def parseFile(f):
-	'''	
-	raises an argument exception if the string f is not a file
-	
-	parameter f - the string to be checked as a file
-	returns - parameter f, unchanged
-	'''
-	if not os.path.isfile(f):
-		msg = "file {} either does not exist or in not accessible".format(f)
-		raise argparse.ArgumentTypeError(msg)
-		
-	return f
 	
 	
 if __name__ == "__main__":
 
 	# used to parse command line arguments
-	parser = argparse.ArgumentParser()
-
-	# directory and file are mutually exclusive parameters
-	exclusive_group = parser.add_mutually_exclusive_group()
+	parser = OptionParser()
 	
-	# directory specifies the directory where the images are
-	parser.add_argument("-d","--directory", 
-						help="set the directory containing the images on which to run galfit",
-						type=parseDirectory, default="./")
-	
-	# file specifies the full path filename of the list of images to run
-	exclusive_group.add_argument("-f","--file", 
-						help="set the file pattern to match image filenames in given directory",
-						default="*_simulation.fits")
-						
-	exclusive_group.add_argument("-i","--input", 
-						help="set the file containing the list of full path image filenames",
-						type=parseFile)
-						
 	# bulge is a boolean (true or false) specifying if the simulation should fit
 	# an additional component after the initial fit from imexam results
-	parser.add_argument("-b","--bulge", 
+	parser.add_option("-b","--bulge", 
 						help="turn on to include a bulge fit after the initial galaxy fit",
 						action="store_true")
 						
-	parser.add_argument("-c","--constraint", 
-						help="set the file containing the galfit constraints",
-						type=parseFile)
+	parser.add_option("-c","--constraint", 
+						help="set the file containing the galfit constraints")
 						
 	# Magnitude photometric zeropoint					
 	# Plate scale
 	# PSF
 	
 	# parse the command line using above parameter rules
-	args = parser.parse_args()
-	if not args.input:
-		imageFilenames = fnmatch.filter(os.listdir(args.directory), args.file)
-		if len(imageFilenames) == 0:
-			print "file pattern {} in directory {} does not match any files".format(
-								args.file, args.directory)
-			parser.print_help()
-		
-		# this loops through every image in images file and remove \n
-		imageFilenames = [args.directory + imageFilename.strip() for imageFilename in imageFilenames ]
-	else:
-		inputFile = open(args.directory + args.input, 'r')
-		imageFilenames = inputFile.readlines()
-		inputFile.close()
-		
-		# this loops through every image in images file and prefixes with directory
-		imageFilenames = [imageFilename.strip() for imageFilename in imageFilenames ]
-		
-
-	if not args.constraint:
-		constraintFilename = "none"
-	else:
-		constraintFilename = args.constraint
+	[options, args] = parser.parse_args()
 	
-	logMsg = "run on {} for images {}\n".format(time.strftime("%m-%d-%Y"), imageFilenames)
-	# this loops through every image in images file and
+	if len(args) != 1:
+		parser.error("incorrect number of arguments, " + 
+					"must provide an input file containing the list of full path image filenames.")
+	elif not os.path.isfile(args[0]):
+		parser.error("input file " + args[0] + " either does not exist or is not accessible")
+	
+	
+	# read list of image filenames from input file
+	inputFile = open(args[0], 'r')
+	imageFilenames = inputFile.readlines()
+	inputFile.close()
+	
+	# this loops through every image in images file and removes new line
+	imageFilenames = [ imageFilename.strip() for imageFilename in imageFilenames ]
+		
+	# set constraint to default unless one is given on command line
+	if not options.constraint:
+		constraintFilename = "none"
+	elif not os.path.isfile(options.constraint):
+		parser.error("constraint file " + options.constraint + " either does not exist or is not accessible")
+	else:
+		constraintFilename = options.constraint
+	
+	# set the log header
+	logMsg = "run on " + time.strftime("%m-%d-%Y") + "\n"
+	
+	# this loops through every image in images file and writes the log, running galfit
 	for imageFilename in imageFilenames:
 		logMsg = logMsg + imageFilename + ": "
 		
-		# run galfit
+		# run galfit, preventing crashes but logging errors in log
 		try:
-			logMsg = logMsg + run_galfit(imageFilename, constraintFilename, args.bulge)
+			# galfit returns a string indicating success or some failure
+			logMsg = logMsg + run_galfit(imageFilename, constraintFilename, options.bulge)
+			
+		# allow user to stop the program running altogether with ctrl-c
 		except KeyboardInterrupt:
+			print ("Escape character ctrl-c used to terminate rungalfit. Log file will still be written.")
 			break
+		
+		# log all runtime errors, but move on to the next image regardless
 		except:
 			logMsg = logMsg + str(sys.exc_info()[0]) + str(sys.exc_info()[1])
+		
+		# every image on its own line in the log file
 		logMsg = logMsg + "\n"
 	
+	# create the log file in the same directory as python was called
 	logFilename = ("rungalfit_log_" + 
-					time.strftime("%m-%d-%Y") + ".txt")
+					imageFilenames[0].split("/")[-1].split("_")[1].split(".")[1] + "_to_" + 
+					imageFilenames[-1].split("/")[-1].split("_")[1].split(".")[1] +
+					"_" + time.strftime("%m-%d-%Y") + ".txt")
+	
+	# write the log file
+	print ("writing log file to " + logFilename)
 	log = open(logFilename, 'w')
 	log.write(logMsg)
 	log.close()
+	
+	print ("Done!\nIn order to summarize results run sumgalfit.py")
 ######################### done ################################################
