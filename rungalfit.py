@@ -65,20 +65,60 @@ def run_imhead(imageFilename):
 	
 	return [directory_location, galaxy_id, filter, cam_number, image_number, frame_height, frame_width]
 	
-				
-def run_imexam(image):
-	'''
-	invokes the iraf method imexam on the given image filename
-	parses the result to be returned as a list of string values
 	
-	parameter image - the full path filename of the image on which to invoke imexam
+def run_gauss(imageFilename, sigma):
+	'''
+	using the image given, calls iraf's gauss method and returns the
+	filename of the result, which is blurred using the sigma given
+	
+	parameter imageFilename - the original image's filename
+	parameter sigma - the number of pixels to blur the image by
+	
+	returns - the blurred image's filename
+	'''
+	newImageFilename = imageFilename[:-5] + "_gauss.fits"
+	iraf.gauss(imageFilename, newImageFilename, sigma)
+	return newImageFilename
+	
+	
+def run_minmax(imageFilename, xStart, xStop, yStart, yStop):
+	'''
+	method calls iraf's minmax method on the area defined by the four
+	parameter values that define two points on the image
+	start is the top left, stop is the bottom right
+	
+	parameter imageFilename - the full path filename of the image on which to invoke imexam
+	
+	returns - list of two strings defining the coordinates of the max pixel ['xMax', 'yMax']
+	'''
+	
+	# string representing the part of the image to run minmax and imexam on
+	areaStr = ('[' + str(int(xStart)) + ':' + str(int(xStop)) + "," +
+					 str(int(yStart)) + ':' + str(int(yStop)) + ']')
+					 
+	#call iraf's minmax function
+	return iraf.minmax(imageFilename + areaStr, Stdout=1, update=0, force=1
+		)[0].strip().split(" ")[3].replace("[", "").replace("]", "").split(",")
+		
+		
+def run_imexam(imageFilename, centerCoords, xStart, xStop, yStart, yStop):
+	'''
+	method calls iraf's imexam method on the area defined by the four
+	
+	parameter imageFilename - the full path filename of the image on which to invoke imexam
+	parameter centerCoords - the coordinates of the initial guess of the center of the galaxy
+	parameter xStart, xStop, yStart, yStop - 
+		two points on the original image defining an area to run minmax on
+		start is the top left, stop is the bottom right
 	
 	returns - list of string image info in the form [line, col, mag, radius, b_a, PA]
 	'''
-	#call iraf's minmax function
-	maxCoords = iraf.minmax(image, Stdout=1, update=0, force=1
-		)[0].strip().split(" ")[3].replace("[", "").replace("]", "").split(",")
 		
+	
+	# string representing the part of the image to run minmax and imexam on
+	areaStr = ('[' + str(int(xStart)) + ':' + str(int(xStop)) + "," +
+					 str(int(yStart)) + ':' + str(int(yStop)) + ']')
+					 
 	#writes the output of the minmax function of iraf to a file for later use. 
 	coordsFilename = "coords"
 	
@@ -90,12 +130,11 @@ def run_imexam(image):
 	# create coords[x*].tmp for writing max coordinate to pass to imexam
 	os.system('touch '+ coordsFilename)
 	write_coords = open(coordsFilename, 'w')
-	write_coords.write(maxCoords[0])				
-	write_coords.write(" " + maxCoords[1])
+	write_coords.write(centerCoords[0] + " " + centerCoords[1])
 	write_coords.close()	
 	
 	#run imexam passing coords.tmp
-	imexam_out = str(iraf.imexam(image, use_display=0, imagecur=coordsFilename, Stdout=1))
+	imexam_out = str(iraf.imexam(imageFilename + areaStr, use_display=0, imagecur=coordsFilename, Stdout=1))
 
 	# "display frame (1:) (1): ['#	 COL	LINE	COORDINATES', '#	 " +
 	# "R	MAG	   FLUX		SKY	   PEAK	   E   PA BETA ENCLOSED	  MOFFAT DIRECT', " +
@@ -105,13 +144,7 @@ def run_imexam(image):
 	# delete coords.tmp, no longer needed
 	os.system('rm ' + coordsFilename) 
 	
-	imexam_array = str.split(imexam_out, "'")
-	# ["display frame (1:) (1): [", 
-	# "#   COL	  LINE	  COORDINATES", 
-	# ", ", "#	   " +
-	# "R	MAG	   FLUX		SKY	   PEAK	   E   PA BETA ENCLOSED	  MOFFAT DIRECT", ", ",
-	# "1283.40	692.16 1283.40 692.16", ", ", "	 63.22	14.53  15461.  0.1202	19.53 0.52	  " +
-	# "1 1.75	 21.58	  18.85	 21.39']"			
+	imexam_array = str.split(imexam_out, "'")		
 	
 	#print imexam_out
 	#print imexam_array 
@@ -139,7 +172,7 @@ def run_imexam(image):
 	return [line, col, mag, radius, b_a, PA]
 	
 
-def run_galfit(imageFilename, galfit_constraint_filename, includeBulgeComponent):
+def run_galfit(imageFilename, galfit_constraint_filename, includeBulgeComponent, includeGaussianSmoothing):
 	'''
 	opens file (parameter) containing list of images and loops over every image, 
 	running galfit and writing the results to the same directory as the images
@@ -156,22 +189,43 @@ def run_galfit(imageFilename, galfit_constraint_filename, includeBulgeComponent)
 	'''
 	returnStr = ""
 	
-	# run the method of dimensions.py
-	[directory_location, galaxy_id, filter, cam_number, image_number, height, width] = run_imhead(imageFilename)
-
-	print directory_location
-	# calls a method of the imexam.py file, passing filename (with width and height) as a parameter
-	# imexam gets the coordinates of the max pixel and uses iraf.imexam to set global
-	# variables detailing the results of iraf's examination of the max coordinate
-	[Y, X, magnitude, rad, BA, angle] = run_imexam(
-		imageFilename + '[' + str(int(width)/2 - 75) + ':' + str(int(width)/2 + 75) + "," +
-							  str(int(height)/2 - 75) + ':' + str(int(height)/2 + 75) + ']')
+	# sigma [# pixels] is used for run gauss when blurring
+	sigma = 15
 	
-	Y = str(float(Y) + float(height)/2 - 75.0)
-	X = str(float(X) + float(width)/2 - 75.0)
+	# run the method of dimensions.py
+	[directory_location, galaxy_id, filter, cam_number, image_number, height, width
+		] = run_imhead(imageFilename)
+
+	# the x y location of the top left corner of the area to run minmax and imexam on
+	# in the coordinate system of the original image (which would be 0, 0 for the original)
+	xStart = float(width)/2 - 75.0
+	xStop = float(width)/2 + 75.0
+	yStart = float(height)/2 - 75.0
+	yStop = float(height)/2 + 75.0
+	
+	# calls iraf's minmax method, passing image filename as a parameter
+	# with image possible gaussian smoothed, as well as two points
+	# on the image defining the area on which to run minmax 
+	# returns as a list of two strings the coordinates of the max pixel
+	if includeGaussianSmoothing:
+		centerCoords = run_minmax(run_gauss(imageFilename, sigma), 
+									xStart, xStop, yStart, yStop)
+	else:
+		centerCoords = run_minmax(imageFilename, 
+									xStart, xStop, yStart, yStop)
+	
+	# calls iraf's imexam method, passing filename as a parameter
+	# along with center coordinate and two points defining area
+	# returns initial estimates of the returned paramters
+	[Y, X, magnitude, rad, BA, angle
+		] = run_imexam(imageFilename, centerCoords, xStart, xStop, yStart, yStop)
+	
+	Y = str(float(Y) + yStart)
+	X = str(float(X) + xStart)
 	
 	# define filenames, galaxy_id has full path if any
-	filename = directory_location + galaxy_id + "_" + image_number + '_cam' + str(cam_number) + '_' + filter
+	filename = (directory_location + galaxy_id + "_" + 
+				image_number + '_cam' + str(cam_number) + '_' + filter)
 	
 	#galfit_output_filename = filename + "_multi.fits"
 	galfit_single_parameter_filename =	filename + '_single_param.txt'
@@ -343,13 +397,21 @@ def run_galfit(imageFilename, galfit_constraint_filename, includeBulgeComponent)
 	
 if __name__ == "__main__":
 
+	usage = "usage: %prog [-h for help] [options] input" 
+
 	# used to parse command line arguments
-	parser = OptionParser()
+	parser = OptionParser(usage)
 	
-	# bulge is a boolean (true or false) specifying if the simulation should fit
-	# an additional component after the initial fit from imexam results
+	# bulge is a boolean (true or false) specifying if the simulation should
+	# fit an additional component after the initial fit from imexam results
 	parser.add_option("-b","--bulge", 
 						help="turn on to include a bulge fit after the initial galaxy fit",
+						action="store_true")
+						
+	# gauss is a boolean (true or false) specifying if the simulation should
+	# apply gaussian smoothing before running minmax
+	parser.add_option("-g","--gauss", 
+						help="turn on to include a gaussian smoothing before minmax is run",
 						action="store_true")
 						
 	parser.add_option("-c","--constraint", 
@@ -395,7 +457,7 @@ if __name__ == "__main__":
 		# run galfit, preventing crashes but logging errors in log
 		try:
 			# galfit returns a string indicating success or some failure
-			logMsg = logMsg + run_galfit(imageFilename, constraintFilename, options.bulge)
+			logMsg = logMsg + run_galfit(imageFilename, constraintFilename, options.bulge, options.gauss)
 			
 		# allow user to stop the program running altogether with ctrl-c
 		except KeyboardInterrupt:
@@ -404,7 +466,9 @@ if __name__ == "__main__":
 		
 		# log all runtime errors, but move on to the next image regardless
 		except:
-			logMsg = logMsg + str(sys.exc_info()[0]) + str(sys.exc_info()[1])
+			errorMsg = str(sys.exc_info()[0]) + str(sys.exc_info()[1])
+			print errorMsg
+			logMsg = logMsg + errorMsg
 		
 		# every image on its own line in the log file
 		logMsg = logMsg + "\n"

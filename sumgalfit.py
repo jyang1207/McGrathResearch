@@ -282,10 +282,10 @@ def sum_galfit(resultFilename, maxDist, minSersIndex, maxSersIndex):
 
 if __name__ == "__main__":
 	
-	usage = "usage: %prog [options] input output" 
+	usage = "usage: %prog [-h for help] [options] input output" 
 
 	# used to parse command line arguments
-	parser = OptionParser()
+	parser = OptionParser(usage)
 						
 	# file specifies the full path filename of the list of images to run
 	parser.add_option("--maxDistance", 
