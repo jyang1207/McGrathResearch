@@ -81,7 +81,7 @@ def run_gauss(imageFilename, sigma):
 	return newImageFilename
 	
 	
-def run_minmax(imageFilename, xStart, xStop, yStart, yStop):
+def run_minmax(imageFilename, xStart, yStart, xStop, yStop):
 	'''
 	method calls iraf's minmax method on the area defined by the four
 	parameter values that define two points on the image
@@ -101,7 +101,7 @@ def run_minmax(imageFilename, xStart, xStop, yStart, yStop):
 		)[0].strip().split(" ")[3].replace("[", "").replace("]", "").split(",")
 		
 		
-def run_imexam(imageFilename, centerCoords, xStart, xStop, yStart, yStop):
+def run_imexam(imageFilename, centerCoords, xStart, yStart, xStop, yStop):
 	'''
 	method calls iraf's imexam method on the area defined by the four
 	
@@ -174,7 +174,9 @@ def run_imexam(imageFilename, centerCoords, xStart, xStop, yStart, yStop):
 
 def write_galfit_single_parameter(imageFilename, galfit_single_parameter_filename,
 									galfit_single_output_filename, 
-									width, height, X, Y, magnitude, rad, BA, angle):
+									psf, mpZeropoint, plateScale, 
+									xMin, yMin, xMax, yMax, 
+									X, Y, magnitude, rad, BA, angle):
 	'''
 	writes the galfit parameter file for the single component
 	
@@ -183,7 +185,7 @@ def write_galfit_single_parameter(imageFilename, galfit_single_parameter_filenam
 		the filename of the galfit parameter file being written
 	parameter galfit_single_output_filename - 
 		the filename of the file where the output of the galfit run will be written
-	parameter width, height - the area on the image on which to run galfit
+	parameter xMin, yMin, xMax, yMax - the area on the image on which to run galfit
 	parameter X, Y, magnitude, rad, BA, angle - 
 		initial guess at the location and description of the single galaxy component
 	'''
@@ -196,22 +198,22 @@ def write_galfit_single_parameter(imageFilename, galfit_single_parameter_filenam
 			"						#Output data image block\n")
 	WP.write("C)" + " none" + 
 			"						#Sigma image name (made from data if blank or 'none')\n")
-	WP.write("D)" + " none" + 
-			"						#Input PSF image and (optional) diffusion kernel\n")#command line TODO
+	WP.write("D) " + psf + 
+			"						#Input PSF image and (optional) diffusion kernel\n")
 	WP.write("E)" + " 1" + 
 			"						#PSF fine sampling factor relative to data\n")
 	WP.write("F)" + " none" +							
 			"						#Bad pixel mask (FITS file or ASCIIcoord list)\n")
 	WP.write("G)" + " none" + 
 			"						#File with parameter constraints (ASCII file)\n")
-	WP.write("H)" + " 1 " + width + " 1 " + height + 
+	WP.write("H) " + str(xMin) + " " + str(xMax) + " " + str(yMin) + " " + str(yMax) + 
 			"						#Image region to fit (xmin xmax ymin ymax)\n")
 	WP.write("I)" + " 200 200" + 
-			"						#Size of the concolution box (x y)\n")
-	WP.write("J)" + " 26.3" + 
-			"						#Magnitude photometric zeropoint\n")#command line TODO 
-	WP.write("K)" + " 0.06" + "	 0.06" + 
-			"						#Plate scale (dx dy)  [arcsec per pixel]\n")#command line TODO 
+			"						#Size of the convolution box (x y)\n")
+	WP.write("J) " + str(mpZeropoint) + 
+			"						#Magnitude photometric zeropoint\n")
+	WP.write("K) " + str(plateScale) + "	 " + str(plateScale) + 
+			"						#Plate scale (dx dy)  [arcsec per pixel]\n")
 	WP.write("O)" + " regular" + 
 			"						#display type (regular, curses, both\n")
 	WP.write("P)" + " 0" + 
@@ -324,7 +326,8 @@ def get_galfit_bulge_parameter_str(galfit_single_result_filename,
 	return bulgeParam
 
 
-def run_galfit(imageFilename, galfit_constraint_filename, includeBulgeComponent, includeGaussianSmoothing):
+def run_galfit(imageFilename, galfit_constraint_filename, psf, mpZeropoint, plateScale, 
+				includeBulgeComponent, includeGaussianSmoothing):
 	'''
 	opens file (parameter) containing list of images and loops over every image, 
 	running galfit and writing the results to the same directory as the images
@@ -367,16 +370,16 @@ def run_galfit(imageFilename, galfit_constraint_filename, includeBulgeComponent,
 	# returns as a list of two strings (the coordinates of the max pixel)
 	if includeGaussianSmoothing:
 		centerCoords = run_minmax(run_gauss(imageFilename, sigma), 
-									xStart, xStop, yStart, yStop)
+									xStart, yStart, xStop, yStop)
 	else:
 		centerCoords = run_minmax(imageFilename, 
-									xStart, xStop, yStart, yStop)
+									xStart, yStart, xStop, yStop)
 	
 	# calls iraf's imexam method, passing filename as a parameter
 	# along with center coordinates and two points defining area
 	# returns initial estimates of the returned paramters
 	[Y, X, magnitude, rad, BA, angle
-		] = run_imexam(imageFilename, centerCoords, xStart, xStop, yStart, yStop)
+		] = run_imexam(imageFilename, centerCoords, xStart, yStart, xStop, yStop)
 	
 	Y = str(float(Y) + yStart)
 	X = str(float(X) + xStart)
@@ -394,7 +397,9 @@ def run_galfit(imageFilename, galfit_constraint_filename, includeBulgeComponent,
 	# writes the single component parameter file, given filenames and galxy parameters
 	write_galfit_single_parameter(imageFilename, galfit_single_parameter_filename,
 									galfit_single_output_filename, 
-									width, height, X, Y, magnitude, rad, BA, angle)
+									psf, mpZeropoint, plateScale, 
+									1, 1, width, height, 
+									X, Y, magnitude, rad, BA, angle)
 
 	# run galfit on paramter file
 	os.system('galfit ' + galfit_single_parameter_filename)
@@ -440,7 +445,8 @@ def run_galfit(imageFilename, galfit_constraint_filename, includeBulgeComponent,
 	return "success"
 	
 	
-def main(imageListFilename, galfit_constraint_filename, includeBulgeComponent, includeGaussianSmoothing):
+def main(imageListFilename, galfit_constraint_filename, psf, mpZeropoint, plateScale, 
+			includeBulgeComponent, includeGaussianSmoothing):
 	'''
 	main method loops through all image filenames in image list, running galfit
 	and logging errors to a log file, which is named according to the date and 
@@ -477,7 +483,8 @@ def main(imageListFilename, galfit_constraint_filename, includeBulgeComponent, i
 		try:
 			# galfit returns a string indicating success or some failure
 			logMsg = logMsg + run_galfit(imageFilename, 
-										galfit_constraint_filename, 
+										galfit_constraint_filename, psf,
+										mpZeropoint, plateScale,
 										includeBulgeComponent, includeGaussianSmoothing)
 		
 		# allow user to stop the program running altogether with ctrl-c
@@ -532,14 +539,27 @@ if __name__ == "__main__":
 	parser.add_option("-g","--gauss", 
 						help="turn on to include a gaussian smoothing before minmax is run",
 						action="store_true")
-						
+	
+	# the constraint file. verified as file and assigned default if omitted after parsing
 	parser.add_option("-c","--constraint", 
 						help="set the file containing the galfit constraints")
+			
+	# Magnitude photometric zeropoint	
+	parser.add_option("--mpz", metavar="MagnitudePhotometricZeropoint",
+						type="float", default=26.3, 
+						help="set the magnitude photometric zeropoint for galfit to use" +
+								"[default: %default]")
 						
-	# Magnitude photometric zeropoint					
 	# Plate scale
-	# PSF
-	
+	parser.add_option("--plate", metavar="PlateScale",
+						type="float", default=0.06, 
+						help="set the plate scale for galfit to use" +
+								"[default: %default]")
+								
+	# PSF file. verified as file and assigned default if omitted after parsing
+	parser.add_option("--psf",
+						help="set the file for galfit to use as a PSF")
+						
 	# parse the command line using above parameter rules
 	[options, args] = parser.parse_args()
 	
@@ -549,13 +569,21 @@ if __name__ == "__main__":
 	elif not os.path.isfile(args[0]):
 		parser.error("input file " + args[0] + " either does not exist or is not accessible")
 		
-	# set constraint to default unless one is given on command line
+	# set constraint to default unless one is given on command line, and verify file exists
 	if not options.constraint:
 		constraintFilename = "none"
 	elif not os.path.isfile(options.constraint):
 		parser.error("constraint file " + options.constraint + " either does not exist or is not accessible")
 	else:
 		constraintFilename = options.constraint
+		
+	# set psf to default unless one is given on command line, and verify file exists
+	if not options.psf:
+		psf = "none"
+	elif not os.path.isfile(options.psf):
+		parser.error("psf file " + options.psf + " either does not exist or is not accessible")
+	else:
+		psf = options.psf
 	
 	# pass pertinent info to the main method
-	main(args[0], constraintFilename, options.bulge, options.gauss)
+	main(args[0], constraintFilename, psf, options.mpz, options.plate, options.bulge, options.gauss)

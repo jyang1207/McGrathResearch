@@ -131,6 +131,8 @@ def sum_galfit(resultFilename, maxDist, minSersIndex, maxSersIndex):
 	return - a string summarizing the results, ending in a new line
 	'''
 	
+	delim = " "
+	
 	resultFile = open(resultFilename, 'r')
 	
 	resultLines = resultFile.readlines()
@@ -233,9 +235,9 @@ def sum_galfit(resultFilename, maxDist, minSersIndex, maxSersIndex):
 		else:
 			type = "disk"
 			
-		return (errorFlag1 + galaxyID + ", " + timeStep + ", " + age_gyr + ", " + camera + ", " + filter + ", " +
-				type + ", " + posFlag + ", " + px1 + ", " + py1 + ", " + sersFlag1 + ", " + sersIndex1 + ", " + mag1 + ", " + 
-				rad1 + ", " + ba1 + ", " + pa1 + "\n")
+		return (errorFlag1 + galaxyID + delim + timeStep + delim + age_gyr + delim + 
+				camera + delim + filter + delim + type + delim + px1 + delim + py1 + delim + 
+				sersIndex1 + delim + mag1 + delim + rad1 + delim + ba1 + delim + pa1 + delim + "0\n")
 				
 	
 	# component seperation of greater than 5 is bad 
@@ -271,12 +273,12 @@ def sum_galfit(resultFilename, maxDist, minSersIndex, maxSersIndex):
 			type2 = "bulge"
 			type1 = "disk"
 			
-	result1 = (errorFlag1 + galaxyID + ", " + timeStep + ", " + age_gyr + ", " + camera + ", " + filter + ", " +
-				type1 + ", " + posFlag + ", " + px1 + ", " + py1 + ", " + sersFlag1 + ", " + sersIndex1 + ", " + 
-				mag1 + ", " + rad1 + ", " + ba1 + ", " + pa1 + ", " + str(dist) + "\n")
-	result2 = (errorFlag2 + galaxyID + ", " + timeStep + ", " + age_gyr + ", " + camera + ", " + filter + ", " +
-				type2 + ", " + posFlag + ", " + px2 + ", " + py2 + ", " + sersFlag2 + ", " + sersIndex2 + ", " + 
-				mag2 + ", " + rad2 + ", " + ba2 + ", " + pa2 + ", " + str(dist) + "\n")
+	result1 = (errorFlag1 + galaxyID + delim + timeStep + delim + age_gyr + delim + 
+				camera + delim + filter + delim + type1 + delim + px1 + delim + py1 + delim + 
+				sersIndex1 + delim + mag1 + delim + rad1 + delim + ba1 + delim + pa1 + delim + str(dist) + "\n")
+	result2 = (errorFlag2 + galaxyID + delim + timeStep + delim + age_gyr + delim + 
+				camera + delim + filter + delim + type2 + delim + px2 + delim + py2 + delim + 
+				sersIndex2 + delim + mag2 + delim + rad2 + delim + ba2 + delim + pa2 + delim + str(dist) + "\n")
 	return result1 + result2
 
 
@@ -330,9 +332,9 @@ if __name__ == "__main__":
 				"max distance = " + str(options.maxDistance) + ", " + 
 				"min sersic index = " + str(options.minSersicIndex) + ", and " + 
 				"max sersic index = " + str(options.maxSersicIndex) + "\n" + 
-				"galaxy ID, time step, age (GYr), camera, filter, type, " + 
-				"pos error, px, py, sers error, sersic, mag, rad, b/a, angle" + 
-				", [component seperation distance]\n")
+				"galaxyID timeStep age(GYr) camera filter type " + 
+				"px py sersicIndex mag rad b/a angle" + 
+				", component seperation distance\n")
 	
 	outFile.close()
 	
