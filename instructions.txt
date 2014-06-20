@@ -1,0 +1,50 @@
+
+#######some useful command line terminal input examples:########
+
+#
+#for dividing timesteps between multiple processors
+#
+
+mkdir 200to240
+mkdir 250to290
+mkdir 300to340
+mkdir 350to390
+mkdir 400to440
+mkdir 450to490
+mkdir 500to540
+mkdir 550to590
+
+cd 250to290/
+ls ../../../*0.2[^01234]*/images/*F160W_s* > images.txt
+cd ../350to390/
+ls ../../../*0.3[^01234]*/images/*F160W_s* > images.txt
+cd ../450to490/
+ls ../../../*0.4[^01234]*/images/*F160W_s* > images.txt
+cd ../550to590/
+ls ../../../*0.5[^01234]*/images/*F160W_s* > images.txt
+cd ../500to540/
+ls ../../../*0.5[01234]*/images/*F160W_s* > images.txt
+cd ../400to440/
+ls ../../../*0.4[01234]*/images/*F160W_s* > images.txt
+cd ../300to340/
+ls ../../../*0.3[01234]*/images/*F160W_s* > images.txt
+cd ../200to240/
+ls ../../../*0.2[01234]*/images/*F160W_s* > images.txt
+
+screen
+python ../../../../../code/rungalfit.py -b -c ../../sers_comp3.constraint images.txt
+
+(detach using ctrl-a followed by ctrl-d)
+
+#
+#for creating summary files using sumgalfit.py
+#
+
+mv ../V*/images/*cam* outputs_
+mv ../V*/images/*gauss* outputs_
+ls ../outputs_/*_bulge_result* > bulge_results.txt
+ls ../outputs_/*_single_result* > single_results.txt
+ls ../outputs_/*_bulge_result* > bulge_results.txt
+ls ../outputs_/*_single_result* > single_results.txt
+python ../../../code/sumgalfit.py bulge_results.txt bulge_summary.txt
+python ../../../code/sumgalfit.py single_results.txt single_summary.txt
