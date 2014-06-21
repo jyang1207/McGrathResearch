@@ -4,10 +4,8 @@
 
 import os
 import sys
-import re
 from pyraf import iraf
 import time
-import fnmatch
 from optparse import OptionParser
 
 
@@ -20,7 +18,7 @@ def run_imhead(imageFilename):
 	
 	returns - 
 		a string list of image info in the form 
-		[galaxy_id, filter, cam_number, image_number, frame_height, frame_width]
+		[galaxy_id, filt, cam_number, image_number, frame_height, frame_width]
 	'''
 	
 	imhead_return = iraf.imhead(imageFilename, Stdout=1)[0].strip()
@@ -41,7 +39,7 @@ def run_imhead(imageFilename):
 	galaxy_id = imhead_info.split("_")[0]
 	#"VELA01"
 	
-	filter = imhead_info.split("_")[6]
+	filt = imhead_info.split("_")[6]
 	#"F125W"	
 	
 	image_number = imhead_info.split("_")[1].split(".")[1]
@@ -63,7 +61,7 @@ def run_imhead(imageFilename):
 		cam_number = cam_str[-1]					
 	#print cam_number
 	
-	return [directory_location, galaxy_id, filter, cam_number, image_number, frame_height, frame_width]
+	return [directory_location, galaxy_id, filt, cam_number, image_number, frame_height, frame_width]
 	
 	
 def run_gauss(imageFilename, sigma):
@@ -95,7 +93,7 @@ def run_minmax(imageFilename, xStart, yStart, xStop, yStop):
 	# string representing the part of the image to run minmax and imexam on
 	areaStr = ('[' + str(int(xStart)) + ':' + str(int(xStop)) + "," +
 					 str(int(yStart)) + ':' + str(int(yStop)) + ']')
-					 
+
 	#call iraf's minmax function
 	return iraf.minmax(imageFilename + areaStr, Stdout=1, update=0, force=1
 		)[0].strip().split(" ")[3].replace("[", "").replace("]", "").split(",")
@@ -118,7 +116,7 @@ def run_imexam(imageFilename, centerCoords, xStart, yStart, xStop, yStop):
 	# string representing the part of the image to run minmax and imexam on
 	areaStr = ('[' + str(int(xStart)) + ':' + str(int(xStop)) + "," +
 					 str(int(yStart)) + ':' + str(int(yStop)) + ']')
-					 
+
 	#writes the output of the minmax function of iraf to a file for later use. 
 	coordsFilename = "coords"
 	
@@ -354,7 +352,7 @@ def run_galfit(imageFilename, galfit_constraint_filename, psf, mpZeropoint, plat
 	sigma = 15
 	
 	# run iraf's imhead method to get image information
-	[directory_location, galaxy_id, filter, cam_number, image_number, height, width
+	[directory_location, galaxy_id, filt, cam_number, image_number, height, width
 		] = run_imhead(imageFilename)
 
 	# the x y location of the top left corner of the area on which to run minmax and imexam
@@ -386,7 +384,7 @@ def run_galfit(imageFilename, galfit_constraint_filename, psf, mpZeropoint, plat
 	
 	# define filenames
 	filename = (directory_location + galaxy_id + "_" + 
-				image_number + '_cam' + str(cam_number) + '_' + filter)
+				image_number + '_cam' + str(cam_number) + '_' + filt)
 	galfit_single_parameter_filename =	filename + '_single_param.txt'
 	galfit_single_output_filename =		filename + "_single_multi.fits"
 	galfit_single_result_filename =		filename + "_single_result.txt"
@@ -496,7 +494,7 @@ def main(imageListFilename, galfit_constraint_filename, psf, mpZeropoint, plateS
 		# move on to the next image regardless
 		except not NameError:
 			errorMsg = str(sys.exc_info()[0]) + str(sys.exc_info()[1])
-			print errorMsg
+			print (errorMsg)
 			logMsg = logMsg + errorMsg
 		
 		# every image on its own line in the log file
