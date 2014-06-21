@@ -1,0 +1,44 @@
+pro write_comp_errors, infile, DIST_FROM_CENTER = distLimit, SERSIC_INDEX = sersLimit
+
+	catch, file_error
+
+	readcol,infile,id,ts,age,cam,fil,typ,px,py,ser,mag,rad,ba,ang,dis,$
+		SKIPLINE=2,FORMAT='A,A,F,A,A,A'
+	
+	IF file_error NE 0 THEN STOP
+	
+	out_filename = (strmid(infile,0,strpos(infile,'.'))+'_all_errors.txt')
+	
+	errors = where(strmid(id,0,1) EQ '*', errorCount)
+				
+	get_lun,outfile
+	openw,outfile,out_filename
+	printf,outfile,'two component (bulge) fits'
+	printf,outfile,''
+	printf,outfile,errorCount,' errors detected by sersic index and component separation, if any'
+	printf,outfile,''
+	if not(n_elements(distLimit) eq 0) then begin
+		dx = (300-px)
+		dy = (300-py)
+		distErrors = where( ( ((dx^2 + dy^2)^(0.5)) GT float(distLimit) ), distCount )
+		printf,outfile,distCount,' components with (x, y) position greater than ',distLimit,' from (300, 300)'
+		for i=0,distCount-1 do $
+			printf,outfile,id[distErrors[i]],' time:',ts[distErrors[i]],$
+					' camera:',cam[distErrors[i]],' type:',typ[distErrors[i]],$
+					' with a position of (',px[distErrors[i]],',',py[distErrors[i]],')'
+		printf,outfile,''
+	endif
+	if not(n_elements(sersLimit) eq 0) then begin
+		sersErrors = where( ( ser LT float(sersLimit) ), sersCount )
+		printf,outfile,sersCount,' components with sersic index less than ',sersLimit
+                for i=0,sersCount-1 do $
+                        printf,outfile,id[sersErrors[i]],' time:',ts[sersErrors[i]],$
+                                        ' camera:',cam[sersErrors[i]],' type:',typ[sersErrors[i]],$
+                                        ' with a sersic index of ',ser[sersErrors[i]]
+		printf,outfile,''
+	endif
+	free_lun,outfile
+	
+	print,'file ',out_filename,' written'
+
+end
