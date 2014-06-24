@@ -193,8 +193,8 @@ def write_sextractor_config_file(sextractor_config_filename, sextractor_param_fi
 					# MAX maximum of all flag values,
 					# MOST most common flag value.
 	detectMinArea = "5"	# Minimum number of pixels above threshold triggering detection
-	detectThresh = "0.75"	#Detection threshold. 1 argument: (ADUs or relative to Background RMS, see THRESH TYPE). 2 arguments: R (mag.arcsec� 2 ), Zero-point (mag).
-	analysisThreshold = "5"	#Threshold (in surface brightness) at which CLASS STAR and FWHM operate. 1 argument: relative to Background RMS. 2 arguments: mu (mag/arcsec� 2 ), Zero-point (mag).
+	detectThresh = "0.75"	#Detection threshold. 1 argument: (ADUs or relative to Background RMS, see THRESH TYPE). 2 arguments: R (mag.arcsec 2 ), Zero-point (mag).
+	analysisThreshold = "5"	#Threshold (in surface brightness) at which CLASS STAR and FWHM operate. 1 argument: relative to Background RMS. 2 arguments: mu (mag/arcsec 2 ), Zero-point (mag).
 	#threshType = ?	# Meaning of the DETECT_THRESH and ANALYSIS_THRESH parameters:
 					# RELATIVE - scaling factor to the background RMS,
 					# ABSOLUTE - absolute level (in ADUs or in surface brightness)
@@ -203,7 +203,7 @@ def write_sextractor_config_file(sextractor_config_filename, sextractor_param_fi
 	#filterThresh = ? Lower and higher thresholds (in back-ground standard deviations) for a pix-el
 	#to be consideredin filtering (used for retinafiltering only).
 	deblendThreshold = "16"	# Minimum contrast parameter for deblending.
-	deblendMinContrast = 0.0001	# Minimum contrast parameter for deblending.
+	deblendMinContrast = "0.0001"	# Minimum contrast parameter for deblending.
 	cleanBool = "Y"	# If true, a cleaning of the catalog is done before being written to disk.
 	cleanParam = "1.0"	# Efficiency of cleaning.
 	maskType = "CORRECT"	#replace by values of pixels symmetric with respect to the source center.
@@ -215,7 +215,7 @@ def write_sextractor_config_file(sextractor_config_filename, sextractor_param_fi
 	magAutoKronFact = "2.5"
 	magAutoMinRadius = "3.5"
 	saturLevel = "120"  #Pixel value above which it is considered saturated.
-	magGamma = "4.0"    #γ of the emulsion (slope of the response function). Takes effect in PHOTO mode 
+	magGamma = "4.0"    #gamma of the emulsion (slope of the response function). Takes effect in PHOTO mode 
 						#only but NEEDS to be specified, even for CCD images.
 	pixelScale = "0.06" #Pixel size in arcsec.
 	#------------------------- Star/Galaxy Separation ----------------------------
@@ -256,12 +256,12 @@ def write_sextractor_config_file(sextractor_config_filename, sextractor_param_fi
 							#EXTRA WARNINGS like NORMAL, plus a few more warnings if necessary,
 							#FULL display a more complete information and the principal parameters of all the objects extracted.
 	#------------------------------- New Stuff -----------------------------------
-	weightType = "MAP_WEIGHT" 	#variance-map derived from an external weight-map,
-								#MAP_VAR external variance-map,
-								#MAP RMS variance-map derived from an external RMS-map,
-								#BACKGROUND variance-map derived from the image itself,
-								#NONE no weighting,
-	#WEIGHT IMAGE --File name of the detection andmeasurement weightimage , respectively.
+	weightType = "NONE" 	#variance-map derived from an external weight-map,
+							#MAP_VAR external variance-map,
+							#MAP RMS variance-map derived from an external RMS-map,
+							#BACKGROUND variance-map derived from the image itself,
+							#NONE no weighting,
+	#WEIGHT IMAGE --File name of the detection and measurement weight image , respectively.
 	#WEIGHT GAIN -- If true, weight maps are considered as gain maps.
 	magZeropoint = "25.96"     #Zero-point offset to be applied to magnitudes.
 	#------------------------- End of variable definitions -----------------------
@@ -270,241 +270,244 @@ def write_sextractor_config_file(sextractor_config_filename, sextractor_param_fi
 	os.system('touch ' + sextractor_config_filename)
 	sextractorConfigFile = open(sextractor_config_filename,'w')
 	sextractorConfigFile.write(
-		'''
-		# Default configuration file for SExtractor V1.2b14 - > 2.0
-		# EB 23/07/98
-		# (*) indicates parameters which can be omitted from this config file.
-		
-		#-------------------------------- Catalog ------------------------------------
-		CATALOG_NAME    generic.cat
-		CATALOG_TYPE    ASCII_HEAD      # "NONE","ASCII_HEAD","ASCII","FITS_1.0"
-		                                # or "FITS_LDAC"
-		''')
+'''
+# Default configuration file for SExtractor V1.2b14 - > 2.0
+# EB 23/07/98
+# (*) indicates parameters which can be omitted from this config file.
+
+#-------------------------------- Catalog ------------------------------------
+
+CATALOG_NAME    generic.cat
+CATALOG_TYPE    ASCII_HEAD      # "NONE","ASCII_HEAD","ASCII","FITS_1.0"
+								# or "FITS_LDAC"
+''')
 	
 	#WFC3.morphWG.param
 	sextractorConfigFile.write(
 		"PARAMETERS_NAME " + sextractor_param_filename + 
-		"  # name of the file containing catalog contents")
+		"  # name of the file containing catalog contents\n")
 		
 	sextractorConfigFile.write(
-		'''
-		#------------------------------- Extraction ----------------------------------
-		
-		''')
+'''
+
+#------------------------------- Extraction ----------------------------------
+
+''')
 	
 	#CCD
 	sextractorConfigFile.write(
 		"DETECT_TYPE     " + detectType + 
-		"             # \"CCD\" or \"PHOTO\" (*)")
+		"             # \"CCD\" or \"PHOTO\" (*)\n")
 	
 	#OR
 	sextractorConfigFile.write(
-		"FLAG_TYPE       " + flagType)
+		"FLAG_TYPE       " + flagType + "\n")
 	
 	#5
 	sextractorConfigFile.write(
 		"DETECT_MINAREA  " + detectMinArea +
-		"               # minimum number of pixels above threshold")
+		"               # minimum number of pixels above threshold\n")
 	
 	#0.75
 	sextractorConfigFile.write(
 		"DETECT_THRESH   " + detectThresh +
-		"            # <sigmas> or <threshold>,<ZP> in mag.arcsec-2")
+		"            # <sigmas> or <threshold>,<ZP> in mag.arcsec-2\n")
 	
 	#5
 	sextractorConfigFile.write(
 		"ANALYSIS_THRESH " + analysisThreshold +
-		"               # <sigmas> or <threshold>,<ZP> in mag.arcsec-2")
+		"               # <sigmas> or <threshold>,<ZP> in mag.arcsec-2\n")
 	
 	#Y
 	sextractorConfigFile.write(
 		"FILTER          " + filterBool +
-		"               # apply filter for detection (\"Y\" or \"N\")?")
+		"               # apply filter for detection (\"Y\" or \"N\")?\n")
 	
 	#tophat_9.0_9x9.conv
 	sextractorConfigFile.write(
 		"FILTER_NAME     " + filterName + 
-		"     # name of the file containing the filter")
+		"     # name of the file containing the filter\n")
 	
 	#16
 	sextractorConfigFile.write(
 		"DEBLEND_NTHRESH " + deblendThreshold + 
-		"              # Number of deblending sub-thresholds")
+		"              # Number of deblending sub-thresholds\n")
 	
 	#0.0001
 	sextractorConfigFile.write(
 		"DEBLEND_MINCONT " + deblendMinContrast +
-		"  # Minimum contrast parameter for deblending\n")
+		"  # Minimum contrast parameter for deblending\n\n")
 	
 	#Y
 	sextractorConfigFile.write(
 		"CLEAN           " + cleanBool +
-		"               # Clean spurious detections? (Y or N)?")
+		"               # Clean spurious detections? (Y or N)?\n")
 	
 	#1.0
 	sextractorConfigFile.write(
 		"CLEAN_PARAM     " + cleanParam + 
-		"             # Cleaning efficiency\n")
+		"             # Cleaning efficiency\n\n")
 	
 	#CORRECT
 	sextractorConfigFile.write(
 		"MASK_TYPE       " + maskType + 
 		"         # type of detection MASKing: can be one of\n" +
-		"                                # \"NONE\", \"BLANK\" or \"CORRECT\"")
+		"                                # \"NONE\", \"BLANK\" or \"CORRECT\"\n")
 	
 	sextractorConfigFile.write(
-		'''
-		
-		#------------------------------ Photometry -----------------------------------
-		
-		''')
+'''
+
+#------------------------------ Photometry -----------------------------------
+
+''')
 	
 	#10.
 	sextractorConfigFile.write(
 		"PHOT_APERTURES   " + photoApertureDiameter +
-		"   # MAG_APER aperture diameter(s) in pixels")
+		"   # MAG_APER aperture diameter(s) in pixels\n")
 	
 	#2.5, 3.5
 	sextractorConfigFile.write(
 		"PHOT_AUTOPARAMS " + magAutoKronFact + ", " + magAutoMinRadius +
-		"        # MAG_AUTO parameters: <Kron_fact>,<min_radius>")
+		"        # MAG_AUTO parameters: <Kron_fact>,<min_radius>\n")
 	
 	#120
 	sextractorConfigFile.write(
 		"SATUR_LEVEL     " + saturLevel + 
-		"             # level (in ADUs) at which arises saturation")
+		"             # level (in ADUs) at which arises saturation\n")
 	
 	#4.0
 	sextractorConfigFile.write(
 		"MAG_GAMMA       " + magGamma +
-		"             # gamma of emulsion (for photographic scans)")
+		"             # gamma of emulsion (for photographic scans)\n")
 	
 	#0.06
 	sextractorConfigFile.write(
 		"PIXEL_SCALE     " + pixelScale +
-		"            # size of pixel in arcsec (0=use FITS WCS info).")
+		"            # size of pixel in arcsec (0=use FITS WCS info).\n")
 	
 	sextractorConfigFile.write(
-		'''
-		
-		#------------------------- Star/Galaxy Separation ----------------------------
-		
-		''')
+'''
+
+#------------------------- Star/Galaxy Separation ----------------------------
+
+''')
 	
 	#0.18
 	sextractorConfigFile.write(
 		"SEEING_FWHM     " + stellarFWHM + 
-		"            # stellar FWHM in arcsec")
+		"            # stellar FWHM in arcsec\n")
 	
 	#default.nnw
 	sextractorConfigFile.write(
 		"STARNNW_NAME    " + starNNWFilename + 
-		"     # Neural-Network_Weight table filename")
+		"     # Neural-Network_Weight table filename\n")
 	
 	sextractorConfigFile.write(
-		'''
-		
-		#------------------------------ Background -----------------------------------
-		
-		''')
+'''
+
+#------------------------------ Background -----------------------------------
+
+''')
 	
 	#256
 	sextractorConfigFile.write(
 		"BACK_SIZE       " + backSize + 
-		"             # Background mesh: <size> or <width>,<height>")
+		"             # Background mesh: <size> or <width>,<height>\n")
 	
 	#9
 	sextractorConfigFile.write(
 		"BACK_FILTERSIZE " + backFilterSize +
-		"               # Background filter: <size> or <width>,<height>\n")
+		"               # Background filter: <size> or <width>,<height>\n\n")
 	
 	#LOCAL
 	sextractorConfigFile.write(
 		"BACKPHOTO_TYPE  " + backPhotoType + 
-		"           # can be \"GLOBAL\" or \"LOCAL\" (*)")
+		"           # can be \"GLOBAL\" or \"LOCAL\" (*)\n")
 	
 	#100
 	sextractorConfigFile.write(
 		"BACKPHOTO_THICK " + backPhotoThickness + 
-		"             # thickness of the background LOCAL annulus (*)")
+		"             # thickness of the background LOCAL annulus (*)\n")
 	
 	sextractorConfigFile.write(
-		'''
-		
-		#------------------------------ Check Image ----------------------------------
-		
-		''')
+'''
+
+#------------------------------ Check Image ----------------------------------
+
+''')
 	
 	#SEGMENTATION
 	sextractorConfigFile.write(
 		"CHECKIMAGE_TYPE  " + checkImageType + 
 		"   # can be one of \"NONE\", \"BACKGROUND\",\n" + 
 		'''
-		                                # "MINIBACKGROUND", "-BACKGROUND", "OBJECTS",
-		                                # "-OBJECTS", "SEGMENTATION", "APERTURES",
-		                                # or "FILTERED" (*)
+								# "MINIBACKGROUND", "-BACKGROUND", "OBJECTS",
+								# "-OBJECTS", "SEGMENTATION", "APERTURES",
+								# or "FILTERED" (*)
 		''')
 	
 	sextractorConfigFile.write(
-		'''
-		
-		#--------------------- Memory (change with caution!) -------------------------
-		
-		# MEMORY_OBJSTACK   50000       # number of objects in stack
-		# MEMORY_PIXSTACK   1000000     # number of pixels in stack
-		# MEMORY_BUFSIZE    8500        # number of lines in buffer
-		
-		''')
+'''
+
+#--------------------- Memory (change with caution!) -------------------------
+
+# MEMORY_OBJSTACK   50000       # number of objects in stack
+# MEMORY_PIXSTACK   1000000     # number of pixels in stack
+# MEMORY_BUFSIZE    8500        # number of lines in buffer
+
+''')
 	
 	#2000
 	sextractorConfigFile.write(
 		"MEMORY_OBJSTACK " + memoryObjStack +
-		"            # number of objects in stack")
+		"            # number of objects in stack\n")
 	
 	#200000
 	sextractorConfigFile.write(
 		"MEMORY_PIXSTACK " + memoryPixStack + 
-		"          # number of pixels in stack")
+		"          # number of pixels in stack\n")
 	
 	#2048
 	sextractorConfigFile.write(
 		"MEMORY_BUFSIZE  " + memoryBufferSize + 
-		"            # number of lines in buffer")
+		"            # number of lines in buffer\n")
 	
 	sextractorConfigFile.write(
-		'''
-		 
-		#----------------------------- Miscellaneous ---------------------------------
-		
-		''')
+'''
+ 
+#----------------------------- Miscellaneous ---------------------------------
+
+''')
 	
 	#QUIET
 	sextractorConfigFile.write(
 		"VERBOSE_TYPE    " + verboseType + 
-		"           # can be \"QUIET\", \"NORMAL\" or \"FULL\" (*)")
+		"           # can be \"QUIET\", \"NORMAL\" or \"FULL\" (*)\n")
 	
 	sextractorConfigFile.write(
-		'''
-		
-		#------------------------------- New Stuff -----------------------------------
-		
-		''')
+'''
+
+#------------------------------- New Stuff -----------------------------------
+
+''')
 	
 	#MAP_WEIGHT
 	sextractorConfigFile.write(
-		"WEIGHT_TYPE   " + weightType)
+		"WEIGHT_TYPE   " + weightType + "\n")
 	
 	sextractorConfigFile.write(
-		'''
-		# WEIGHT_TYPE     MAP_RMS,MAP_RMS
-		# WEIGHT_THRESH   10000.0
-		
-		
-		''')
+'''
+# WEIGHT_TYPE     MAP_RMS,MAP_RMS
+# WEIGHT_THRESH   10000.0
+
+
+''')
 	
 	#25.96
 	sextractorConfigFile.write(
-		"MAG_ZEROPOINT   " + magZeropoint + "           # H-band magnitude zero-point")
+		"MAG_ZEROPOINT   " + magZeropoint + 
+		"           # H-band magnitude zero-point\n")
 	
 
 def write_galfit_single_parameter(imageFilename, galfit_single_parameter_filename,
@@ -672,18 +675,59 @@ def run_sextractor(imageFilename):
 	parameter imageFilename -
 		the string of the full path filename of the image on which sextractor will be run
 	'''
-	weightImage = "cos_2epoch_wfc3_f160w_060mas_v1.0_wht.fits"
-	configFilename = "WFC3.Hfinal.weight.sex"
+	configFilename = ".".join(imageFilename.split(".")[:-1]) + ".sex"
+	outputCatFilename = "generic.cat"
+	segmentationMapFilename = "check.fits"
 	# SYNTAX: sex <image> [<image2>][-c <configuration_file>][-<keyword> <value>]
 	write_sextractor_config_file(configFilename, "WFC3.morphWG.param")
-	os.system("sex " + imageFilename + "-c " + configFilename + "-WEIGHT_IMAGE " + weightImage)
+	os.system("sex " + imageFilename + " -c " + configFilename)
 	'''
 	TODO:
 	use segmentation map outputted by sextractor to create a mask for galfit
-	by calling imreplace and providing the galxy catalog number as the 
+	by calling imreplace and providing the galaxy catalog number as the 
 	min and max pixel range to be replaced with zeros
 	'''
-
+	# get galaxyID of the galaxy closest to center of image from outputCatFile
+	outputCatFile = open(outputCatFilename, 'r')
+	outputCatContents = outputCatFile.readlines()
+	outputCatFile.close()
+	
+	# start on the last line
+	lineIndex = -1
+	
+	# set to a high value initially, just needs to be greater than the closest galaxy distance
+	prevBestDist = 1000.0
+	
+	# nonsense value to indicate if no galaxy is found closer than above distance
+	prevBestID = -1
+	
+	# read backwards until comment character indicates the field description section
+	while outputCatContents[lineIndex].strip()[0] != "#":
+		
+		# TODO: might be able to have indices collected fro commented header
+		# gather galaxy information
+		galaxyOutputList = outputCatContents[lineIndex].strip().split()
+		galaxyID = galaxyOutputList[0]
+		galaxyXimage = galaxyOutputList[26]
+		galaxyYimage = galaxyOutputList[27]
+		
+		# TODO: generalize center
+		# compute distance from image center 
+		dx = 300.0 - galaxyXimage
+		dy = 300.0 - galaxyYimage
+		curDist = ( dx^2 + dy^2 )^(0.5)
+		
+		# store galaxyID if closer than prev closest galaxy to center of image
+		if curDist < prevBestDist:
+			prevBestID = galaxyID
+			prevBestDist = curDist
+		
+		# go to the next (prev in file) line
+		lineIndex = lineIndex - 1
+		
+	if prevBestID == -1:
+		print ("sextractor did not yield a galaxy closer than" + str(prevBestDist))
+		
 def run_galfit(imageFilename, logMsg, galfit_constraint_filename, psf, mpZeropoint, plateScale, 
 				includeBulgeComponent, includeGaussianSmoothing):
 	'''
@@ -905,6 +949,11 @@ if __name__ == "__main__":
 	parser.add_option("-g","--gauss", 
 						help="turn on to include a gaussian smoothing before minmax is run",
 						action="store_true")
+						
+	# run sextractor
+	parser.add_option("-s","--sextractor", 
+						help="turn on to run sextractor",
+						action="store_true")
 	
 	# the constraint file. verified as file and assigned default if omitted after parsing
 	parser.add_option("-c","--constraint", 
@@ -934,6 +983,10 @@ if __name__ == "__main__":
 					"must provide an input file containing the list of full path image filenames.")
 	elif not os.path.isfile(args[0]):
 		parser.error("input file " + args[0] + " either does not exist or is not accessible")
+		
+	if options.sextractor:
+		run_sextractor(args[0])
+		exit()
 		
 	# set constraint to default unless one is given on command line, and verify file exists
 	if not options.constraint:
