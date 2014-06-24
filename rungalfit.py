@@ -178,19 +178,29 @@ def write_sextractor_config_file(imageFilename, sextractor_config_filename,
 	'''
 	
 	# variables describing the sextractor config file
-	
 	#------------------------------- Extraction ----------------------------------
 	detectType = "CCD" 
-	flagType = "OR"
-	detectMinArea = "5"
-	detectThresh = "0.75"
-	analysisThreshold = "5"
-	filterBool = "Y"
-	filterName = "tophat_9.0_9x9.conv"
-	deblendThreshold = "16"
-	deblendMinContrast = 0.0001
-	cleanBool = "Y"
-	cleanParam = "1.0"
+	#fitsUnsigned = ?
+	#flagImage = ?
+	flagType = "OR"	# Combination method for flags on the same object:
+					# OR arithmetical OR,
+					# AND arithmetical AND,
+					# MIN minimum of all flag values,
+					# MAX maximum of all flag values,
+					# MOST most common flag value.
+	detectMinArea = "5"	# Minimum number of pixels above threshold triggering detection
+	detectThresh = "0.75"	#Detection threshold. 1 argument: (ADUs or relative to Background RMS, see THRESH TYPE). 2 arguments: R (mag.arcsecî 2 ), Zero-point (mag).
+	analysisThreshold = "5"	#Threshold (in surface brightness) at which CLASS STAR and FWHM operate. 1 argument: relative to Background RMS. 2 arguments: mu (mag/arcsecî 2 ), Zero-point (mag).
+	#threshType = ?	# Meaning of the DETECT_THRESH and ANALYSIS_THRESH parameters:
+					# RELATIVE - scaling factor to the background RMS,
+					# ABSOLUTE - absolute level (in ADUs or in surface brightness)
+	filterBool = "Y"	#  If true,filtering is applied to the data before extraction.
+	filterName = "tophat_9.0_9x9.conv"	# Name and path of the file containing the filter definition
+	#filterThresh = ?
+	deblendThreshold = "16"	# Minimum contrast parameter for deblending.
+	deblendMinContrast = 0.0001	# Minimum contrast parameter for deblending.
+	cleanBool = "Y"	# If true, a cleaning of the catalog is done before being written to disk.
+	cleanParam = "1.0"	# Efficiency of cleaning.
 	maskType = "CORRECT"
 	#------------------------------ Photometry -----------------------------------
 	photoApertureDiameter = "10."
@@ -203,26 +213,29 @@ def write_sextractor_config_file(imageFilename, sextractor_config_filename,
 	stellarFWHM = "0.18"
 	starNNWFilename = "default.nnw"
 	#------------------------------ Background -----------------------------------
-	backSize = "256" # Size, or Width, Height (inpixels) of a background mesh.
-	backFilterSize = "9" #Size, or Width, Height (inbackground meshes) of the background-filtering mask.
-	backPhotoType = "LOCAL" #Background used to compute magnitudes:
-	backPhotoThickness = "100" #Thickness (in pixels) of the background LOCAL annulus.
-	#backValue in BACK TYPE MANUAL mode, the constant value to be subtracted from the images.
-	#backType What background is subtracted from the images: AUTO The internal interpolated background-map. In the manual it says ‚ÄúINTERNAL‚Äù
-				# here but the keyword is AUTO. MANUAL A user-supplied constant value provided in BACK VALUE.
+	backSize = "256"	# Size, or Width, Height (inpixels) of a background mesh.
+	backFilterSize = "9"	#Size, or Width, Height (inbackground meshes) of the background-filtering mask.
+	backPhotoType = "LOCAL"	#Background used to compute magnitudes:
+							# GLOBAL - taken directly from the background map
+							# LOCAL - recomputed in a rectangular annulus around the object
+	backPhotoThickness = "100"	#Thickness (in pixels) of the background LOCAL annulus.
+	#backType = ?	# What background is subtracted from the images: 
+					# AUTO - The internal interpolated background-map. In the manual it says "INTERNAL" here but the keyword is AUTO. 
+					# MANUAL A user-supplied constant value provided in BACK VALUE.
+	#backValue = ?	# in BACK TYPE MANUAL mode, the constant value to be subtracted from the images.
 	#------------------------------ Check Image ----------------------------------
 	checkImageType = "SEGMENTATION" #display patches corresponding to pixels attributed to each object
-					  #APERTURES-- MAG APER and MAG AUTO integration limits
-					  #-OBJECTS-- background-subtracted image with detected objects blanked,
-					  #OBJECTS detected objects,
-					  #FILTERED background-subtracted filtered image (requires FILTER = Y),
-					  #-BACKGROUND background-subtracted image,
-					  #MINIBACK RMS low-resolution background noise map, 
-					  #MINIBACKGROUND low-resolution background map,
-					  #BACKGROUND RMS full-resolution interpolated background noise map,
-					  #BACKGROUND full-resolution interpolated background map,
-					  #IDENTICAL identical to input image (useful for converting formats),
-					  #NONE no check-image,
+						#APERTURES-- MAG APER and MAG AUTO integration limits
+						#-OBJECTS-- background-subtracted image with detected objects blanked,
+						#OBJECTS detected objects,
+						#FILTERED background-subtracted filtered image (requires FILTER = Y),
+						#-BACKGROUND background-subtracted image,
+						#MINIBACK RMS low-resolution background noise map, 
+						#MINIBACKGROUND low-resolution background map,
+						#BACKGROUND RMS full-resolution interpolated background noise map,
+						#BACKGROUND full-resolution interpolated background map,
+						#IDENTICAL identical to input image (useful for converting formats),
+						#NONE no check-image,
 	#--------------------- Memory (change with caution!) -------------------------
 	memoryObjStack = "2000"
 	memoryPixStack = "200000"
@@ -233,14 +246,15 @@ def write_sextractor_config_file(imageFilename, sextractor_config_filename,
 							#EXTRA WARNINGS like NORMAL, plus a few more warnings if necessary,
 							#FULL display a more complete information and the principal parameters of all the objects extracted.
 	#------------------------------- New Stuff -----------------------------------
-	weightType = "MAP_WEIGHT" #variance-map derived from an external weight-map,
-							  #MAP_VAR external variance-map,
-							  #MAP RMS variance-map derived from an external RMS-map,
-							  #BACKGROUND variance-map derived from the image itself,
-							  #NONE no weighting,
+	weightType = "MAP_WEIGHT" 	#variance-map derived from an external weight-map,
+								#MAP_VAR external variance-map,
+								#MAP RMS variance-map derived from an external RMS-map,
+								#BACKGROUND variance-map derived from the image itself,
+								#NONE no weighting,
 	#WEIGHT IMAGE --File name of the detection andmeasurement weightimage , respectively.
 	#WEIGHT GAIN -- If true, weight maps are considered as gain maps.
 	magZeropoint = "25.96"
+	#------------------------- End of variable definitions -----------------------
 	
 	# use above variables to write the config file
 	os.system('touch ' + sextractor_config_filename)
