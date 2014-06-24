@@ -6,16 +6,24 @@ pro write_comp_errors, infile, DIST_FROM_CENTER = distLimit, SERSIC_INDEX = sers
 		SKIPLINE=2,FORMAT='A,A,F,A,A,A'
 	
 	IF file_error NE 0 THEN STOP
+
+	start_index = 0
 	
-	out_filename = (strmid(infile,0,strpos(infile,'.'))+'_all_errors.txt')
+	while ($
+		( strlen( strmid(infile,start_index,strpos(infile,'.',start_index)) ) EQ 0 ) $
+		and ( start_index LT strlen(infile) ) $
+	) $
+	do start_index = start_index + 3
+	
+	if not( start_index LT strlen(infile) ) then print,'failed to find the file extension for naming the output file'
+	
+	out_filename = (strmid(infile,0,strpos(infile,'.',start_index))+'_all_errors.txt') 
 	
 	errors = where(strmid(id,0,1) EQ '*', errorCount)
 				
 	get_lun,outfile
 	openw,outfile,out_filename
-	printf,outfile,'two component (bulge) fits'
-	printf,outfile,''
-	printf,outfile,errorCount,' errors detected by sersic index and component separation, if any'
+	printf,outfile,errorCount,' errors detected by sersic index and component separation (components with leading *s)'
 	printf,outfile,''
 	if not(n_elements(distLimit) eq 0) then begin
 		dx = (300-px)

@@ -131,43 +131,335 @@ def run_imexam(imageFilename, centerCoords, xStart, yStart, xStop, yStop):
 	write_coords.write(centerCoords[0] + " " + centerCoords[1])
 	write_coords.close()	
 	
-	#run imexam passing coords.tmp
-	imexam_out = str(iraf.imexam(imageFilename + areaStr, use_display=0, imagecur=coordsFilename, Stdout=1))
+	#run imexam passing coords.tmp, data is returned in the last two elements of the return array of strings
+	imexam_out = iraf.imexam(imageFilename + areaStr, use_display=0, imagecur=coordsFilename, Stdout=1)[-2:]
 
-	# "display frame (1:) (1): ['#	 COL	LINE	COORDINATES', '#	 " +
-	# "R	MAG	   FLUX		SKY	   PEAK	   E   PA BETA ENCLOSED	  MOFFAT DIRECT', " +
-	# "'1283.40	 692.16 1283.40 692.16', '	63.22  14.53  15461.  0.1202   19.53 0.52	 " +
-	# "1 1.75	 21.58	  18.85	 21.39']"	
+	# ['COL	LINE X Y', 
+	# 'R MAG FLUX SKY PEAK E PA BETA ENCLOSED MOFFAT DIRECT']
 	
 	# delete coords.tmp, no longer needed
 	os.system('rm ' + coordsFilename) 
 	
-	imexam_array = str.split(imexam_out, "'")		
-	
 	#print imexam_out
 	#print imexam_array 
 	
-	xy = imexam_array[5].strip()
-	data = imexam_array[7].strip()
-	data = str.split(data)
-	xy = str.split(xy)
+	xy = imexam_out[0].strip().split()
+	data = imexam_out[1].strip().split()
 	
-	col = xy[0]										#this gives x value 
-	line = xy[1]									#this gives y value
-	mag = data[1]									#this prints the magnitude
-	radius = data[0]								#this prints the radius
-	b_a = int(1) - float(data[5])					#this prints the E variable that relates to b/a. note b/a=1-e
-	PA = float(data[6]) - int(90)					#this gives the position angle. iraf measures up from x. Galfit down from y
-
-#	print col
-#	print line
-#	print mag
-#	print radius
-#	print b_a
-#	print PA
-#	exit()	
+	col = float(xy[0])							#this gives x value 
+	line = float(xy[1])							#this gives y value
+	radius = float(data[0])						#this gives the radius
+	mag = float(data[1])						#this gives the magnitude
+	
+	# these might be indef, if so then set to default values
+	try:
+		b_a = 1.0 - float(data[5])				# b/a=1-e
+	except:
+		print("using default values for b/a")
+		b_a = 1.0
+	try:
+		PA = float(data[6]) - 90.0				#this gives the position angle. iraf measures up from x. Galfit down from y
+	except:
+		print("using default values for position angle")
+		PA = 0.0
 	
 	return [line, col, mag, radius, b_a, PA]
+	
+	
+def write_sextractor_config_file(imageFilename, sextractor_config_filename,
+									sextractor_param_filename):
+	'''
+	writes the sextractor config file
+	
+	parameter imageFilename - the filename of the image on which sextractor is being run
+	parameter sextractor_config_filename - 
+		the filename of the sextractor config file being written
+	parameter sextractor_param_filename - name of the file containing catalog contents
+	'''
+	
+	# variables describing the sextractor config file
+	
+	#------------------------------- Extraction ----------------------------------
+	detectType = "CCD"
+	flagType = "OR"
+	detectMinArea = "5"
+	detectThresh = "0.75"
+	analysisThreshold = "5"
+	filterBool = "Y"
+	filterName = "tophat_9.0_9x9.conv"
+	deblendThreshold = "16"
+	deblendMinContrast = 0.0001
+	cleanBool = "Y"
+	cleanParam = "1.0"
+	maskType = "CORRECT"
+	#------------------------------ Photometry -----------------------------------
+	photoApertureDiameter = "10."
+	magAutoKronFact = "2.5"
+	magAutoMinRadius = "3.5"
+	saturLevel = "120"
+	magGamma = "4.0"
+	pixelScale = "0.06"
+	#------------------------- Star/Galaxy Separation ----------------------------
+	stellarFWHM = "0.18"
+	starNNWFilename = "default.nnw"
+	#------------------------------ Background -----------------------------------
+	backSize = "256" # 
+	backFilterSize = "9"
+	backPhotoType = "LOCAL"
+	backPhotoThickness = "100"
+	#backValue
+	#backType
+	#------------------------------ Check Image ----------------------------------
+	checkImageType = "SEGMENTATION"
+	#--------------------- Memory (change with caution!) -------------------------
+	memoryObjStack = "2000"
+	memoryPixStack = "200000"
+	memoryBufferSize = "2048"
+	#----------------------------- Miscellaneous ---------------------------------
+	verboseType = "QUIET"
+	#------------------------------- New Stuff -----------------------------------
+	weightType = "MAP_WEIGHT"
+	magZeropoint = "25.96"
+	
+	# use above variables to write the config file
+	os.system('touch ' + sextractor_config_filename)
+	sextractorConfigFile = open(sextractor_config_filename,'w')
+	sextractorConfigFile.write(
+		'''
+		# Default configuration file for SExtractor V1.2b14 - > 2.0
+		# EB 23/07/98
+		# (*) indicates parameters which can be omitted from this config file.
+		
+		#-------------------------------- Catalog ------------------------------------
+		CATALOG_NAME    generic.cat
+		CATALOG_TYPE    ASCII_HEAD      # "NONE","ASCII_HEAD","ASCII","FITS_1.0"
+		                                # or "FITS_LDAC"
+		''')
+	
+	#WFC3.morphWG.param
+	sextractorConfigFile.write(
+		"PARAMETERS_NAME " + sextractor_param_filename + 
+		"  # name of the file containing catalog contents")
+		
+	sextractorConfigFile.write(
+		'''
+		#------------------------------- Extraction ----------------------------------
+		
+		''')
+	
+	#CCD
+	sextractorConfigFile.write(
+		"DETECT_TYPE     " + detectType + 
+		"             # \"CCD\" or \"PHOTO\" (*)")
+	
+	#OR
+	sextractorConfigFile.write(
+		"FLAG_TYPE       " + flagType)
+	
+	#5
+	sextractorConfigFile.write(
+		"DETECT_MINAREA  " + detectMinArea +
+		"               # minimum number of pixels above threshold")
+	
+	#0.75
+	sextractorConfigFile.write(
+		"DETECT_THRESH   " + detectThresh +
+		"            # <sigmas> or <threshold>,<ZP> in mag.arcsec-2")
+	
+	#5
+	sextractorConfigFile.write(
+		"ANALYSIS_THRESH " + analysisThreshold +
+		"               # <sigmas> or <threshold>,<ZP> in mag.arcsec-2")
+	
+	#Y
+	sextractorConfigFile.write(
+		"FILTER          " + filterBool +
+		"               # apply filter for detection (\"Y\" or \"N\")?")
+	
+	#tophat_9.0_9x9.conv
+	sextractorConfigFile.write(
+		"FILTER_NAME     " + filterName + 
+		"     # name of the file containing the filter")
+	
+	#16
+	sextractorConfigFile.write(
+		"DEBLEND_NTHRESH " + deblendThreshold + 
+		"              # Number of deblending sub-thresholds")
+	
+	#0.0001
+	sextractorConfigFile.write(
+		"DEBLEND_MINCONT " + deblendMinContrast +
+		"  # Minimum contrast parameter for deblending\n")
+	
+	#Y
+	sextractorConfigFile.write(
+		"CLEAN           " + cleanBool +
+		"               # Clean spurious detections? (Y or N)?")
+	
+	#1.0
+	sextractorConfigFile.write(
+		"CLEAN_PARAM     " + cleanParam + 
+		"             # Cleaning efficiency\n")
+	
+	#CORRECT
+	sextractorConfigFile.write(
+		"MASK_TYPE       " + maskType + 
+		"         # type of detection MASKing: can be one of\n" +
+		"                                # \"NONE\", \"BLANK\" or \"CORRECT\"")
+	
+	sextractorConfigFile.write(
+		'''
+		
+		#------------------------------ Photometry -----------------------------------
+		
+		''')
+	
+	#10.
+	sextractorConfigFile.write(
+		"PHOT_APERTURES   " + photoApertureDiameter +
+		"   # MAG_APER aperture diameter(s) in pixels")
+	
+	#2.5, 3.5
+	sextractorConfigFile.write(
+		"PHOT_AUTOPARAMS " + magAutoKronFact + ", " + magAutoMinRadius +
+		"        # MAG_AUTO parameters: <Kron_fact>,<min_radius>")
+	
+	#120
+	sextractorConfigFile.write(
+		"SATUR_LEVEL     " + saturLevel + 
+		"             # level (in ADUs) at which arises saturation")
+	
+	#4.0
+	sextractorConfigFile.write(
+		"MAG_GAMMA       " + magGamma +
+		"             # gamma of emulsion (for photographic scans)")
+	
+	#0.06
+	sextractorConfigFile.write(
+		"PIXEL_SCALE     " + pixelScale +
+		"            # size of pixel in arcsec (0=use FITS WCS info).")
+	
+	sextractorConfigFile.write(
+		'''
+		
+		#------------------------- Star/Galaxy Separation ----------------------------
+		
+		''')
+	
+	#0.18
+	sextractorConfigFile.write(
+		"SEEING_FWHM     " + stellarFWHM + 
+		"            # stellar FWHM in arcsec")
+	
+	#default.nnw
+	sextractorConfigFile.write(
+		"STARNNW_NAME    " + starNNWFilename + 
+		"     # Neural-Network_Weight table filename")
+	
+	sextractorConfigFile.write(
+		'''
+		
+		#------------------------------ Background -----------------------------------
+		
+		''')
+	
+	#256
+	sextractorConfigFile.write(
+		"BACK_SIZE       " + backSize + 
+		"             # Background mesh: <size> or <width>,<height>")
+	
+	#9
+	sextractorConfigFile.write(
+		"BACK_FILTERSIZE " + backFilterSize +
+		"               # Background filter: <size> or <width>,<height>\n")
+	
+	#LOCAL
+	sextractorConfigFile.write(
+		"BACKPHOTO_TYPE  " + backPhotoType + 
+		"           # can be \"GLOBAL\" or \"LOCAL\" (*)")
+	
+	#100
+	sextractorConfigFile.write(
+		"BACKPHOTO_THICK " + backPhotoThickness + 
+		"             # thickness of the background LOCAL annulus (*)")
+	
+	sextractorConfigFile.write(
+		'''
+		
+		#------------------------------ Check Image ----------------------------------
+		
+		''')
+	
+	#SEGMENTATION
+	sextractorConfigFile.write(
+		"CHECKIMAGE_TYPE  " + checkImageType + 
+		"   # can be one of \"NONE\", \"BACKGROUND\",\n" + 
+		'''
+		                                # "MINIBACKGROUND", "-BACKGROUND", "OBJECTS",
+		                                # "-OBJECTS", "SEGMENTATION", "APERTURES",
+		                                # or "FILTERED" (*)
+		''')
+	
+	sextractorConfigFile.write(
+		'''
+		
+		#--------------------- Memory (change with caution!) -------------------------
+		
+		# MEMORY_OBJSTACK   50000       # number of objects in stack
+		# MEMORY_PIXSTACK   1000000     # number of pixels in stack
+		# MEMORY_BUFSIZE    8500        # number of lines in buffer
+		
+		''')
+	
+	#2000
+	sextractorConfigFile.write(
+		"MEMORY_OBJSTACK " + memoryObjStack +
+		"            # number of objects in stack")
+	
+	#200000
+	sextractorConfigFile.write(
+		"MEMORY_PIXSTACK " + memoryPixStack + 
+		"          # number of pixels in stack")
+	
+	#2048
+	sextractorConfigFile.write(
+		"MEMORY_BUFSIZE  " + memoryBufferSize + 
+		"            # number of lines in buffer")
+	
+	sextractorConfigFile.write(
+		'''
+		 
+		#----------------------------- Miscellaneous ---------------------------------
+		
+		''')
+	
+	#QUIET
+	sextractorConfigFile.write(
+		"VERBOSE_TYPE    " + verboseType + 
+		"           # can be \"QUIET\", \"NORMAL\" or \"FULL\" (*)")
+	
+	sextractorConfigFile.write(
+		'''
+		
+		#------------------------------- New Stuff -----------------------------------
+		
+		''')
+	
+	#MAP_WEIGHT
+	sextractorConfigFile.write(
+		"WEIGHT_TYPE   " + weightType)
+	
+	sextractorConfigFile.write(
+		'''
+		# WEIGHT_TYPE     MAP_RMS,MAP_RMS
+		# WEIGHT_THRESH   10000.0
+		
+		
+		''')
+	
+	#25.96
+	sextractorConfigFile.write(
+		"MAG_ZEROPOINT   " + magZeropoint + "           # H-band magnitude zero-point")
 	
 
 def write_galfit_single_parameter(imageFilename, galfit_single_parameter_filename,
@@ -178,7 +470,7 @@ def write_galfit_single_parameter(imageFilename, galfit_single_parameter_filenam
 	'''
 	writes the galfit parameter file for the single component
 	
-	parameter imageFilename - the filoename of the image on which galfit is being run
+	parameter imageFilename - the filename of the image on which galfit is being run
 	parameter galfit_single_parameter_filename - 
 		the filename of the galfit parameter file being written
 	parameter galfit_single_output_filename - 
@@ -188,76 +480,76 @@ def write_galfit_single_parameter(imageFilename, galfit_single_parameter_filenam
 		initial guess at the location and description of the single galaxy component
 	'''
 	os.system('touch ' + galfit_single_parameter_filename)
-	WP = open(galfit_single_parameter_filename,'w')
-	WP.write("# IMAGE and GALFIT CONTROL PARAMETERS\n")
-	WP.write("A) " + imageFilename + 
+	galfitSingleParamFile = open(galfit_single_parameter_filename,'w')
+	galfitSingleParamFile.write("# IMAGE and GALFIT CONTROL PARAMETERS\n")
+	galfitSingleParamFile.write("A) " + imageFilename + 
 			"						#Input data image block\n")
-	WP.write("B) " + galfit_single_output_filename +
+	galfitSingleParamFile.write("B) " + galfit_single_output_filename +
 			"						#Output data image block\n")
-	WP.write("C)" + " none" + 
+	galfitSingleParamFile.write("C)" + " none" + 
 			"						#Sigma image name (made from data if blank or 'none')\n")
-	WP.write("D) " + psf + 
+	galfitSingleParamFile.write("D) " + psf + 
 			"						#Input PSF image and (optional) diffusion kernel\n")
-	WP.write("E)" + " 1" + 
+	galfitSingleParamFile.write("E)" + " 1" + 
 			"						#PSF fine sampling factor relative to data\n")
-	WP.write("F)" + " none" +							
+	galfitSingleParamFile.write("F)" + " none" +							
 			"						#Bad pixel mask (FITS file or ASCIIcoord list)\n")
-	WP.write("G)" + " none" + 
+	galfitSingleParamFile.write("G)" + " none" + 
 			"						#File with parameter constraints (ASCII file)\n")
-	WP.write("H) " + str(xMin) + " " + str(xMax) + " " + str(yMin) + " " + str(yMax) + 
+	galfitSingleParamFile.write("H) " + str(xMin) + " " + str(xMax) + " " + str(yMin) + " " + str(yMax) + 
 			"						#Image region to fit (xmin xmax ymin ymax)\n")
-	WP.write("I)" + " 200 200" + 
+	galfitSingleParamFile.write("I)" + " 200 200" + 
 			"						#Size of the convolution box (x y)\n")
-	WP.write("J) " + str(mpZeropoint) + 
+	galfitSingleParamFile.write("J) " + str(mpZeropoint) + 
 			"						#Magnitude photometric zeropoint\n")
-	WP.write("K) " + str(plateScale) + "	 " + str(plateScale) + 
+	galfitSingleParamFile.write("K) " + str(plateScale) + "	 " + str(plateScale) + 
 			"						#Plate scale (dx dy)  [arcsec per pixel]\n")
-	WP.write("O)" + " regular" + 
+	galfitSingleParamFile.write("O)" + " regular" + 
 			"						#display type (regular, curses, both\n")
-	WP.write("P)" + " 0" + 
+	galfitSingleParamFile.write("P)" + " 0" + 
 			"						#Options: 0=normal run; 1,2=make model/imgblock & quit\n")
-	WP.write("S)" + " 0" + 
+	galfitSingleParamFile.write("S)" + " 0" + 
 			"						#Modify/create components interactively?\n")
-	WP.write("\n")
-	WP.write("# INITIAL FITTING PARAMETERS\n")
-	WP.write("#\n")
-	WP.write("# For component type, the allowed functions are:\n")
-	WP.write("#		nuker, sersic, expdisk, devauc, king, psf, gaussian, moffat,\n")
-	WP.write("#		ferrer, coresersic, sky and isophote.\n")
-	WP.write("#\n")
-	WP.write("# Hidden parameters will only appear when they are specified:\n")
-	WP.write("#		C0 (diskyness/boxyness),\n")
-	WP.write("#		Fn (n=interger, Azimuthal Fourier Modes).\n")
-	WP.write("#		R0-R10 (PA rotation, for creating spiral structures).\n")
-	WP.write("#\n")
-	WP.write("# ------------------------------------------------------------------------------\n")
-	WP.write("#		par)	par value(s)	fit toggle(s)	# parameter description\n")
-	WP.write("# ------------------------------------------------------------------------------\n")
-	WP.write("\n")
-	WP.write("# Componenet number: 1\n")
-	WP.write(" 0) sersic					#Component type\n")
-	WP.write(" 1) " + str(X) + "	" + str(Y) + "	1	1			#Position x,y\n")
-	WP.write(" 3) " + str(magnitude) + "	1			#Integrated Magnitude\n")
-	WP.write(" 4) " + str(rad) + "			1			#R_e (half-light radius)	[pix]\n")
-	WP.write(" 5) " + "1.0000		1			#Sersic index n (de Vaucouleurs n=4)\n")
-	WP.write(" 6) 0.0000		0			#	-----\n")
-	WP.write(" 7) 0.0000		0			#	-----\n")
-	WP.write(" 8) 0.0000		0			#	-----\n")
-	WP.write(" 9) " + str(BA) + "			1			#Axis ratio (b/a)\n")
-	WP.write(" 10) " + str(angle) + "		1			#Position angle (PA) [deg: Up=0, left=90]\n")
-	WP.write(" Z) 0							#Leave in [1] or subtract [0] this comp from data?\n")
-	WP.write("\n")
+	galfitSingleParamFile.write("\n")
+	galfitSingleParamFile.write("# INITIAL FITTING PARAMETERS\n")
+	galfitSingleParamFile.write("#\n")
+	galfitSingleParamFile.write("# For component type, the allowed functions are:\n")
+	galfitSingleParamFile.write("#		nuker, sersic, expdisk, devauc, king, psf, gaussian, moffat,\n")
+	galfitSingleParamFile.write("#		ferrer, coresersic, sky and isophote.\n")
+	galfitSingleParamFile.write("#\n")
+	galfitSingleParamFile.write("# Hidden parameters will only appear when they are specified:\n")
+	galfitSingleParamFile.write("#		C0 (diskyness/boxyness),\n")
+	galfitSingleParamFile.write("#		Fn (n=interger, Azimuthal Fourier Modes).\n")
+	galfitSingleParamFile.write("#		R0-R10 (PA rotation, for creating spiral structures).\n")
+	galfitSingleParamFile.write("#\n")
+	galfitSingleParamFile.write("# ------------------------------------------------------------------------------\n")
+	galfitSingleParamFile.write("#		par)	par value(s)	fit toggle(s)	# parameter description\n")
+	galfitSingleParamFile.write("# ------------------------------------------------------------------------------\n")
+	galfitSingleParamFile.write("\n")
+	galfitSingleParamFile.write("# Componenet number: 1\n")
+	galfitSingleParamFile.write(" 0) sersic					#Component type\n")
+	galfitSingleParamFile.write(" 1) " + str(X) + "	" + str(Y) + "	1	1			#Position x,y\n")
+	galfitSingleParamFile.write(" 3) " + str(magnitude) + "	1			#Integrated Magnitude\n")
+	galfitSingleParamFile.write(" 4) " + str(rad) + "			1			#R_e (half-light radius)	[pix]\n")
+	galfitSingleParamFile.write(" 5) " + "1.0000		1			#Sersic index n (de Vaucouleurs n=4)\n")
+	galfitSingleParamFile.write(" 6) 0.0000		0			#	-----\n")
+	galfitSingleParamFile.write(" 7) 0.0000		0			#	-----\n")
+	galfitSingleParamFile.write(" 8) 0.0000		0			#	-----\n")
+	galfitSingleParamFile.write(" 9) " + str(BA) + "			1			#Axis ratio (b/a)\n")
+	galfitSingleParamFile.write(" 10) " + str(angle) + "		1			#Position angle (PA) [deg: Up=0, left=90]\n")
+	galfitSingleParamFile.write(" Z) 0							#Leave in [1] or subtract [0] this comp from data?\n")
+	galfitSingleParamFile.write("\n")
 
 
-	WP.write("# Componenet number: 2\n")
-	WP.write(" 0) sky						#Component type\n")
-	WP.write(" 1) 0.0000		0			#	Sky background at center of fitting region [ADUs]\n")
-	WP.write(" 2) 0.0000		0			#	dsky/dx (sky gradient in x) [ADUs/pix]\n")
-	WP.write(" 3) 0.0000		0			#	dsky/dy (sky gradient in y) [ADUs/pix]\n")
-	WP.write(" Z) 0						#Leave in [1] or subtract [0] this comp from data?\n")
-	WP.write("\n")
+	galfitSingleParamFile.write("# Componenet number: 2\n")
+	galfitSingleParamFile.write(" 0) sky						#Component type\n")
+	galfitSingleParamFile.write(" 1) 0.0000		0			#	Sky background at center of fitting region [ADUs]\n")
+	galfitSingleParamFile.write(" 2) 0.0000		0			#	dsky/dx (sky gradient in x) [ADUs/pix]\n")
+	galfitSingleParamFile.write(" 3) 0.0000		0			#	dsky/dy (sky gradient in y) [ADUs/pix]\n")
+	galfitSingleParamFile.write(" Z) 0						#Leave in [1] or subtract [0] this comp from data?\n")
+	galfitSingleParamFile.write("\n")
 
-	WP.close()
+	galfitSingleParamFile.close()
 	
 	
 def get_galfit_bulge_parameter_str(galfit_single_result_filename, 
@@ -276,29 +568,29 @@ def get_galfit_bulge_parameter_str(galfit_single_result_filename,
 	singleResultFile.close()
 	
 	# gather info about first fit while modifying output and coonstraint parameters
-	bulgeParam = ""		
+	bulgeParamStr = ""		
 	positionLine = ""
 	magnitudeLine = ""
 	for resultLine in resultContents:
 	
 		if resultLine.strip()[:2] == "B)":
-			bulgeParam = (bulgeParam + "B) " + galfit_bulge_output_filename +
+			bulgeParamStr = (bulgeParamStr + "B) " + galfit_bulge_output_filename +
 						"						#Output data image block\n")
 			
 		elif resultLine.strip()[:2] == "G)":
-			bulgeParam = (bulgeParam + "G) " + galfit_constraint_filename + 
+			bulgeParamStr = (bulgeParamStr + "G) " + galfit_constraint_filename + 
 						"						#File with parameter constraints (ASCII file)\n")
 		
 		elif not positionLine and resultLine.strip()[:2] == "1)":
 			positionLine = resultLine.strip().split(" ")
-			bulgeParam = bulgeParam + resultLine
+			bulgeParamStr = bulgeParamStr + resultLine
 			
 		elif not magnitudeLine and resultLine.strip()[:2] == "3)":
 			magnitudeLine = resultLine.strip().split(" ")
-			bulgeParam = bulgeParam + resultLine
+			bulgeParamStr = bulgeParamStr + resultLine
 			
 		else:
-			bulgeParam = bulgeParam + resultLine
+			bulgeParamStr = bulgeParamStr + resultLine
 			
 	# store results of single component run into variables
 	resultX = positionLine[1]
@@ -307,24 +599,28 @@ def get_galfit_bulge_parameter_str(galfit_single_result_filename,
 	
 	
 	# write the third component to the end of galfit_single_result_filename
-	bulgeParam = bulgeParam + ("# Componenet number: 3\n")
-	bulgeParam = bulgeParam + (" 0) sersic					#Component type\n")
-	bulgeParam = bulgeParam + (" 1) " + resultX + " " + resultY + " 1	1			#Position x,y\n")
-	bulgeParam = bulgeParam + (" 3) " + resultMag + "	1			#Integrated Magnitude\n")
-	bulgeParam = bulgeParam + (" 4) " + str(rad) + "			1			#R_e (half-light radius)	[pix]\n")
-	bulgeParam = bulgeParam + (" 5) " + "1.0000		1			#Sersic index n (de Vaucouleurs n=4)\n")
-	bulgeParam = bulgeParam + (" 6) 0.0000		0			#	-----\n")
-	bulgeParam = bulgeParam + (" 7) 0.0000		0			#	-----\n")
-	bulgeParam = bulgeParam + (" 8) 0.0000		0			#	-----\n")
-	bulgeParam = bulgeParam + (" 9) 1" + "			1			#Axis ratio (b/a)\n")
-	bulgeParam = bulgeParam + (" 10) 0" + "		1			#Position angle (PA) [deg: Up=0, left=90]\n")
-	bulgeParam = bulgeParam + (" Z) 0							#Leave in [1] or subtract [0] this comp from data?\n")
-	bulgeParam = bulgeParam + ("\n")
+	bulgeParamStr = bulgeParamStr + ("# Componenet number: 3\n")
+	bulgeParamStr = bulgeParamStr + (" 0) sersic					#Component type\n")
+	bulgeParamStr = bulgeParamStr + (" 1) " + resultX + " " + resultY + " 1	1			#Position x,y\n")
+	bulgeParamStr = bulgeParamStr + (" 3) " + resultMag + "	1			#Integrated Magnitude\n")
+	bulgeParamStr = bulgeParamStr + (" 4) " + str(rad) + "			1			#R_e (half-light radius)	[pix]\n")
+	bulgeParamStr = bulgeParamStr + (" 5) " + "1.0000		1			#Sersic index n (de Vaucouleurs n=4)\n")
+	bulgeParamStr = bulgeParamStr + (" 6) 0.0000		0			#	-----\n")
+	bulgeParamStr = bulgeParamStr + (" 7) 0.0000		0			#	-----\n")
+	bulgeParamStr = bulgeParamStr + (" 8) 0.0000		0			#	-----\n")
+	bulgeParamStr = bulgeParamStr + (" 9) 1" + "			1			#Axis ratio (b/a)\n")
+	bulgeParamStr = bulgeParamStr + (" 10) 0" + "		1			#Position angle (PA) [deg: Up=0, left=90]\n")
+	bulgeParamStr = bulgeParamStr + (" Z) 0							#Leave in [1] or subtract [0] this comp from data?\n")
+	bulgeParamStr = bulgeParamStr + ("\n")
 
-	return bulgeParam
+	return bulgeParamStr
 
 
-def run_galfit(imageFilename, galfit_constraint_filename, psf, mpZeropoint, plateScale, 
+def run_sextractor():
+	write_sextractor_config_file()
+
+
+def run_galfit(imageFilename, logMsg, galfit_constraint_filename, psf, mpZeropoint, plateScale, 
 				includeBulgeComponent, includeGaussianSmoothing):
 	'''
 	opens file (parameter) containing list of images and loops over every image, 
@@ -379,6 +675,13 @@ def run_galfit(imageFilename, galfit_constraint_filename, psf, mpZeropoint, plat
 	[Y, X, magnitude, rad, BA, angle
 		] = run_imexam(imageFilename, centerCoords, xStart, yStart, xStop, yStop)
 	
+	# write to the log if default values are being used
+	if float(BA) == 1.0:
+		logMsg = logMsg + "Default b/a used. "
+	if float(angle) == 0.0:
+		logMsg = logMsg + "Default position angle used. "
+	
+	# transform coordinates back into coordinates for original image
 	Y = str(float(Y) + yStart)
 	X = str(float(X) + xStart)
 	
@@ -409,7 +712,7 @@ def run_galfit(imageFilename, galfit_constraint_filename, psf, mpZeropoint, plat
 		os.system("rm " + "fit.log")
 		os.system("mv galfit.01 " + galfit_single_result_filename)
 	else:
-		return "galfit failed on single component, probably mushroom (atomic galfit error)"
+		return logMsg + "galfit failed on single component, probably mushroom (atomic galfit error)"
 	
 	# done unless command line specified that a second galfit run
 	# should be done by adding a bulge component to the result of the first run
@@ -422,9 +725,9 @@ def run_galfit(imageFilename, galfit_constraint_filename, psf, mpZeropoint, plat
 							galfit_bulge_output_filename, galfit_constraint_filename, rad)
 
 		# write the bulge parameter file using the modified contents of the single results
-		bulgeParamFile = open(galfit_bulge_parameter_filename, "w")
-		bulgeParamFile.write(bulgeParamStr)
-		bulgeParamFile.close()
+		galfitBulgeParamFile = open(galfit_bulge_parameter_filename, "w")
+		galfitBulgeParamFile.write(bulgeParamStr)
+		galfitBulgeParamFile.close()
 		
 		# run galfit on paramter file
 		os.system('galfit ' + galfit_bulge_parameter_filename)
@@ -437,10 +740,10 @@ def run_galfit(imageFilename, galfit_constraint_filename, psf, mpZeropoint, plat
 			os.system("mv galfit.01 " + galfit_bulge_result_filename)
 			#os.system('mv ' + galfit_output_filename + ' ' + galfit_bulge_output_filename)
 		else:
-			return "galfit failed on bulge component, probably mushroom"
+			return logMsg + "galfit failed on bulge component, probably mushroom"
 	
 	# if we get here then nothing went wrong!
-	return "success"
+	return logMsg + "success"
 	
 	
 def main(imageListFilename, galfit_constraint_filename, psf, mpZeropoint, plateScale, 
@@ -480,7 +783,7 @@ def main(imageListFilename, galfit_constraint_filename, psf, mpZeropoint, plateS
 		# run galfit, preventing crashes but logging errors in log and printing them
 		try:
 			# galfit returns a string indicating success or some failure
-			logMsg = logMsg + run_galfit(imageFilename, 
+			logMsg = run_galfit(imageFilename, logMsg, 
 										galfit_constraint_filename, psf,
 										mpZeropoint, plateScale,
 										includeBulgeComponent, includeGaussianSmoothing)
@@ -492,7 +795,7 @@ def main(imageListFilename, galfit_constraint_filename, psf, mpZeropoint, plateS
 		
 		# log all runtime errors other than those resulting from code modification typos
 		# move on to the next image regardless
-		except not NameError:
+		except not SystemExit:
 			errorMsg = str(sys.exc_info()[0]) + str(sys.exc_info()[1])
 			print (errorMsg)
 			logMsg = logMsg + errorMsg
@@ -513,8 +816,8 @@ def main(imageListFilename, galfit_constraint_filename, psf, mpZeropoint, plateS
 	log.close()
 	
 	print ("Done!\nIn order to summarize results run sumgalfit.py")
-	
-	
+
+
 if __name__ == "__main__":
 	'''
 	parses the command line using the optparse package
