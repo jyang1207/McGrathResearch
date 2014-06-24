@@ -206,12 +206,12 @@ def write_sextractor_config_file(sextractor_config_filename, sextractor_param_fi
 	deblendMinContrast = 0.0001	# Minimum contrast parameter for deblending.
 	cleanBool = "Y"	# If true, a cleaning of the catalog is done before being written to disk.
 	cleanParam = "1.0"	# Efficiency of cleaning.
-	maskType = "CORRECT" #replace by values of pixels symmetric with respect to the source center.
-			   #BLANK --put detected pixels belonging to neighbors to zero,
-			   #NONE no masking,
+	maskType = "CORRECT"	#replace by values of pixels symmetric with respect to the source center.
+							#BLANK --put detected pixels belonging to neighbors to zero,
+							#NONE no masking,
 	#------------------------------ Photometry -----------------------------------
-	photoApertureDiameter = "10." # these threes variables are related to the Kron radius, which is introduced as a accurate flexible aperture
-								  # that would capture most of the flux from an object.
+	photoApertureDiameter = "10." 	# these threes variables are related to the Kron radius, which is introduced as a accurate flexible aperture
+									# that would capture most of the flux from an object.
 	magAutoKronFact = "2.5"
 	magAutoMinRadius = "3.5"
 	saturLevel = "120"  #Pixel value above which it is considered saturated.
