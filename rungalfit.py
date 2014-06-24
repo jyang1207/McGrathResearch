@@ -180,8 +180,8 @@ def write_sextractor_config_file(imageFilename, sextractor_config_filename,
 	# variables describing the sextractor config file
 	#------------------------------- Extraction ----------------------------------
 	detectType = "CCD" 
-	#fitsUnsigned = ?
-	#flagImage = ?
+	#fitsUnsigned = Force 16-bit FITS input data to be interpreted as unsigned integers.
+	#flagImage = File name(s) of the flagimage(s)
 	flagType = "OR"	# Combination method for flags on the same object:
 					# OR arithmetical OR,
 					# AND arithmetical AND,
@@ -189,29 +189,35 @@ def write_sextractor_config_file(imageFilename, sextractor_config_filename,
 					# MAX maximum of all flag values,
 					# MOST most common flag value.
 	detectMinArea = "5"	# Minimum number of pixels above threshold triggering detection
-	detectThresh = "0.75"	#Detection threshold. 1 argument: (ADUs or relative to Background RMS, see THRESH TYPE). 2 arguments: R (mag.arcsec” 2 ), Zero-point (mag).
-	analysisThreshold = "5"	#Threshold (in surface brightness) at which CLASS STAR and FWHM operate. 1 argument: relative to Background RMS. 2 arguments: mu (mag/arcsec” 2 ), Zero-point (mag).
+	detectThresh = "0.75"	#Detection threshold. 1 argument: (ADUs or relative to Background RMS, see THRESH TYPE). 2 arguments: R (mag.arcsecï¿½ 2 ), Zero-point (mag).
+	analysisThreshold = "5"	#Threshold (in surface brightness) at which CLASS STAR and FWHM operate. 1 argument: relative to Background RMS. 2 arguments: mu (mag/arcsecï¿½ 2 ), Zero-point (mag).
 	#threshType = ?	# Meaning of the DETECT_THRESH and ANALYSIS_THRESH parameters:
 					# RELATIVE - scaling factor to the background RMS,
 					# ABSOLUTE - absolute level (in ADUs or in surface brightness)
 	filterBool = "Y"	#  If true,filtering is applied to the data before extraction.
 	filterName = "tophat_9.0_9x9.conv"	# Name and path of the file containing the filter definition
-	#filterThresh = ?
+	#filterThresh = ? Lower and higher thresholds (in back-ground standard deviations) for a pix-el
+	#to be consideredin filtering (used for retinafiltering only).
 	deblendThreshold = "16"	# Minimum contrast parameter for deblending.
 	deblendMinContrast = 0.0001	# Minimum contrast parameter for deblending.
 	cleanBool = "Y"	# If true, a cleaning of the catalog is done before being written to disk.
 	cleanParam = "1.0"	# Efficiency of cleaning.
-	maskType = "CORRECT"
+	maskType = "CORRECT" #replace by values of pixels symmetric with respect to the source center.
+			   #BLANK --put detected pixels belonging to neighbors to zero,
+			   #NONE no masking,
 	#------------------------------ Photometry -----------------------------------
-	photoApertureDiameter = "10."
+	photoApertureDiameter = "10." # these threes variables are related to the Kron radius, which is introduced as a accurate flexible aperture
+								  # that would capture most of the flux from an object.
 	magAutoKronFact = "2.5"
 	magAutoMinRadius = "3.5"
-	saturLevel = "120"
-	magGamma = "4.0"
-	pixelScale = "0.06"
+	saturLevel = "120"  #Pixel value above which it is considered saturated.
+	magGamma = "4.0"    #Î³ of the emulsion (slope of the response function). Takes effect in PHOTO mode 
+						#only but NEEDS to be specified, even for CCD images.
+	pixelScale = "0.06" #Pixel size in arcsec.
 	#------------------------- Star/Galaxy Separation ----------------------------
-	stellarFWHM = "0.18"
-	starNNWFilename = "default.nnw"
+	stellarFWHM = "0.18"# ????? Seeing_FWHM FWHM of stellar images in arcsec.This quantity is used only
+						#for the neural network star/galaxy separation as expressed in the CLASS STAR output.
+	starNNWFilename = "default.nnw" #Name of the file containing the neural network weights for star/galaxy separation.
 	#------------------------------ Background -----------------------------------
 	backSize = "256"	# Size, or Width, Height (inpixels) of a background mesh.
 	backFilterSize = "9"	#Size, or Width, Height (inbackground meshes) of the background-filtering mask.
@@ -253,7 +259,7 @@ def write_sextractor_config_file(imageFilename, sextractor_config_filename,
 								#NONE no weighting,
 	#WEIGHT IMAGE --File name of the detection andmeasurement weightimage , respectively.
 	#WEIGHT GAIN -- If true, weight maps are considered as gain maps.
-	magZeropoint = "25.96"
+	magZeropoint = "25.96"     #Zero-point offset to be applied to magnitudes.
 	#------------------------- End of variable definitions -----------------------
 	
 	# use above variables to write the config file
