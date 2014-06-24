@@ -6,6 +6,7 @@ import os
 import sys
 from pyraf import iraf
 import time
+import math
 from optparse import OptionParser
 
 
@@ -713,9 +714,9 @@ def run_sextractor(imageFilename):
 		
 		# TODO: generalize center
 		# compute distance from image center 
-		dx = 300.0 - galaxyXimage
-		dy = 300.0 - galaxyYimage
-		curDist = ( dx^2 + dy^2 )^(0.5)
+		dx = 300.0 - float(galaxyXimage)
+		dy = 300.0 - float(galaxyYimage)
+		curDist = math.sqrt( dx*dx + dy*dy )
 		
 		# store galaxyID if closer than prev closest galaxy to center of image
 		if curDist < prevBestDist:
@@ -727,6 +728,9 @@ def run_sextractor(imageFilename):
 		
 	if prevBestID == -1:
 		print ("sextractor did not yield a galaxy closer than" + str(prevBestDist))
+	else:
+		print ("closest galaxy id is " + str(prevBestID) + 
+				" at distance of " + str(prevBestDist))
 		
 def run_galfit(imageFilename, logMsg, galfit_constraint_filename, psf, mpZeropoint, plateScale, 
 				includeBulgeComponent, includeGaussianSmoothing):
