@@ -166,17 +166,21 @@ def run_imexam(imageFilename, centerCoords, xStart, yStart, xStop, yStop):
 	return [line, col, mag, radius, b_a, PA]
 	
 	
-def write_sextractor_config_file(imageFilename, sextractor_config_filename,
-									sextractor_param_filename):
+def run_imreplace(imageFilename, lowPixVal, uppPixVal):
+	'''
+	imreplace images value lower upper
+	'''
+	iraf.imreplace(imageFilename, 0, lower=lowPixVal, upper=uppPixVal)
+	
+def write_sextractor_config_file(sextractor_config_filename, sextractor_param_filename):
 	'''
 	writes the sextractor config file
 	
-	parameter imageFilename - the filename of the image on which sextractor is being run
 	parameter sextractor_config_filename - 
 		the filename of the sextractor config file being written
 	parameter sextractor_param_filename - name of the file containing catalog contents
 	'''
-	
+	# TODO: where is the image file? command line? do we have to rewrite this every image?
 	# variables describing the sextractor config file
 	#------------------------------- Extraction ----------------------------------
 	detectType = "CCD" 
@@ -505,7 +509,8 @@ def write_sextractor_config_file(imageFilename, sextractor_config_filename,
 
 def write_galfit_single_parameter(imageFilename, galfit_single_parameter_filename,
 									galfit_single_output_filename, 
-									psf, mpZeropoint, plateScale, 
+									psf, segmentationMapFilename,
+									mpZeropoint, plateScale, 
 									xMin, yMin, xMax, yMax, 
 									X, Y, magnitude, rad, BA, angle):
 	'''
@@ -516,6 +521,9 @@ def write_galfit_single_parameter(imageFilename, galfit_single_parameter_filenam
 		the filename of the galfit parameter file being written
 	parameter galfit_single_output_filename - 
 		the filename of the file where the output of the galfit run will be written
+	parameter psf - the filename of the psf to give galfit
+	parameter segmentationMapFilename - 
+		the filename of the Bad pixel mask to give galfit
 	parameter xMin, yMin, xMax, yMax - the area on the image on which to run galfit
 	parameter X, Y, magnitude, rad, BA, angle - 
 		initial guess at the location and description of the single galaxy component
@@ -533,7 +541,7 @@ def write_galfit_single_parameter(imageFilename, galfit_single_parameter_filenam
 			"						#Input PSF image and (optional) diffusion kernel\n")
 	galfitSingleParamFile.write("E)" + " 1" + 
 			"						#PSF fine sampling factor relative to data\n")
-	galfitSingleParamFile.write("F)" + " none" +							
+	galfitSingleParamFile.write("F) " + segmentationMapFilename +							
 			"						#Bad pixel mask (FITS file or ASCIIcoord list)\n")
 	galfitSingleParamFile.write("G)" + " none" + 
 			"						#File with parameter constraints (ASCII file)\n")
@@ -657,9 +665,24 @@ def get_galfit_bulge_parameter_str(galfit_single_result_filename,
 	return bulgeParamStr
 
 
-def run_sextractor():
-	write_sextractor_config_file()
-
+def run_sextractor(imageFilename):
+	'''
+	TODO: describe method
+	
+	parameter imageFilename -
+		the string of the full path filename of the image on which sextractor will be run
+	'''
+	weightImage = "cos_2epoch_wfc3_f160w_060mas_v1.0_wht.fits"
+	configFilename = "WFC3.Hfinal.weight.sex"
+	# SYNTAX: sex <image> [<image2>][-c <configuration_file>][-<keyword> <value>]
+	write_sextractor_config_file(configFilename, "WFC3.morphWG.param")
+	os.system("sex " + imageFilename + "-c " + configFilename + "-WEIGHT_IMAGE " + weightImage)
+	'''
+	TODO:
+	use segmentation map outputted by sextractor to create a mask for galfit
+	by calling imreplace and providing the galxy catalog number as the 
+	min and max pixel range to be replaced with zeros
+	'''
 
 def run_galfit(imageFilename, logMsg, galfit_constraint_filename, psf, mpZeropoint, plateScale, 
 				includeBulgeComponent, includeGaussianSmoothing):
@@ -739,7 +762,8 @@ def run_galfit(imageFilename, logMsg, galfit_constraint_filename, psf, mpZeropoi
 	# writes the single component parameter file, given filenames and galxy parameters
 	write_galfit_single_parameter(imageFilename, galfit_single_parameter_filename,
 									galfit_single_output_filename, 
-									psf, mpZeropoint, plateScale, 
+									psf, "none",
+									mpZeropoint, plateScale, 
 									1, 1, width, height, 
 									X, Y, magnitude, rad, BA, angle)
 
