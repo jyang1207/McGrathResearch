@@ -180,7 +180,7 @@ def write_sextractor_config_file(imageFilename, sextractor_config_filename,
 	# variables describing the sextractor config file
 	
 	#------------------------------- Extraction ----------------------------------
-	detectType = "CCD"
+	detectType = "CCD" 
 	flagType = "OR"
 	detectMinArea = "5"
 	detectThresh = "0.75"
@@ -203,22 +203,43 @@ def write_sextractor_config_file(imageFilename, sextractor_config_filename,
 	stellarFWHM = "0.18"
 	starNNWFilename = "default.nnw"
 	#------------------------------ Background -----------------------------------
-	backSize = "256" # 
-	backFilterSize = "9"
-	backPhotoType = "LOCAL"
-	backPhotoThickness = "100"
-	#backValue
-	#backType
+	backSize = "256" # Size, or Width, Height (inpixels) of a background mesh.
+	backFilterSize = "9" #Size, or Width, Height (inbackground meshes) of the background-filtering mask.
+	backPhotoType = "LOCAL" #Background used to compute magnitudes:
+	backPhotoThickness = "100" #Thickness (in pixels) of the background LOCAL annulus.
+	#backValue in BACK TYPE MANUAL mode, the constant value to be subtracted from the images.
+	#backType What background is subtracted from the images: AUTO The internal interpolated background-map. In the manual it says “INTERNAL”
+				# here but the keyword is AUTO. MANUAL A user-supplied constant value provided in BACK VALUE.
 	#------------------------------ Check Image ----------------------------------
-	checkImageType = "SEGMENTATION"
+	checkImageType = "SEGMENTATION" #display patches corresponding to pixels attributed to each object
+					  #APERTURES-- MAG APER and MAG AUTO integration limits
+					  #-OBJECTS-- background-subtracted image with detected objects blanked,
+					  #OBJECTS detected objects,
+					  #FILTERED background-subtracted filtered image (requires FILTER = Y),
+					  #-BACKGROUND background-subtracted image,
+					  #MINIBACK RMS low-resolution background noise map, 
+					  #MINIBACKGROUND low-resolution background map,
+					  #BACKGROUND RMS full-resolution interpolated background noise map,
+					  #BACKGROUND full-resolution interpolated background map,
+					  #IDENTICAL identical to input image (useful for converting formats),
+					  #NONE no check-image,
 	#--------------------- Memory (change with caution!) -------------------------
 	memoryObjStack = "2000"
 	memoryPixStack = "200000"
 	memoryBufferSize = "2048"
 	#----------------------------- Miscellaneous ---------------------------------
-	verboseType = "QUIET"
+	verboseType = "QUIET"	#run silently,
+							#NORMAL display warnings and limited info concerning the work in progress,
+							#EXTRA WARNINGS like NORMAL, plus a few more warnings if necessary,
+							#FULL display a more complete information and the principal parameters of all the objects extracted.
 	#------------------------------- New Stuff -----------------------------------
-	weightType = "MAP_WEIGHT"
+	weightType = "MAP_WEIGHT" #variance-map derived from an external weight-map,
+							  #MAP_VAR external variance-map,
+							  #MAP RMS variance-map derived from an external RMS-map,
+							  #BACKGROUND variance-map derived from the image itself,
+							  #NONE no weighting,
+	#WEIGHT IMAGE --File name of the detection andmeasurement weightimage , respectively.
+	#WEIGHT GAIN -- If true, weight maps are considered as gain maps.
 	magZeropoint = "25.96"
 	
 	# use above variables to write the config file
