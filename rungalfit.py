@@ -183,6 +183,14 @@ def write_sextractor_config_file(sextractor_config_filename, sextractor_param_fi
 	'''
 	# TODO: where is the image file? command line? do we have to rewrite this every image?
 	# variables describing the sextractor config file
+	catalogName = "generic.fits" # Name of the output catalogue. If the name “STDOUT” is given and CATALOG TYPE is set to ASCII, ASCII HEAD, ASCII SKYCAT, or ASCII VOTABLE the catalogue will be piped to the standard output (stdout
+	catalogType = "ASCII_HEAD" 	# Format of output catalog:
+								# ASCII – ASCII table; the simplest, but space and time consuming,
+								# ASCII HEAD – as ASCII, preceded by a header containing information about the content,
+								# ASCII SKYCAT – SkyCat ASCII format (WCS coordinates required)
+								# ASCII VOTABLE – XML-VOTable format, together with meta-data,
+								# FITS 1.0 – FITS format as in SExtractor 1
+								# FITS LDAC – FITS “LDAC” format (the original image header is copied).
 	#------------------------------- Extraction ----------------------------------
 	detectType = "CCD" 
 	#fitsUnsigned = Force 16-bit FITS input data to be interpreted as unsigned integers.
@@ -235,6 +243,7 @@ def write_sextractor_config_file(sextractor_config_filename, sextractor_param_fi
 					# MANUAL A user-supplied constant value provided in BACK VALUE.
 	#backValue = ?	# in BACK TYPE MANUAL mode, the constant value to be subtracted from the images.
 	#------------------------------ Check Image ----------------------------------
+	checkImageName = "check.fits" # CHECKIMAGE NAME - File name for each “check-image”
 	checkImageType = "SEGMENTATION" #display patches corresponding to pixels attributed to each object
 						#APERTURES-- MAG APER and MAG AUTO integration limits
 						#-OBJECTS-- background-subtracted image with detected objects blanked,
@@ -278,10 +287,17 @@ def write_sextractor_config_file(sextractor_config_filename, sextractor_param_fi
 
 #-------------------------------- Catalog ------------------------------------
 
-CATALOG_NAME    generic.cat
-CATALOG_TYPE    ASCII_HEAD      # "NONE","ASCII_HEAD","ASCII","FITS_1.0"
-								# or "FITS_LDAC"
 ''')
+	
+	#generic.fits
+	sextractorConfigFile.write(
+		"CATALOG_NAME    " + catalogName + "\n")
+	
+	# ASCII_HEAD
+	sextractorConfigFile.write(
+		"CATALOG_TYPE    " + catalogType + 
+		"      # \"NONE\",\"ASCII_HEAD\",\"ASCII\",\"FITS_1.0\"")
+								# or "FITS_LDAC"
 	
 	#WFC3.morphWG.param
 	sextractorConfigFile.write(
@@ -438,15 +454,20 @@ CATALOG_TYPE    ASCII_HEAD      # "NONE","ASCII_HEAD","ASCII","FITS_1.0"
 
 ''')
 	
+	#check.fits
+	sextractorConfigFile.write(
+		"CHECKIMAGE_TYPE  " + checkImageName + 
+		"	# CHECKIMAGE NAME - File name for each \"check-image\"")
+	
 	#SEGMENTATION
 	sextractorConfigFile.write(
 		"CHECKIMAGE_TYPE  " + checkImageType + 
 		"   # can be one of \"NONE\", \"BACKGROUND\",\n" + 
-		'''
-								# "MINIBACKGROUND", "-BACKGROUND", "OBJECTS",
-								# "-OBJECTS", "SEGMENTATION", "APERTURES",
-								# or "FILTERED" (*)
-		''')
+'''
+						# "MINIBACKGROUND", "-BACKGROUND", "OBJECTS",
+						# "-OBJECTS", "SEGMENTATION", "APERTURES",
+						# or "FILTERED" (*)
+''')
 	
 	sextractorConfigFile.write(
 '''
@@ -671,23 +692,28 @@ def get_galfit_bulge_parameter_str(galfit_single_result_filename,
 
 def run_sextractor(imageFilename):
 	'''
-	TODO: describe method
+	runs sextractor on the given image, returning the galaxy id of
+	the galaxy closest to the center of the image. Also produces
+	generic.cat and check.fits in the calling directory, which 
+	are galaxy info and the segmentation map, respectively.
 	
 	parameter imageFilename -
 		the string of the full path filename of the image on which sextractor will be run
+	
+	returns - the id of the galaxy closest to the center of the image
 	'''
 	configFilename = ".".join(imageFilename.split(".")[:-1]) + ".sex"
-	outputCatFilename = "generic.cat"
-	segmentationMapFilename = "check.fits"
+	paramFilename = "WFC3.morphWG.param"
+	# these can be changed on the command line with flags
+	outputCatFilename = "generic.cat" # -CATALOG_NAME <filename>
+	segmentationMapFilename = "check.fits" # -CHECKIMAGE_NAME <filename>
+	
+	# TODO: might not have to run every time, move to main()
+	write_sextractor_config_file(configFilename, paramFilename)
+	
 	# SYNTAX: sex <image> [<image2>][-c <configuration_file>][-<keyword> <value>]
-	write_sextractor_config_file(configFilename, "WFC3.morphWG.param")
 	os.system("sex " + imageFilename + " -c " + configFilename)
-	'''
-	TODO:
-	use segmentation map outputted by sextractor to create a mask for galfit
-	by calling imreplace and providing the galaxy catalog number as the 
-	min and max pixel range to be replaced with zeros
-	'''
+
 	# get galaxyID of the galaxy closest to center of image from outputCatFile
 	outputCatFile = open(outputCatFilename, 'r')
 	outputCatContents = outputCatFile.readlines()
@@ -705,7 +731,7 @@ def run_sextractor(imageFilename):
 	# read backwards until comment character indicates the field description section
 	while outputCatContents[lineIndex].strip()[0] != "#":
 		
-		# TODO: might be able to have indices collected fro commented header
+		# TODO: might be able to have indices collected from commented header
 		# gather galaxy information
 		galaxyOutputList = outputCatContents[lineIndex].strip().split()
 		galaxyID = galaxyOutputList[0]
@@ -731,6 +757,9 @@ def run_sextractor(imageFilename):
 	else:
 		print ("closest galaxy id is " + str(prevBestID) + 
 				" at distance of " + str(prevBestDist))
+		
+	# return the id of the galaxy that was identified as the center galaxy
+	return prevBestID
 		
 def run_galfit(imageFilename, logMsg, galfit_constraint_filename, psf, mpZeropoint, plateScale, 
 				includeBulgeComponent, includeGaussianSmoothing):
@@ -917,10 +946,13 @@ def main(imageListFilename, galfit_constraint_filename, psf, mpZeropoint, plateS
 		logMsg = logMsg + "\n"
 	
 	# create the log file in the same directory as python was called
-	logFilename = ("rungalfit_log_" + 
+	try:
+		logFilename = ("rungalfit_log_" + 
 					imageFilenames[0].split("/")[-1].split("_")[1].split(".")[1] + "_to_" + 
 					imageFilenames[-1].split("/")[-1].split("_")[1].split(".")[1] +
 					"_" + time.strftime("%m-%d-%Y") + ".txt")
+	except:
+		logFilename = ("rungalfit_log.txt")
 	
 	# write the log file
 	print ("writing log file to " + logFilename)
