@@ -9,169 +9,80 @@ import time
 import math
 from optparse import OptionParser
 
-
-def run_imhead(imageFilename):
+def main(imageListFilename, galfit_constraint_filename, psf, mpZeropoint, plateScale, 
+			includeBulgeComponent, includeGaussianSmoothing):
 	'''
-	invokes the iraf method imhead on the given image filename
-	parses the result to be returned as a list of string values
+	main method loops through all image filenames in image list, running galfit
+	and logging errors to a log file, which is named according to the date and 
+	the images on which galfit was run
 	
-	parameter imageFilename - the full path filename of the image on which to invoke imexam
-	
-	returns - 
-		a string list of image info in the form 
-		[galaxy_id, filt, cam_number, image_number, frame_height, frame_width]
-	'''
-	
-	imhead_return = iraf.imhead(imageFilename, Stdout=1)[0].strip()
-	imhead_info = imhead_return.split("/")[-1]
-	directory_location = imhead_return.replace(imhead_info, "")
-	# "VELA01_a0.110_0006317__skipir_CAMERA0-BROADBAND_F125W_simulation.fits[600,600][real]:" 
-	
-	
-	frame_dimensions = imhead_info.split("[")[1].replace("]", "").split(",")
-	# ["600","600"]
-
-	frame_width = frame_dimensions[0]
-	# "600"
-	
-	frame_height = frame_dimensions[1]
-	# "600"
-	
-	galaxy_id = imhead_info.split("_")[0]
-	#"VELA01"
-	
-	filt = imhead_info.split("_")[6]
-	#"F125W"	
-	
-	image_number = imhead_info.split("_")[1].split(".")[1]
-	# "110"
-	
-	cam_str = imhead_info.split("_")[5].split("-")[0]
-	# "CAMERA0"
-
-	
-	#these statements accomodate for camera numbers greater than 9
-	digits = ["1","2","3","4","5","6","7","8","9"]			
-	
-	#determines if camera number is greater than 10, does not allow greater than 99
-	# ex: "CAMERA0" -> cam_str[-2] = "M"
-	# ex: "CAMERA12" -> cam_str[-2] = "1"
-	if cam_str[-2] in digits:										
-		cam_number = cam_str[-2:]
-	else:
-		cam_number = cam_str[-1]					
-	#print cam_number
-	
-	return [directory_location, galaxy_id, filt, cam_number, image_number, frame_height, frame_width]
-	
-	
-def run_gauss(imageFilename, sigma):
-	'''
-	using the image given, calls iraf's gauss method and returns the
-	filename of the result, which is blurred using the sigma given
-	
-	parameter imageFilename - the original image's filename
-	parameter sigma - the number of pixels to blur the image by
-	
-	returns - the blurred image's filename
-	'''
-	newImageFilename = imageFilename[:-5] + "_gauss.fits"
-	iraf.gauss(imageFilename, newImageFilename, sigma)
-	return newImageFilename
-	
-	
-def run_minmax(imageFilename, xStart, yStart, xStop, yStop):
-	'''
-	method calls iraf's minmax method on the area defined by the four
-	parameter values that define two points on the image
-	start is the top left, stop is the bottom right
-	
-	parameter imageFilename - the full path filename of the image on which to invoke imexam
-	
-	returns - list of two strings defining the coordinates of the max pixel ['xMax', 'yMax']
-	'''
-	
-	# string representing the part of the image to run minmax and imexam on
-	areaStr = ('[' + str(int(xStart)) + ':' + str(int(xStop)) + "," +
-					 str(int(yStart)) + ':' + str(int(yStop)) + ']')
-
-	#call iraf's minmax function
-	return iraf.minmax(imageFilename + areaStr, Stdout=1, update=0, force=1
-		)[0].strip().split(" ")[3].replace("[", "").replace("]", "").split(",")
+	parameter imageListFilename -
+		the string of the full path filename of the list of images on which galfit will be run
 		
+	parameter galfit_constraint_filename -
+		the filename of the constraint file. if none, value is "none"
+	
+	parameter includeBulgeComponent - 
+		boolean indicating if a bulge should be fit after first pass by galfit
 		
-def run_imexam(imageFilename, centerCoords, xStart, yStart, xStop, yStop):
+	parameter includeGaussianSmoothing - 
+		boolean indicating if a gaussian smoothing should be applied before running minmax
 	'''
-	method calls iraf's imexam method on the area defined by the four
+	# read list of image filenames from input file
+	inputFile = open(imageListFilename, 'r')
+	imageFilenames = inputFile.readlines()
+	inputFile.close()
 	
-	parameter imageFilename - the full path filename of the image on which to invoke imexam
-	parameter centerCoords - the coordinates of the initial guess of the center of the galaxy
-	parameter xStart, xStop, yStart, yStop - 
-		two points on the original image defining an area to run minmax on
-		start is the top left, stop is the bottom right
+	# this loops through every image in images file and removes new line
+	imageFilenames = [ imageFilename.strip() for imageFilename in imageFilenames ]
 	
-	returns - list of string image info in the form [line, col, mag, radius, b_a, PA]
-	'''
+	# set the log header
+	logMsg = "run on " + time.strftime("%m-%d-%Y") + "\n"
+	
+	# this loops through every image in images file and writes the log, running galfit
+	for imageFilename in imageFilenames:
+		logMsg = logMsg + imageFilename + ": "
 		
+		# run galfit, preventing crashes but logging errors in log and printing them
+		try:
+			# galfit returns a string indicating success or some failure
+			logMsg = run_galfit(imageFilename, logMsg, 
+										galfit_constraint_filename, psf,
+										mpZeropoint, plateScale,
+										includeBulgeComponent, includeGaussianSmoothing)
+		
+		# allow user to stop the program running altogether with ctrl-c
+		except KeyboardInterrupt:
+			print ("Escape character ctrl-c used to terminate rungalfit. Log file will still be written.")
+			break
+		
+		# log all runtime errors other than those resulting from code modification typos
+		# move on to the next image regardless
+		except not SystemExit:
+			errorMsg = str(sys.exc_info()[0]) + str(sys.exc_info()[1])
+			print (errorMsg)
+			logMsg = logMsg + errorMsg
+		
+		# every image on its own line in the log file
+		logMsg = logMsg + "\n"
 	
-	# string representing the part of the image to run minmax and imexam on
-	areaStr = ('[' + str(int(xStart)) + ':' + str(int(xStop)) + "," +
-					 str(int(yStart)) + ':' + str(int(yStop)) + ']')
-
-	#writes the output of the minmax function of iraf to a file for later use. 
-	coordsFilename = "coords"
-	
-	# this is t prevent parallel processes from overwriting the coords.tmp file
-	while os.path.isfile(coordsFilename + ".tmp"):
-		coordsFilename = coordsFilename + "x"
-	coordsFilename = coordsFilename + ".tmp"
-	
-	# create coords[x*].tmp for writing max coordinate to pass to imexam
-	os.system('touch '+ coordsFilename)
-	write_coords = open(coordsFilename, 'w')
-	write_coords.write(centerCoords[0] + " " + centerCoords[1])
-	write_coords.close()	
-	
-	#run imexam passing coords.tmp, data is returned in the last two elements of the return array of strings
-	imexam_out = iraf.imexam(imageFilename + areaStr, use_display=0, imagecur=coordsFilename, Stdout=1)[-2:]
-
-	# ['COL	LINE X Y', 
-	# 'R MAG FLUX SKY PEAK E PA BETA ENCLOSED MOFFAT DIRECT']
-	
-	# delete coords.tmp, no longer needed
-	os.system('rm ' + coordsFilename) 
-	
-	#print imexam_out
-	#print imexam_array 
-	
-	xy = imexam_out[0].strip().split()
-	data = imexam_out[1].strip().split()
-	
-	col = float(xy[0])							#this gives x value 
-	line = float(xy[1])							#this gives y value
-	radius = float(data[0])						#this gives the radius
-	mag = float(data[1])						#this gives the magnitude
-	
-	# these might be indef, if so then set to default values
+	# create the log file in the same directory as python was called
 	try:
-		b_a = 1.0 - float(data[5])				# b/a=1-e
+		logFilename = ("rungalfit_log_" + 
+					imageFilenames[0].split("/")[-1].split("_")[1].split(".")[1] + "_to_" + 
+					imageFilenames[-1].split("/")[-1].split("_")[1].split(".")[1] +
+					"_" + time.strftime("%m-%d-%Y") + ".txt")
 	except:
-		print("using default values for b/a")
-		b_a = 1.0
-	try:
-		PA = float(data[6]) - 90.0				#this gives the position angle. iraf measures up from x. Galfit down from y
-	except:
-		print("using default values for position angle")
-		PA = 0.0
+		logFilename = ("rungalfit_log.txt")
 	
-	return [line, col, mag, radius, b_a, PA]
+	# write the log file
+	print ("writing log file to " + logFilename)
+	log = open(logFilename, 'w')
+	log.write(logMsg)
+	log.close()
 	
-	
-def run_imreplace(imageFilename, lowPixVal, uppPixVal):
-	'''
-	imreplace images value lower upper
-	'''
-	iraf.imreplace(imageFilename, 0, lower=lowPixVal, upper=uppPixVal)
+	print ("Done!\nIn order to summarize results run sumgalfit.py")
+
 	
 def write_sextractor_config_file(sextractor_config_filename, sextractor_param_filename):
 	'''
@@ -532,6 +443,366 @@ def write_sextractor_config_file(sextractor_config_filename, sextractor_param_fi
 		"           # H-band magnitude zero-point\n")
 	
 
+def run_galfit(imageFilename, logMsg, galfit_constraint_filename, psf, mpZeropoint, plateScale, 
+				includeBulgeComponent, includeGaussianSmoothing):
+	'''
+	opens file (parameter) containing list of images and loops over every image, 
+	running galfit and writing the results to the same directory as the images
+	
+	calls methods to invoke iraf methods to write the initial galfit param file
+	for each image
+	
+	parameter imageFilename -
+		the string of the full path filename of the image on which galfit will be run
+		
+	parameter galfit_constraint_filename -
+		the filename of the constraint file. if none, value is "none"
+	
+	parameter includeBulgeComponent - 
+		boolean indicating if a bulge should be fit after first pass by galfit
+		
+	parameter includeGaussianSmoothing - 
+		boolean indicating if a gaussian smoothing should be applied before running minmax
+		
+	returns - string indicating success or failure
+	'''
+	
+	# sigma [# pixels] is used for run gauss when blurring
+	sigma = 15
+	
+	# run iraf's imhead method to get image information
+	[directory_location, galaxy_id, filt, cam_number, image_number, height, width
+		] = run_imhead(imageFilename)
+
+	# the x y location of the top left corner of the area on which to run minmax and imexam
+	# in the coordinate system of the original image (which would be 0, 0 for the original)
+	xStart = float(width)/2 - 75.0
+	xStop = float(width)/2 + 75.0
+	yStart = float(height)/2 - 75.0
+	yStop = float(height)/2 + 75.0
+	
+	# calls iraf's minmax method, passing image filename as a parameter
+	# with image possible gaussian smoothed, as well as two points
+	# on the image defining the area on which to run minmax 
+	# returns as a list of two strings (the coordinates of the max pixel)
+	if includeGaussianSmoothing:
+		centerCoords = run_minmax(run_gauss(imageFilename, sigma), 
+									xStart, yStart, xStop, yStop)
+	else:
+		centerCoords = run_minmax(imageFilename, 
+									xStart, yStart, xStop, yStop)
+	
+	# calls iraf's imexam method, passing filename as a parameter
+	# along with center coordinates and two points defining area
+	# returns initial estimates of the returned paramters
+	[Y, X, magnitude, rad, BA, angle
+		] = run_imexam(imageFilename, centerCoords, xStart, yStart, xStop, yStop)
+	
+	# write to the log if default values are being used
+	if float(BA) == 1.0:
+		logMsg = logMsg + "Default b/a used. "
+	if float(angle) == 0.0:
+		logMsg = logMsg + "Default position angle used. "
+	
+	# transform coordinates back into coordinates for original image
+	Y = str(float(Y) + yStart)
+	X = str(float(X) + xStart)
+	
+	# define filenames
+	filename = (directory_location + galaxy_id + "_" + 
+				image_number + '_cam' + str(cam_number) + '_' + filt)
+	galfit_single_parameter_filename =	filename + '_single_param.txt'
+	galfit_single_output_filename =		filename + "_single_multi.fits"
+	galfit_single_result_filename =		filename + "_single_result.txt"
+	galfit_bulge_parameter_filename =	filename + '_bulge_param.txt'
+	galfit_bulge_output_filename =		filename + "_bulge_multi.fits"
+	galfit_bulge_result_filename =		filename + "_bulge_result.txt"
+							
+	# writes the single component parameter file, given filenames and galxy parameters
+	write_galfit_single_parameter(imageFilename, galfit_single_parameter_filename,
+									galfit_single_output_filename, 
+									psf, "none",
+									mpZeropoint, plateScale, 
+									1, 1, width, height, 
+									X, Y, magnitude, rad, BA, angle)
+
+	# run galfit on paramter file
+	os.system('galfit ' + galfit_single_parameter_filename)
+
+	# detects atomic galfit error
+	# If not failure then removes temp files, otherwise returns
+	if os.path.isfile(galfit_single_output_filename):
+		# remove temp files
+		os.system("rm " + "fit.log")
+		os.system("mv galfit.01 " + galfit_single_result_filename)
+	else:
+		return logMsg + "galfit failed on single component, probably mushroom (atomic galfit error)"
+	
+	# done unless command line specified that a second galfit run
+	# should be done by adding a bulge component to the result of the first run
+	if includeBulgeComponent:
+	
+		# reads the results of the first run and returns it as a long string
+		# with the output and constraint modified for bulge run and the
+		# new bulge component appended with some intitial guess parameters
+		bulgeParamStr = get_galfit_bulge_parameter_str(galfit_single_result_filename, 
+							galfit_bulge_output_filename, galfit_constraint_filename, rad)
+
+		# write the bulge parameter file using the modified contents of the single results
+		galfitBulgeParamFile = open(galfit_bulge_parameter_filename, "w")
+		galfitBulgeParamFile.write(bulgeParamStr)
+		galfitBulgeParamFile.close()
+		
+		# run galfit on paramter file
+		os.system('galfit ' + galfit_bulge_parameter_filename)
+	
+		# detects atomic galfit error
+		# If not failure then removes temp files, otherwise returns
+		if os.path.isfile(galfit_bulge_output_filename):
+			# remove temp files
+			os.system("rm " + "fit.log")
+			os.system("mv galfit.01 " + galfit_bulge_result_filename)
+			#os.system('mv ' + galfit_output_filename + ' ' + galfit_bulge_output_filename)
+		else:
+			return logMsg + "galfit failed on bulge component, probably mushroom"
+	
+	# if we get here then nothing went wrong!
+	return logMsg + "success"
+	
+
+def run_imhead(imageFilename):
+	'''
+	invokes the iraf method imhead on the given image filename
+	parses the result to be returned as a list of string values
+	
+	parameter imageFilename - the full path filename of the image on which to invoke imexam
+	
+	returns - 
+		a string list of image info in the form 
+		[galaxy_id, filt, cam_number, image_number, frame_height, frame_width]
+	'''
+	
+	imhead_return = iraf.imhead(imageFilename, Stdout=1)[0].strip()
+	imhead_info = imhead_return.split("/")[-1]
+	directory_location = imhead_return.replace(imhead_info, "")
+	# "VELA01_a0.110_0006317__skipir_CAMERA0-BROADBAND_F125W_simulation.fits[600,600][real]:" 
+	
+	
+	frame_dimensions = imhead_info.split("[")[1].replace("]", "").split(",")
+	# ["600","600"]
+
+	frame_width = frame_dimensions[0]
+	# "600"
+	
+	frame_height = frame_dimensions[1]
+	# "600"
+	
+	galaxy_id = imhead_info.split("_")[0]
+	#"VELA01"
+	
+	filt = imhead_info.split("_")[6]
+	#"F125W"	
+	
+	image_number = imhead_info.split("_")[1].split(".")[1]
+	# "110"
+	
+	cam_str = imhead_info.split("_")[5].split("-")[0]
+	# "CAMERA0"
+
+	
+	#these statements accomodate for camera numbers greater than 9
+	digits = ["1","2","3","4","5","6","7","8","9"]			
+	
+	#determines if camera number is greater than 10, does not allow greater than 99
+	# ex: "CAMERA0" -> cam_str[-2] = "M"
+	# ex: "CAMERA12" -> cam_str[-2] = "1"
+	if cam_str[-2] in digits:										
+		cam_number = cam_str[-2:]
+	else:
+		cam_number = cam_str[-1]					
+	#print cam_number
+	
+	return [directory_location, galaxy_id, filt, cam_number, image_number, frame_height, frame_width]
+	
+	
+def run_gauss(imageFilename, sigma):
+	'''
+	using the image given, calls iraf's gauss method and returns the
+	filename of the result, which is blurred using the sigma given
+	
+	parameter imageFilename - the original image's filename
+	parameter sigma - the number of pixels to blur the image by
+	
+	returns - the blurred image's filename
+	'''
+	newImageFilename = imageFilename[:-5] + "_gauss.fits"
+	iraf.gauss(imageFilename, newImageFilename, sigma)
+	return newImageFilename
+	
+	
+def run_minmax(imageFilename, xStart, yStart, xStop, yStop):
+	'''
+	method calls iraf's minmax method on the area defined by the four
+	parameter values that define two points on the image
+	start is the top left, stop is the bottom right
+	
+	parameter imageFilename - the full path filename of the image on which to invoke imexam
+	
+	returns - list of two strings defining the coordinates of the max pixel ['xMax', 'yMax']
+	'''
+	
+	# string representing the part of the image to run minmax and imexam on
+	areaStr = ('[' + str(int(xStart)) + ':' + str(int(xStop)) + "," +
+					 str(int(yStart)) + ':' + str(int(yStop)) + ']')
+
+	#call iraf's minmax function
+	return iraf.minmax(imageFilename + areaStr, Stdout=1, update=0, force=1
+		)[0].strip().split(" ")[3].replace("[", "").replace("]", "").split(",")
+		
+		
+def run_imexam(imageFilename, centerCoords, xStart, yStart, xStop, yStop):
+	'''
+	method calls iraf's imexam method on the area defined by the four
+	
+	parameter imageFilename - the full path filename of the image on which to invoke imexam
+	parameter centerCoords - the coordinates of the initial guess of the center of the galaxy
+	parameter xStart, xStop, yStart, yStop - 
+		two points on the original image defining an area to run minmax on
+		start is the top left, stop is the bottom right
+	
+	returns - list of string image info in the form [line, col, mag, radius, b_a, PA]
+	'''
+		
+	
+	# string representing the part of the image to run minmax and imexam on
+	areaStr = ('[' + str(int(xStart)) + ':' + str(int(xStop)) + "," +
+					 str(int(yStart)) + ':' + str(int(yStop)) + ']')
+
+	#writes the output of the minmax function of iraf to a file for later use. 
+	coordsFilename = "coords"
+	
+	# this is t prevent parallel processes from overwriting the coords.tmp file
+	while os.path.isfile(coordsFilename + ".tmp"):
+		coordsFilename = coordsFilename + "x"
+	coordsFilename = coordsFilename + ".tmp"
+	
+	# create coords[x*].tmp for writing max coordinate to pass to imexam
+	os.system('touch '+ coordsFilename)
+	write_coords = open(coordsFilename, 'w')
+	write_coords.write(centerCoords[0] + " " + centerCoords[1])
+	write_coords.close()	
+	
+	#run imexam passing coords.tmp, data is returned in the last two elements of the return array of strings
+	imexam_out = iraf.imexam(imageFilename + areaStr, use_display=0, imagecur=coordsFilename, Stdout=1)[-2:]
+
+	# ['COL	LINE X Y', 
+	# 'R MAG FLUX SKY PEAK E PA BETA ENCLOSED MOFFAT DIRECT']
+	
+	# delete coords.tmp, no longer needed
+	os.system('rm ' + coordsFilename) 
+	
+	xy = imexam_out[0].strip().split()
+	data = imexam_out[1].strip().split()
+	
+	col = float(xy[0])							#this gives x value 
+	line = float(xy[1])							#this gives y value
+	radius = float(data[0])						#this gives the radius
+	mag = float(data[1])						#this gives the magnitude
+	
+	# these might be indef, if so then set to default values
+	try:
+		b_a = 1.0 - float(data[5])				# b/a=1-e
+	except:
+		print("using default values for b/a")
+		b_a = 1.0
+	try:
+		PA = float(data[6]) - 90.0				#this gives the position angle. iraf measures up from x. Galfit down from y
+	except:
+		print("using default values for position angle")
+		PA = 0.0
+	
+	return [line, col, mag, radius, b_a, PA]
+	
+	
+def run_sextractor(imageFilename):
+	'''
+	runs sextractor on the given image, returning the galaxy id of
+	the galaxy closest to the center of the image. Also produces
+	generic.cat and check.fits in the calling directory, which 
+	are galaxy info and the segmentation map, respectively.
+	
+	parameter imageFilename -
+		the string of the full path filename of the image on which sextractor will be run
+	
+	returns - the id of the galaxy closest to the center of the image
+	'''
+	configFilename = ".".join(imageFilename.split(".")[:-1]) + ".sex"
+	paramFilename = "WFC3.morphWG.param"
+	# these can be changed on the command line with flags
+	outputCatFilename = "generic.cat" # -CATALOG_NAME <filename>
+	segmentationMapFilename = "check.fits" # -CHECKIMAGE_NAME <filename>
+	
+	# TODO: might not have to run every time, move to main()
+	write_sextractor_config_file(configFilename, paramFilename)
+	
+	# SYNTAX: sex <image> [<image2>][-c <configuration_file>][-<keyword> <value>]
+	os.system("sex " + imageFilename + " -c " + configFilename)
+
+	# get galaxyID of the galaxy closest to center of image from outputCatFile
+	outputCatFile = open(outputCatFilename, 'r')
+	outputCatContents = outputCatFile.readlines()
+	outputCatFile.close()
+	
+	# start on the last line
+	lineIndex = -1
+	
+	# set to a high value initially, just needs to be greater than the closest galaxy distance
+	prevBestDist = 1000.0
+	
+	# nonsense value to indicate if no galaxy is found closer than above distance
+	prevBestID = -1
+	
+	# read backwards until comment character indicates the field description section
+	while outputCatContents[lineIndex].strip()[0] != "#":
+		
+		# TODO: might be able to have indices collected from commented header
+		# gather galaxy information
+		galaxyOutputList = outputCatContents[lineIndex].strip().split()
+		galaxyID = galaxyOutputList[0]
+		galaxyXimage = galaxyOutputList[26]
+		galaxyYimage = galaxyOutputList[27]
+		
+		# TODO: generalize center
+		# compute distance from image center 
+		dx = 300.0 - float(galaxyXimage)
+		dy = 300.0 - float(galaxyYimage)
+		curDist = math.sqrt( dx*dx + dy*dy )
+		
+		# store galaxyID if closer than prev closest galaxy to center of image
+		if curDist < prevBestDist:
+			prevBestID = galaxyID
+			prevBestDist = curDist
+		
+		# go to the next (prev in file) line
+		lineIndex = lineIndex - 1
+		
+	if prevBestID == -1:
+		print ("sextractor did not yield a galaxy closer than" + str(prevBestDist))
+	else:
+		print ("closest galaxy id is " + str(prevBestID) + 
+				" at distance of " + str(prevBestDist))
+		
+	# return the id of the galaxy that was identified as the center galaxy
+	return prevBestID
+
+	
+def run_imreplace(imageFilename, lowPixVal, uppPixVal):
+	'''
+	imreplace images value lower upper
+	'''
+	iraf.imreplace(imageFilename, 0, lower=lowPixVal, upper=uppPixVal)
+
+
 def write_galfit_single_parameter(imageFilename, galfit_single_parameter_filename,
 									galfit_single_output_filename, 
 									psf, segmentationMapFilename,
@@ -688,280 +959,7 @@ def get_galfit_bulge_parameter_str(galfit_single_result_filename,
 	bulgeParamStr = bulgeParamStr + ("\n")
 
 	return bulgeParamStr
-
-
-def run_sextractor(imageFilename):
-	'''
-	runs sextractor on the given image, returning the galaxy id of
-	the galaxy closest to the center of the image. Also produces
-	generic.cat and check.fits in the calling directory, which 
-	are galaxy info and the segmentation map, respectively.
-	
-	parameter imageFilename -
-		the string of the full path filename of the image on which sextractor will be run
-	
-	returns - the id of the galaxy closest to the center of the image
-	'''
-	configFilename = ".".join(imageFilename.split(".")[:-1]) + ".sex"
-	paramFilename = "WFC3.morphWG.param"
-	# these can be changed on the command line with flags
-	outputCatFilename = "generic.cat" # -CATALOG_NAME <filename>
-	segmentationMapFilename = "check.fits" # -CHECKIMAGE_NAME <filename>
-	
-	# TODO: might not have to run every time, move to main()
-	write_sextractor_config_file(configFilename, paramFilename)
-	
-	# SYNTAX: sex <image> [<image2>][-c <configuration_file>][-<keyword> <value>]
-	os.system("sex " + imageFilename + " -c " + configFilename)
-
-	# get galaxyID of the galaxy closest to center of image from outputCatFile
-	outputCatFile = open(outputCatFilename, 'r')
-	outputCatContents = outputCatFile.readlines()
-	outputCatFile.close()
-	
-	# start on the last line
-	lineIndex = -1
-	
-	# set to a high value initially, just needs to be greater than the closest galaxy distance
-	prevBestDist = 1000.0
-	
-	# nonsense value to indicate if no galaxy is found closer than above distance
-	prevBestID = -1
-	
-	# read backwards until comment character indicates the field description section
-	while outputCatContents[lineIndex].strip()[0] != "#":
 		
-		# TODO: might be able to have indices collected from commented header
-		# gather galaxy information
-		galaxyOutputList = outputCatContents[lineIndex].strip().split()
-		galaxyID = galaxyOutputList[0]
-		galaxyXimage = galaxyOutputList[26]
-		galaxyYimage = galaxyOutputList[27]
-		
-		# TODO: generalize center
-		# compute distance from image center 
-		dx = 300.0 - float(galaxyXimage)
-		dy = 300.0 - float(galaxyYimage)
-		curDist = math.sqrt( dx*dx + dy*dy )
-		
-		# store galaxyID if closer than prev closest galaxy to center of image
-		if curDist < prevBestDist:
-			prevBestID = galaxyID
-			prevBestDist = curDist
-		
-		# go to the next (prev in file) line
-		lineIndex = lineIndex - 1
-		
-	if prevBestID == -1:
-		print ("sextractor did not yield a galaxy closer than" + str(prevBestDist))
-	else:
-		print ("closest galaxy id is " + str(prevBestID) + 
-				" at distance of " + str(prevBestDist))
-		
-	# return the id of the galaxy that was identified as the center galaxy
-	return prevBestID
-		
-def run_galfit(imageFilename, logMsg, galfit_constraint_filename, psf, mpZeropoint, plateScale, 
-				includeBulgeComponent, includeGaussianSmoothing):
-	'''
-	opens file (parameter) containing list of images and loops over every image, 
-	running galfit and writing the results to the same directory as the images
-	
-	calls methods to invoke iraf methods to write the initial galfit param file
-	for each image
-	
-	parameter imageFilename -
-		the string of the full path filename of the image on which galfit will be run
-		
-	parameter galfit_constraint_filename -
-		the filename of the constraint file. if none, value is "none"
-	
-	parameter includeBulgeComponent - 
-		boolean indicating if a bulge should be fit after first pass by galfit
-		
-	parameter includeGaussianSmoothing - 
-		boolean indicating if a gaussian smoothing should be applied before running minmax
-		
-	returns - string indicating success or failure
-	'''
-	
-	# sigma [# pixels] is used for run gauss when blurring
-	sigma = 15
-	
-	# run iraf's imhead method to get image information
-	[directory_location, galaxy_id, filt, cam_number, image_number, height, width
-		] = run_imhead(imageFilename)
-
-	# the x y location of the top left corner of the area on which to run minmax and imexam
-	# in the coordinate system of the original image (which would be 0, 0 for the original)
-	xStart = float(width)/2 - 75.0
-	xStop = float(width)/2 + 75.0
-	yStart = float(height)/2 - 75.0
-	yStop = float(height)/2 + 75.0
-	
-	# calls iraf's minmax method, passing image filename as a parameter
-	# with image possible gaussian smoothed, as well as two points
-	# on the image defining the area on which to run minmax 
-	# returns as a list of two strings (the coordinates of the max pixel)
-	if includeGaussianSmoothing:
-		centerCoords = run_minmax(run_gauss(imageFilename, sigma), 
-									xStart, yStart, xStop, yStop)
-	else:
-		centerCoords = run_minmax(imageFilename, 
-									xStart, yStart, xStop, yStop)
-	
-	# calls iraf's imexam method, passing filename as a parameter
-	# along with center coordinates and two points defining area
-	# returns initial estimates of the returned paramters
-	[Y, X, magnitude, rad, BA, angle
-		] = run_imexam(imageFilename, centerCoords, xStart, yStart, xStop, yStop)
-	
-	# write to the log if default values are being used
-	if float(BA) == 1.0:
-		logMsg = logMsg + "Default b/a used. "
-	if float(angle) == 0.0:
-		logMsg = logMsg + "Default position angle used. "
-	
-	# transform coordinates back into coordinates for original image
-	Y = str(float(Y) + yStart)
-	X = str(float(X) + xStart)
-	
-	# define filenames
-	filename = (directory_location + galaxy_id + "_" + 
-				image_number + '_cam' + str(cam_number) + '_' + filt)
-	galfit_single_parameter_filename =	filename + '_single_param.txt'
-	galfit_single_output_filename =		filename + "_single_multi.fits"
-	galfit_single_result_filename =		filename + "_single_result.txt"
-	galfit_bulge_parameter_filename =	filename + '_bulge_param.txt'
-	galfit_bulge_output_filename =		filename + "_bulge_multi.fits"
-	galfit_bulge_result_filename =		filename + "_bulge_result.txt"
-							
-	# writes the single component parameter file, given filenames and galxy parameters
-	write_galfit_single_parameter(imageFilename, galfit_single_parameter_filename,
-									galfit_single_output_filename, 
-									psf, "none",
-									mpZeropoint, plateScale, 
-									1, 1, width, height, 
-									X, Y, magnitude, rad, BA, angle)
-
-	# run galfit on paramter file
-	os.system('galfit ' + galfit_single_parameter_filename)
-
-	# detects atomic galfit error
-	# If not failure then removes temp files, otherwise returns
-	if os.path.isfile(galfit_single_output_filename):
-		# remove temp files
-		os.system("rm " + "fit.log")
-		os.system("mv galfit.01 " + galfit_single_result_filename)
-	else:
-		return logMsg + "galfit failed on single component, probably mushroom (atomic galfit error)"
-	
-	# done unless command line specified that a second galfit run
-	# should be done by adding a bulge component to the result of the first run
-	if includeBulgeComponent:
-	
-		# reads the results of the first run and returns it as a long string
-		# with the output and constraint modified for bulge run and the
-		# new bulge component appended with some intitial guess parameters
-		bulgeParamStr = get_galfit_bulge_parameter_str(galfit_single_result_filename, 
-							galfit_bulge_output_filename, galfit_constraint_filename, rad)
-
-		# write the bulge parameter file using the modified contents of the single results
-		galfitBulgeParamFile = open(galfit_bulge_parameter_filename, "w")
-		galfitBulgeParamFile.write(bulgeParamStr)
-		galfitBulgeParamFile.close()
-		
-		# run galfit on paramter file
-		os.system('galfit ' + galfit_bulge_parameter_filename)
-	
-		# detects atomic galfit error
-		# If not failure then removes temp files, otherwise returns
-		if os.path.isfile(galfit_bulge_output_filename):
-			# remove temp files
-			os.system("rm " + "fit.log")
-			os.system("mv galfit.01 " + galfit_bulge_result_filename)
-			#os.system('mv ' + galfit_output_filename + ' ' + galfit_bulge_output_filename)
-		else:
-			return logMsg + "galfit failed on bulge component, probably mushroom"
-	
-	# if we get here then nothing went wrong!
-	return logMsg + "success"
-	
-	
-def main(imageListFilename, galfit_constraint_filename, psf, mpZeropoint, plateScale, 
-			includeBulgeComponent, includeGaussianSmoothing):
-	'''
-	main method loops through all image filenames in image list, running galfit
-	and logging errors to a log file, which is named according to the date and 
-	the images on which galfit was run
-	
-	parameter imageListFilename -
-		the string of the full path filename of the list of images on which galfit will be run
-		
-	parameter galfit_constraint_filename -
-		the filename of the constraint file. if none, value is "none"
-	
-	parameter includeBulgeComponent - 
-		boolean indicating if a bulge should be fit after first pass by galfit
-		
-	parameter includeGaussianSmoothing - 
-		boolean indicating if a gaussian smoothing should be applied before running minmax
-	'''
-	# read list of image filenames from input file
-	inputFile = open(imageListFilename, 'r')
-	imageFilenames = inputFile.readlines()
-	inputFile.close()
-	
-	# this loops through every image in images file and removes new line
-	imageFilenames = [ imageFilename.strip() for imageFilename in imageFilenames ]
-	
-	# set the log header
-	logMsg = "run on " + time.strftime("%m-%d-%Y") + "\n"
-	
-	# this loops through every image in images file and writes the log, running galfit
-	for imageFilename in imageFilenames:
-		logMsg = logMsg + imageFilename + ": "
-		
-		# run galfit, preventing crashes but logging errors in log and printing them
-		try:
-			# galfit returns a string indicating success or some failure
-			logMsg = run_galfit(imageFilename, logMsg, 
-										galfit_constraint_filename, psf,
-										mpZeropoint, plateScale,
-										includeBulgeComponent, includeGaussianSmoothing)
-		
-		# allow user to stop the program running altogether with ctrl-c
-		except KeyboardInterrupt:
-			print ("Escape character ctrl-c used to terminate rungalfit. Log file will still be written.")
-			break
-		
-		# log all runtime errors other than those resulting from code modification typos
-		# move on to the next image regardless
-		except not SystemExit:
-			errorMsg = str(sys.exc_info()[0]) + str(sys.exc_info()[1])
-			print (errorMsg)
-			logMsg = logMsg + errorMsg
-		
-		# every image on its own line in the log file
-		logMsg = logMsg + "\n"
-	
-	# create the log file in the same directory as python was called
-	try:
-		logFilename = ("rungalfit_log_" + 
-					imageFilenames[0].split("/")[-1].split("_")[1].split(".")[1] + "_to_" + 
-					imageFilenames[-1].split("/")[-1].split("_")[1].split(".")[1] +
-					"_" + time.strftime("%m-%d-%Y") + ".txt")
-	except:
-		logFilename = ("rungalfit_log.txt")
-	
-	# write the log file
-	print ("writing log file to " + logFilename)
-	log = open(logFilename, 'w')
-	log.write(logMsg)
-	log.close()
-	
-	print ("Done!\nIn order to summarize results run sumgalfit.py")
-
 
 if __name__ == "__main__":
 	'''
