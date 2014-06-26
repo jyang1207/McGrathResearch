@@ -10,7 +10,7 @@ import math
 from optparse import OptionParser
 
 def main(imageListFilename, galfit_constraint_filename, psf, mpZeropoint, plateScale, 
-			includeBulgeComponent, includeGaussianSmoothing):
+			includeBulgeComponent, includeGaussianSmoothing, runSextractor, sextractorOptionsList):
 	'''
 	main method loops through all image filenames in image list, running galfit
 	and logging errors to a log file, which is named according to the date and 
@@ -27,7 +27,9 @@ def main(imageListFilename, galfit_constraint_filename, psf, mpZeropoint, plateS
 		
 	parameter includeGaussianSmoothing - 
 		boolean indicating if a gaussian smoothing should be applied before running minmax
-	'''
+	'''	
+	
+	
 	# read list of image filenames from input file
 	inputFile = open(imageListFilename, 'r')
 	imageFilenames = inputFile.readlines()
@@ -36,20 +38,53 @@ def main(imageListFilename, galfit_constraint_filename, psf, mpZeropoint, plateS
 	# this loops through every image in images file and removes new line
 	imageFilenames = [ imageFilename.strip() for imageFilename in imageFilenames ]
 	
+	if len(imageFilenames) == 0:
+		print("no images in given file (positional argument). Exiting.")
+		exit()
+		
+	# sextractor specific tasks that can be done outside of image loop
+	if runSextractor:
+		configFilename = "rungalfitSExtractorConfig.sex" #not based on images, ".".join(imageFilename.split(".")[:-1]) + ".sex"
+		paramFilename = "WFC3.morphWG.param"
+		# these can be changed on the command line with flags
+		outputCatFilename = "generic.cat" # -CATALOG_NAME <filename>
+		segmentationMapFilename = "check.fits" # -CHECKIMAGE_NAME <filename>
+		for sexIndex,sexOpt in sextractorOptionsList:
+			if sexOpt == "-CATALOG_NAME":
+				outputCatFilename = sextractorOptionsList[sexIndex + 1]
+			elif sexOpt == "-CHECKIMAGE_NAME":
+				segmentationMapFilename = sextractorOptionsList[sexIndex + 1]
+		
+		# TODO: command line specify sim or real image
+		write_sextractor_config_file(configFilename, paramFilename)
+	else:
+		segmentationMapFilename = "none"
+
 	# set the log header
 	logMsg = "run on " + time.strftime("%m-%d-%Y") + "\n"
 	
 	# this loops through every image in images file and writes the log, running galfit
 	for imageFilename in imageFilenames:
+		
+		# run sextractor if command line set to do so for each image, galfit uses segmentation map
+		if runSextractor:
+			if includeGaussianSmoothing:
+				sexImageFilename = run_gauss(imageFilename, 15)
+			else:
+				sexImageFilename = imageFilename
+				
+			run_sextractor(sexImageFilename, configFilename, outputCatFilename, sextractorOptionsList)
+			continue # so that galfit does not run, remove to run galfit
+			
 		logMsg = logMsg + imageFilename + ": "
 		
 		# run galfit, preventing crashes but logging errors in log and printing them
 		try:
 			# galfit returns a string indicating success or some failure
 			logMsg = run_galfit(imageFilename, logMsg, 
-										galfit_constraint_filename, psf,
-										mpZeropoint, plateScale,
-										includeBulgeComponent, includeGaussianSmoothing)
+								galfit_constraint_filename, psf,
+								mpZeropoint, plateScale, segmentationMapFilename, 
+								includeBulgeComponent, includeGaussianSmoothing)
 		
 		# allow user to stop the program running altogether with ctrl-c
 		except KeyboardInterrupt:
@@ -91,8 +126,8 @@ def write_sextractor_config_file(sextractor_config_filename, sextractor_param_fi
 	parameter sextractor_config_filename - 
 		the filename of the sextractor config file being written
 	parameter sextractor_param_filename - name of the file containing catalog contents
+	TODO: noise version and nonoise (parameter)
 	'''
-	# TODO: where is the image file? command line? do we have to rewrite this every image?
 	# variables describing the sextractor config file
 	catalogName = "generic.cat" # Name of the output catalogue. If the name "STDOUT" is given and CATALOG TYPE is set to ASCII, ASCII HEAD, ASCII SKYCAT, or ASCII VOTABLE the catalogue will be piped to the standard output (stdout
 	catalogType = "ASCII_HEAD" 	# Format of output catalog:
@@ -112,8 +147,8 @@ def write_sextractor_config_file(sextractor_config_filename, sextractor_param_fi
 					# MIN minimum of all flag values,
 					# MAX maximum of all flag values,
 					# MOST most common flag value.
-	detectMinArea = "5"	# Minimum number of pixels above threshold triggering detection
-	detectThreshold = ".75"	#Detection threshold (0-2). 1 argument: (ADUs or relative to Background RMS, see THRESH TYPE). 2 arguments: R (mag.arcsec 2 ), Zero-point (mag).
+	detectMinArea = "100"	# Minimum number of pixels above threshold triggering detection
+	detectThreshold = "10"	#Detection threshold (0-2). 1 argument: (ADUs or relative to Background RMS, see THRESH TYPE). 2 arguments: R (mag.arcsec 2 ), Zero-point (mag).
 	analysisThreshold = "5"	#Threshold (in surface brightness) at which CLASS STAR and FWHM operate. 1 argument: relative to Background RMS. 2 arguments: mu (mag/arcsec 2 ), Zero-point (mag).
 	#threshType = ?	# Meaning of the DETECT_THRESH and ANALYSIS_THRESH parameters:
 					# RELATIVE - scaling factor to the background RMS,
@@ -123,10 +158,10 @@ def write_sextractor_config_file(sextractor_config_filename, sextractor_param_fi
 	#filterThresh = ? 	# Lower and higher thresholds (in back-ground standard deviations) for a pix-el
 						#to be consideredin filtering (used for retinafiltering only).
 	deblendThreshold = "16"	# Minimum contrast parameter for deblending.
-	deblendMinContrast = "0.0001"	# Minimum contrast parameter for deblending.
+	deblendMinContrast = "0.1"	# Minimum contrast parameter for deblending.
 	cleanBool = "Y"	# If true, a cleaning of the catalog is done before being written to disk.
 	cleanParam = "1.0"	# Efficiency of cleaning.
-	maskType = "BLANK"	#CORRECT - replace by values of pixels symmetric with respect to the source center.
+	maskType = "CORRECT"	#CORRECT - replace by values of pixels symmetric with respect to the source center.
 							#BLANK --put detected pixels belonging to neighbors to zero,
 							#NONE no masking,
 	#------------------------------ Photometry -----------------------------------
@@ -143,7 +178,7 @@ def write_sextractor_config_file(sextractor_config_filename, sextractor_param_fi
 						#for the neural network star/galaxy separation as expressed in the CLASS STAR output.
 	starNNWFilename = "default.nnw" #Name of the file containing the neural network weights for star/galaxy separation.
 	#------------------------------ Background -----------------------------------
-	backSize = "256"	# Size, or Width, Height (inpixels) of a background mesh.
+	backSize = "600"	# Size, or Width, Height (inpixels) of a background mesh.
 	backFilterSize = "9"	#Size, or Width, Height (inbackground meshes) of the background-filtering mask.
 	backPhotoType = "LOCAL"	#Background used to compute magnitudes:
 							# GLOBAL - taken directly from the background map
@@ -493,7 +528,7 @@ def write_sextractor_config_file(sextractor_config_filename, sextractor_param_fi
 	
 
 def run_galfit(imageFilename, logMsg, galfit_constraint_filename, psf, mpZeropoint, plateScale, 
-				includeBulgeComponent, includeGaussianSmoothing):
+				segmentationMapFilename, includeBulgeComponent, includeGaussianSmoothing):
 	'''
 	opens file (parameter) containing list of images and loops over every image, 
 	running galfit and writing the results to the same directory as the images
@@ -506,6 +541,9 @@ def run_galfit(imageFilename, logMsg, galfit_constraint_filename, psf, mpZeropoi
 		
 	parameter galfit_constraint_filename -
 		the filename of the constraint file. if none, value is "none"
+		
+	parameter segmentationMapFilename -
+		the filename of the segmentation map that masks galfit to one of the image's galaxies
 	
 	parameter includeBulgeComponent - 
 		boolean indicating if a bulge should be fit after first pass by galfit
@@ -570,7 +608,7 @@ def run_galfit(imageFilename, logMsg, galfit_constraint_filename, psf, mpZeropoi
 	# writes the single component parameter file, given filenames and galxy parameters
 	write_galfit_single_parameter(imageFilename, galfit_single_parameter_filename,
 									galfit_single_output_filename, 
-									psf, "none",
+									psf, segmentationMapFilename,
 									mpZeropoint, plateScale, 
 									1, 1, width, height, 
 									X, Y, magnitude, rad, BA, angle)
@@ -773,7 +811,7 @@ def run_imexam(imageFilename, centerCoords, xStart, yStart, xStop, yStop):
 	return [line, col, mag, radius, b_a, PA]
 	
 	
-def run_sextractor(imageFilename):
+def run_sextractor(imageFilename, configFilename, outputCatFilename, sextractorOptionsList):
 	'''
 	runs sextractor on the given image, returning the galaxy id of
 	the galaxy closest to the center of the image. Also produces
@@ -785,18 +823,10 @@ def run_sextractor(imageFilename):
 	
 	returns - the id of the galaxy closest to the center of the image
 	'''
-	configFilename = ".".join(imageFilename.split(".")[:-1]) + ".sex"
-	paramFilename = "WFC3.morphWG.param"
-	# these can be changed on the command line with flags
-	outputCatFilename = "generic.cat" # -CATALOG_NAME <filename>
-	segmentationMapFilename = "check.fits" # -CHECKIMAGE_NAME <filename>
-	
-	# TODO: might not have to run every time, move to main()
-	write_sextractor_config_file(configFilename, paramFilename)
-	
-	# SYNTAX: sex <image> [<image2>][-c <configuration_file>][-<keyword> <value>]
-	os.system("sex " + imageFilename + " -c " + configFilename)
 
+	# SYNTAX: sex <image> [<image2>][-c <configuration_file>][-<keyword> <value>]
+	os.system("sex " + imageFilename + " -c " + configFilename + " " + " ".join(sextractorOptionsList))
+	
 	# get galaxyID of the galaxy closest to center of image from outputCatFile
 	outputCatFile = open(outputCatFilename, 'r')
 	outputCatContents = outputCatFile.readlines()
@@ -1061,16 +1091,22 @@ if __name__ == "__main__":
 	# parse the command line using above parameter rules
 	[options, args] = parser.parse_args()
 	
+	sextractorOptionsList = []
+	if options.sextractor and len(args) > 1:
+		for index, sexOpt in enumerate(args[1:]):
+			if index % 2 == 0: 	# odd, consider a keyword
+				sextractorOptionsList.append("-" + sexOpt.upper())
+			else:				# even, consider the value for previous keyword
+				sextractorOptionsList.append(sexOpt)
+			
+		print("command line extra input: " + " ".join(sextractorOptionsList) + "\nAbove interpreted as sextractor keyword options")
+		exit()
+	
 	if len(args) != 1:
 		parser.error("incorrect number of arguments, " + 
 					"must provide an input file containing the list of full path image filenames.")
 	elif not os.path.isfile(args[0]):
 		parser.error("input file " + args[0] + " either does not exist or is not accessible")
-		
-	# TODO: for testing, will need to pass sextractor to main() eventually
-	if options.sextractor:
-		run_sextractor(args[0])
-		exit()
 		
 	# set constraint to default unless one is given on command line, and verify file exists
 	if not options.constraint:
@@ -1089,4 +1125,5 @@ if __name__ == "__main__":
 		psf = options.psf
 	
 	# pass pertinent info to the main method
-	main(args[0], constraintFilename, psf, options.mpz, options.plate, options.bulge, options.gauss)
+	main(args[0], constraintFilename, psf, options.mpz, options.plate, 
+		options.bulge, options.gauss, options.sextractor, sextractorOptionsList)
