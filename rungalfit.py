@@ -15,7 +15,9 @@ def main(imageListFilename, galfit_constraint_filename, psf, mpZeropoint,
 	'''
 	main method loops through all image filenames in image list, running galfit
 	and logging errors to a log file, which is named according to the date and 
-	the images on which galfit was run
+	the images on which galfit was run.
+	Also runs sextractor first if so specified by the command line in order
+	to provide galfit with a mask (pixel replaced segmentation file)
 	
 	parameter imageListFilename -
 		the string of the full path filename of the list of images 
@@ -23,6 +25,9 @@ def main(imageListFilename, galfit_constraint_filename, psf, mpZeropoint,
 		
 	parameter galfit_constraint_filename -
 		the filename of the constraint file. if none, value is "none"
+		
+	parameter psf, mpZeropoint, plateScale - 
+		optional command line inputs with defaults for galfit param file
 	
 	parameter includeBulgeComponent - 
 		boolean indicating if a bulge should be fit after first pass by galfit
@@ -46,9 +51,6 @@ def main(imageListFilename, galfit_constraint_filename, psf, mpZeropoint,
 		print("no images in given file (positional argument). Exiting.")
 		exit()
 		
-	# this loops through every image in images file and removes whitespace
-	imageFilenames = [imageFilename.strip() for imageFilename in imageFilenames]
-	
 	# convenience boolean for dealing with conditionally running sextractor
 	runSextractor = runRealSextractor or runSimSextractor
 		
@@ -72,7 +74,7 @@ def main(imageListFilename, galfit_constraint_filename, psf, mpZeropoint,
 		
 		# write the sextractor config file, which will be used for all images
 		write_sextractor_config_file(configFilename, paramFilename,
-									runSimSextractor, runRealSextractor)
+									runSimSextractor)
 		
 		# prepend the -c <config file> option to the sextractor options list
 		sextractorOptionsList = ["-c", configFilename] + sextractorOptionsList
@@ -84,36 +86,51 @@ def main(imageListFilename, galfit_constraint_filename, psf, mpZeropoint,
 	# set the log header
 	logMsg = "run on " + time.strftime("%m-%d-%Y") + "\n"
 	
+	# this loops through every image in images file and removes whitespace
+	imageFilenames = [imageFilename.strip() for imageFilename in imageFilenames]
+	
 	# this loops through every image, runs galfit, and writes the log string 
 	for imageFilename in imageFilenames:
 		
-		# run sextractor (if command line set to do so) for each image
-		# galfit uses the resulting segmentation map
-		if runSextractor:
-			
-			# smooth image for sextractor use if set to do so on command line
-			if includeGaussianSmoothing:
-				sexImageFilename = run_gauss(imageFilename, 15)
-			else:
-				sexImageFilename = imageFilename
-				
-			# collect returned galaxy id to mask all but that galaxy for galfit
-			gfitGalaxyID = run_sextractor(sexImageFilename, outputCatFilename, 
-										sextractorOptionsList)
-			
-			# use imreplace method to zero single galaxy in the segmentation map
-			run_imreplace(segmentationMapFilename, gfitGalaxyID, gfitGalaxyID)
-			continue # TODO: so that galfit does not run, remove to run galfit
-			
-		logMsg = logMsg + imageFilename + ": "
-		
 		# run galfit, preventing crashes but printing and logging errors in log
 		try:
+					
+			# run sextractor (if command line set to do so) for each image
+			# galfit uses the resulting segmentation map
+			if runSextractor:
+				
+				# smooth image for sextractor use if set to do so on command line
+				if includeGaussianSmoothing:
+					sexImageFilename = run_gauss(imageFilename, 15)
+				else:
+					sexImageFilename = imageFilename
+					
+				# run sextractor and saved return galaxy id for imreplace
+				gfitGalaxyID = run_sextractor(sexImageFilename, outputCatFilename, 
+											sextractorOptionsList)
+				
+				# use imreplace method to zero single galaxy in the segmentation map
+				#run_imreplace(segmentationMapFilename, gfitGalaxyID, gfitGalaxyID)
+				# TODO: so that galfit does not run, remove to run galfit
+				# rename outputs of sextractor so they will not be overwritten?
+				# use sextractor galaxy (x, y) or continue to use minmax?
+				os.system("mv " + outputCatFilename + " " +
+						"/".join(imageFilename.split("/")[:-1]) + 
+						".".join(imageFilename.split("/")[-1
+									].split(".")[:-1]) + ".cat")
+				os.system("mv " + segmentationMapFilename + " " +
+						"/".join(imageFilename.split("/")[:-1]) + 
+						".".join(imageFilename.split("/")[-1
+									].split(".")[:-1]) + "_check.fits")
+				logMsg = (logMsg + imageFilename + ": galaxy to be replaced id = " +
+						str(gfitGalaxyID) + "\n")
+				continue
+		
 			# galfit returns a string indicating success or some failure
 			logMsg = run_galfit(imageFilename, logMsg, 
-								galfit_constraint_filename, psf,
-								mpZeropoint, plateScale, segmentationMapFilename, 
-								includeBulgeComponent, includeGaussianSmoothing)
+							galfit_constraint_filename, psf,
+							mpZeropoint, plateScale, segmentationMapFilename, 
+							includeBulgeComponent, includeGaussianSmoothing)
 		
 		# allow user to stop the program running altogether with ctrl-c 
 		# (might require multiple escapes)
@@ -152,7 +169,7 @@ def main(imageListFilename, galfit_constraint_filename, psf, mpZeropoint,
 
 	
 def write_sextractor_config_file(sextractor_config_filename, 
-				sextractor_param_filename, runSimSextractor, runRealSextractor):
+				sextractor_param_filename, runSimSextractor):
 	'''
 	writes the sextractor config file
 	
@@ -160,8 +177,8 @@ def write_sextractor_config_file(sextractor_config_filename,
 		the filename of the sextractor config file being written
 	parameter sextractor_param_filename - 
 		name of the file containing catalog contents
-	parameter runSimSextractor, runRealSextractor - 
-		booleans for sim or real version of sextractor config file
+	parameter runSimSextractor - 
+		boolean for sim version (real is default) of sextractor config file
 	'''
 	# variables describing the sextractor config file
 	catalogName = "generic.cat" # Name of the output catalogue. If the name "STDOUT" is given and CATALOG TYPE is set to ASCII, ASCII HEAD, ASCII SKYCAT, or ASCII VOTABLE the catalogue will be piped to the standard output (stdout
@@ -182,18 +199,28 @@ def write_sextractor_config_file(sextractor_config_filename,
 					# MIN minimum of all flag values,
 					# MAX maximum of all flag values,
 					# MOST most common flag value.
-	detectMinArea = "100"	# Minimum number of pixels above threshold triggering detection
-	detectThreshold = "10"	#Detection threshold (0-2). 1 argument: (ADUs or relative to Background RMS, see THRESH TYPE). 2 arguments: R (mag.arcsec 2 ), Zero-point (mag).
+					
+	# these variable values change for simulation template vs real template
+	if runSimSextractor:
+		detectMinArea = "100"	# Minimum number of pixels above threshold triggering detection
+		detectThreshold = "20"	#Detection threshold (0-2). 1 argument: (ADUs or relative to Background RMS, see THRESH TYPE). 2 arguments: R (mag.arcsec 2 ), Zero-point (mag).
+		deblendThreshold = "16"	# Minimum contrast parameter for deblending.
+		deblendMinContrast = "0.005"	# Minimum contrast parameter for deblending.
+	else:
+		detectMinArea = "5"	# Minimum number of pixels above threshold triggering detection
+		detectThreshold = "0.75"	#Detection threshold (0-2). 1 argument: (ADUs or relative to Background RMS, see THRESH TYPE). 2 arguments: R (mag.arcsec 2 ), Zero-point (mag).
+		deblendThreshold = "16"	# Minimum contrast parameter for deblending.
+		deblendMinContrast = "0.0001"
+		
 	analysisThreshold = "5"	#Threshold (in surface brightness) at which CLASS STAR and FWHM operate. 1 argument: relative to Background RMS. 2 arguments: mu (mag/arcsec 2 ), Zero-point (mag).
-	#threshType = ?	# Meaning of the DETECT_THRESH and ANALYSIS_THRESH parameters:
-					# RELATIVE - scaling factor to the background RMS,
-					# ABSOLUTE - absolute level (in ADUs or in surface brightness)
 	filterBool = "Y"	#  If true,filtering is applied to the data before extraction.
 	filterName = "tophat_9.0_9x9.conv"	# Name and path of the file containing the filter definition
 	#filterThresh = ? 	# Lower and higher thresholds (in back-ground standard deviations) for a pix-el
 						#to be consideredin filtering (used for retinafiltering only).
-	deblendThreshold = "16"	# Minimum contrast parameter for deblending.
-	deblendMinContrast = "0.1"	# Minimum contrast parameter for deblending.
+	#threshType = ?	# Meaning of the DETECT_THRESH and ANALYSIS_THRESH parameters:
+						# RELATIVE - scaling factor to the background RMS,
+						# ABSOLUTE - absolute level (in ADUs or in surface brightness)
+		
 	cleanBool = "Y"	# If true, a cleaning of the catalog is done before being written to disk.
 	cleanParam = "1.0"	# Efficiency of cleaning.
 	maskType = "CORRECT"	#CORRECT - replace by values of pixels symmetric with respect to the source center.
@@ -647,8 +674,15 @@ def run_galfit(imageFilename, logMsg, galfit_constraint_filename,
 	parameter imageFilename -
 		the full path filename of the image on which galfit will be run
 		
+	parameter logMsg - 
+		the current state of the log at the time of invocation
+		so that this method can append to and return it to caller
+		
 	parameter galfit_constraint_filename -
 		the filename of the constraint file. if none, value is "none"
+		
+	parameter psf, mpZeropoint, plateScale - 
+		optional command line inputs with defaults for galfit param file
 		
 	parameter segmentationMapFilename -
 		the filename of the segmentation map that masks galfit
@@ -659,7 +693,7 @@ def run_galfit(imageFilename, logMsg, galfit_constraint_filename,
 	parameter includeGaussianSmoothing - 
 		boolean indicating if a gaussian smoothing should be applied
 		
-	returns - string indicating success or failure
+	returns - updated log message indicating success or failure
 	'''
 	
 	# sigma [# pixels] is used for run gauss when blurring
@@ -944,7 +978,8 @@ def run_imreplace(imageFilename, lowPixVal, uppPixVal):
 	iraf.imreplace(imageFilename, 0, lower=lowPixVal, upper=uppPixVal)
 
 
-def write_galfit_single_parameter(imageFilename, galfit_single_parameter_filename,
+def write_galfit_single_parameter(imageFilename, 
+									galfit_single_parameter_filename,
 									galfit_single_output_filename, 
 									psf, segmentationMapFilename,
 									mpZeropoint, plateScale, 
