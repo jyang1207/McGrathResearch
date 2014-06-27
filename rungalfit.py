@@ -9,15 +9,17 @@ import time
 import math
 from optparse import OptionParser
 
-def main(imageListFilename, galfit_constraint_filename, psf, mpZeropoint, plateScale, 
-			includeBulgeComponent, includeGaussianSmoothing, runSextractor, sextractorOptionsList):
+def main(imageListFilename, galfit_constraint_filename, psf, mpZeropoint, 
+		plateScale, includeBulgeComponent, includeGaussianSmoothing, 
+		runSimSextractor, runRealSextractor, sextractorOptionsList):
 	'''
 	main method loops through all image filenames in image list, running galfit
 	and logging errors to a log file, which is named according to the date and 
 	the images on which galfit was run
 	
 	parameter imageListFilename -
-		the string of the full path filename of the list of images on which galfit will be run
+		the string of the full path filename of the list of images 
+		on which galfit will be run
 		
 	parameter galfit_constraint_filename -
 		the filename of the constraint file. if none, value is "none"
@@ -26,26 +28,39 @@ def main(imageListFilename, galfit_constraint_filename, psf, mpZeropoint, plateS
 		boolean indicating if a bulge should be fit after first pass by galfit
 		
 	parameter includeGaussianSmoothing - 
-		boolean indicating if a gaussian smoothing should be applied before running minmax
+		boolean indicating if a gaussian smoothing should be applied
+		
+	parameter runSimSextractor, runRealSextractor - 
+		booleans for sim or real version of sextractor config file
+		
+	parameter sextractorOptionsList - 
+		list of keyword options for sextractor left over on command line
 	'''	
-	
 	
 	# read list of image filenames from input file
 	inputFile = open(imageListFilename, 'r')
 	imageFilenames = inputFile.readlines()
 	inputFile.close()
 	
-	# this loops through every image in images file and removes new line
-	imageFilenames = [ imageFilename.strip() for imageFilename in imageFilenames ]
-	
 	if len(imageFilenames) == 0:
 		print("no images in given file (positional argument). Exiting.")
 		exit()
 		
+	# this loops through every image in images file and removes whitespace
+	imageFilenames = [imageFilename.strip() for imageFilename in imageFilenames]
+	
+	# convenience boolean for dealing with conditionally running sextractor
+	runSextractor = runRealSextractor or runSimSextractor
+		
 	# sextractor specific tasks that can be done outside of image loop
 	if runSextractor:
-		configFilename = "rungalfitSExtractorConfig.sex" #not based on images, ".".join(imageFilename.split(".")[:-1]) + ".sex"
+		
+		#not based on images, ".".join(imageFilename.split(".")[:-1]) + ".sex"
+		configFilename = "rungalfitSExtractorConfig.sex" 
+		
+		# TODO: hard coded, change that? Generate a default if none is found?
 		paramFilename = "WFC3.morphWG.param"
+		
 		# these can be changed on the command line with flags
 		outputCatFilename = "generic.cat" # -CATALOG_NAME <filename>
 		segmentationMapFilename = "check.fits" # -CHECKIMAGE_NAME <filename>
@@ -55,30 +70,42 @@ def main(imageListFilename, galfit_constraint_filename, psf, mpZeropoint, plateS
 			elif sexOpt == "-CHECKIMAGE_NAME":
 				segmentationMapFilename = sextractorOptionsList[sexIndex + 1]
 		
-		# TODO: command line specify sim or real image
-		write_sextractor_config_file(configFilename, paramFilename)
+		# write the sextractor config file, which will be used for all images
+		write_sextractor_config_file(configFilename, paramFilename,
+									runSimSextractor, runRealSextractor)
+		
+		# prepend the -c <config file> option to the sextractor options list
+		sextractorOptionsList = ["-c", configFilename] + sextractorOptionsList
 	else:
 		segmentationMapFilename = "none"
 
 	# set the log header
 	logMsg = "run on " + time.strftime("%m-%d-%Y") + "\n"
 	
-	# this loops through every image in images file and writes the log, running galfit
+	# this loops through every image, runs galfit, and writes the log string 
 	for imageFilename in imageFilenames:
 		
-		# run sextractor if command line set to do so for each image, galfit uses segmentation map
+		# run sextractor (if command line set to do so) for each image
+		# galfit uses the resulting segmentation map
 		if runSextractor:
+			
+			# smooth image for sextractor use if set to do so on command line
 			if includeGaussianSmoothing:
 				sexImageFilename = run_gauss(imageFilename, 15)
 			else:
 				sexImageFilename = imageFilename
 				
-			run_sextractor(sexImageFilename, configFilename, outputCatFilename, sextractorOptionsList)
-			continue # so that galfit does not run, remove to run galfit
+			# collect returned galaxy id to mask all but that galaxy for galfit
+			gfitGalaxyID = run_sextractor(sexImageFilename, outputCatFilename, 
+										sextractorOptionsList)
+			
+			# use imreplace method to zero single galaxy in the segmentation map
+			run_imreplace(segmentationMapFilename, gfitGalaxyID, gfitGalaxyID)
+			continue # TODO: so that galfit does not run, remove to run galfit
 			
 		logMsg = logMsg + imageFilename + ": "
 		
-		# run galfit, preventing crashes but logging errors in log and printing them
+		# run galfit, preventing crashes but printing and logging errors in log
 		try:
 			# galfit returns a string indicating success or some failure
 			logMsg = run_galfit(imageFilename, logMsg, 
@@ -86,13 +113,15 @@ def main(imageListFilename, galfit_constraint_filename, psf, mpZeropoint, plateS
 								mpZeropoint, plateScale, segmentationMapFilename, 
 								includeBulgeComponent, includeGaussianSmoothing)
 		
-		# allow user to stop the program running altogether with ctrl-c
+		# allow user to stop the program running altogether with ctrl-c 
+		# (might require multiple escapes)
 		except KeyboardInterrupt:
-			print ("Escape character ctrl-c used to terminate rungalfit. Log file will still be written.")
+			print ("Escape sequence ctrl-c used to terminate rungalfit. " + 
+					"Log file will still be written.")
 			break
 		
-		# log all runtime errors other than those resulting from code modification typos
-		# move on to the next image regardless
+		# catch, log, and ignore all runtime errors except explicit exits 
+		# (for debugging). move on to the next image regardless
 		except not SystemExit:
 			errorMsg = str(sys.exc_info()[0]) + str(sys.exc_info()[1])
 			print (errorMsg)
@@ -104,9 +133,10 @@ def main(imageListFilename, galfit_constraint_filename, psf, mpZeropoint, plateS
 	# create the log file in the same directory as python was called
 	try:
 		logFilename = ("rungalfit_log_" + 
-					imageFilenames[0].split("/")[-1].split("_")[1].split(".")[1] + "_to_" + 
-					imageFilenames[-1].split("/")[-1].split("_")[1].split(".")[1] +
-					"_" + time.strftime("%m-%d-%Y") + ".txt")
+			imageFilenames[0].split("/")[-1].split("_")[1].split(".")[1] + 
+			"_to_" + 
+			imageFilenames[-1].split("/")[-1].split("_")[1].split(".")[1] +
+			"_" + time.strftime("%m-%d-%Y") + ".txt")
 	except:
 		logFilename = ("rungalfit_log.txt")
 	
@@ -119,14 +149,17 @@ def main(imageListFilename, galfit_constraint_filename, psf, mpZeropoint, plateS
 	print ("Done!\nIn order to summarize results run sumgalfit.py")
 
 	
-def write_sextractor_config_file(sextractor_config_filename, sextractor_param_filename):
+def write_sextractor_config_file(sextractor_config_filename, 
+				sextractor_param_filename, runSimSextractor, runRealSextractor):
 	'''
 	writes the sextractor config file
 	
 	parameter sextractor_config_filename - 
 		the filename of the sextractor config file being written
-	parameter sextractor_param_filename - name of the file containing catalog contents
-	TODO: noise version and nonoise (parameter)
+	parameter sextractor_param_filename - 
+		name of the file containing catalog contents
+	parameter runSimSextractor, runRealSextractor - 
+		booleans for sim or real version of sextractor config file
 	'''
 	# variables describing the sextractor config file
 	catalogName = "generic.cat" # Name of the output catalogue. If the name "STDOUT" is given and CATALOG TYPE is set to ASCII, ASCII HEAD, ASCII SKYCAT, or ASCII VOTABLE the catalogue will be piped to the standard output (stdout
@@ -174,7 +207,7 @@ def write_sextractor_config_file(sextractor_config_filename, sextractor_param_fi
 						#only but NEEDS to be specified, even for CCD images.
 	pixelScale = "0.06" #Pixel size in arcsec.
 	#------------------------- Star/Galaxy Separation ----------------------------
-	stellarFWHM = "0.18"# ????? Seeing_FWHM FWHM of stellar images in arcsec.This quantity is used only
+	seeingFWHM = "0.18"# ????? Seeing_FWHM FWHM of stellar images in arcsec.This quantity is used only
 						#for the neural network star/galaxy separation as expressed in the CLASS STAR output.
 	starNNWFilename = "default.nnw" #Name of the file containing the neural network weights for star/galaxy separation.
 	#------------------------------ Background -----------------------------------
@@ -375,10 +408,10 @@ def write_sextractor_config_file(sextractor_config_filename, sextractor_param_fi
 
 ''')
 	
-	if stellarFWHM:
+	if seeingFWHM:
 		#0.18
 		sextractorConfigFile.write(
-			"SEEING_FWHM     " + stellarFWHM + 
+			"SEEING_FWHM     " + seeingFWHM + 
 			"            # stellar FWHM in arcsec\n")
 	
 	if starNNWFilename:
@@ -527,8 +560,81 @@ def write_sextractor_config_file(sextractor_config_filename, sextractor_param_fi
 			"           # H-band magnitude zero-point\n")
 	
 
-def run_galfit(imageFilename, logMsg, galfit_constraint_filename, psf, mpZeropoint, plateScale, 
-				segmentationMapFilename, includeBulgeComponent, includeGaussianSmoothing):
+def run_sextractor(imageFilename, outputCatFilename, sextractorOptionsList):
+	'''
+	runs sextractor on the given image, returning the galaxy id of
+	the galaxy closest to the center of the image. Also produces
+	generic.cat and check.fits in the calling directory, which 
+	are galaxy info and the segmentation map, respectively.
+	
+	parameter imageFilename -
+		the full path filename of the image on which sextractor will be run
+	
+	parameter outputCatFilename -
+		the name of the catalog output from running sextractor, 
+		as specified by the config file unless on in options list
+		
+	parameter sextractorOptionsList - 
+		list of options for sextractor
+		
+	returns - the id of the galaxy closest to the center of the image
+	'''
+
+	# SYNTAX: sex <image> [<image2>][-c <configuration_file>][-<keyword> <value>]
+	os.system("sex " + imageFilename + " " + " ".join(sextractorOptionsList))
+	
+	# get galaxyID of the galaxy closest to center of image from outputCatFile
+	outputCatFile = open(outputCatFilename, 'r')
+	outputCatContents = outputCatFile.readlines()
+	outputCatFile.close()
+	
+	# start on the last line
+	lineIndex = -1
+	
+	# set to a high value initially, just needs to be bigger than best
+	prevBestDist = 1000.0
+	
+	# value to indicate if no galaxy is found closer than above distance
+	prevBestID = -1
+	
+	# read backwards until comment character indicates end of galaxies
+	while outputCatContents[lineIndex].strip()[0] != "#":
+		
+		# TODO: might be able to have indices collected from commented header
+		# gather galaxy information
+		galaxyOutputList = outputCatContents[lineIndex].strip().split()
+		galaxyID = galaxyOutputList[0]
+		galaxyXimage = galaxyOutputList[26]
+		galaxyYimage = galaxyOutputList[27]
+		
+		# TODO: generalize center
+		# compute distance from image center 
+		dx = 300.0 - float(galaxyXimage)
+		dy = 300.0 - float(galaxyYimage)
+		curDist = math.sqrt( dx*dx + dy*dy )
+		
+		# store galaxyID if closer than prev closest galaxy to center of image
+		if curDist < prevBestDist:
+			prevBestID = galaxyID
+			prevBestDist = curDist
+		
+		# go to the next (prev in file) line
+		lineIndex = lineIndex - 1
+		
+	if prevBestID == -1:
+		print ("sextractor did not yield a galaxy closer than " + 
+				str(prevBestDist))
+	else:
+		print ("closest galaxy id is " + str(prevBestID) + 
+				" at distance of " + str(prevBestDist))
+		
+	# return the id of the galaxy that was identified as the center galaxy
+	return prevBestID
+
+
+def run_galfit(imageFilename, logMsg, galfit_constraint_filename, 
+				psf, mpZeropoint, plateScale, segmentationMapFilename, 
+				includeBulgeComponent, includeGaussianSmoothing):
 	'''
 	opens file (parameter) containing list of images and loops over every image, 
 	running galfit and writing the results to the same directory as the images
@@ -537,19 +643,19 @@ def run_galfit(imageFilename, logMsg, galfit_constraint_filename, psf, mpZeropoi
 	for each image
 	
 	parameter imageFilename -
-		the string of the full path filename of the image on which galfit will be run
+		the full path filename of the image on which galfit will be run
 		
 	parameter galfit_constraint_filename -
 		the filename of the constraint file. if none, value is "none"
 		
 	parameter segmentationMapFilename -
-		the filename of the segmentation map that masks galfit to one of the image's galaxies
+		the filename of the segmentation map that masks galfit
 	
 	parameter includeBulgeComponent - 
 		boolean indicating if a bulge should be fit after first pass by galfit
 		
 	parameter includeGaussianSmoothing - 
-		boolean indicating if a gaussian smoothing should be applied before running minmax
+		boolean indicating if a gaussian smoothing should be applied
 		
 	returns - string indicating success or failure
 	'''
@@ -561,8 +667,9 @@ def run_galfit(imageFilename, logMsg, galfit_constraint_filename, psf, mpZeropoi
 	[directory_location, galaxy_id, filt, cam_number, image_number, height, width
 		] = run_imhead(imageFilename)
 
-	# the x y location of the top left corner of the area on which to run minmax and imexam
-	# in the coordinate system of the original image (which would be 0, 0 for the original)
+	# the x y location of the top left corner of the area on which 
+	# to run minmax and imexam in the coordinate system of the original image 
+	# (which would be 0, 0 for the original)
 	xStart = float(width)/2 - 75.0
 	xStop = float(width)/2 + 75.0
 	yStart = float(height)/2 - 75.0
@@ -623,7 +730,8 @@ def run_galfit(imageFilename, logMsg, galfit_constraint_filename, psf, mpZeropoi
 		os.system("rm " + "fit.log")
 		os.system("mv galfit.01 " + galfit_single_result_filename)
 	else:
-		return logMsg + "galfit failed on single component, probably mushroom (atomic galfit error)"
+		return (logMsg + "galfit failed on single component, " + 
+							"probably mushroom (atomic galfit error)")
 	
 	# done unless command line specified that a second galfit run
 	# should be done by adding a bulge component to the result of the first run
@@ -651,7 +759,8 @@ def run_galfit(imageFilename, logMsg, galfit_constraint_filename, psf, mpZeropoi
 			os.system("mv galfit.01 " + galfit_bulge_result_filename)
 			#os.system('mv ' + galfit_output_filename + ' ' + galfit_bulge_output_filename)
 		else:
-			return logMsg + "galfit failed on bulge component, probably mushroom"
+			return (logMsg + "galfit failed on bulge component, " + 
+								"probably mushroom (atomic galfit error)")
 	
 	# if we get here then nothing went wrong!
 	return logMsg + "success"
@@ -662,7 +771,8 @@ def run_imhead(imageFilename):
 	invokes the iraf method imhead on the given image filename
 	parses the result to be returned as a list of string values
 	
-	parameter imageFilename - the full path filename of the image on which to invoke imexam
+	parameter imageFilename - 
+		the full path filename of the image on which to invoke imexam
 	
 	returns - 
 		a string list of image info in the form 
@@ -733,9 +843,11 @@ def run_minmax(imageFilename, xStart, yStart, xStop, yStop):
 	parameter values that define two points on the image
 	start is the top left, stop is the bottom right
 	
-	parameter imageFilename - the full path filename of the image on which to invoke imexam
+	parameter imageFilename - 
+		the full path filename of the image on which to invoke minmax
 	
-	returns - list of two strings defining the coordinates of the max pixel ['xMax', 'yMax']
+	returns - list of two strings defining the coordinates of the max pixel 
+				['xMax', 'yMax']
 	'''
 	
 	# string representing the part of the image to run minmax and imexam on
@@ -751,13 +863,16 @@ def run_imexam(imageFilename, centerCoords, xStart, yStart, xStop, yStop):
 	'''
 	method calls iraf's imexam method on the area defined by the four
 	
-	parameter imageFilename - the full path filename of the image on which to invoke imexam
-	parameter centerCoords - the coordinates of the initial guess of the center of the galaxy
+	parameter imageFilename - 
+		the full path filename of the image on which to invoke imexam
+	parameter centerCoords - 
+		the coordinates of the initial guess of the center of the galaxy
 	parameter xStart, xStop, yStart, yStop - 
 		two points on the original image defining an area to run minmax on
 		start is the top left, stop is the bottom right
 	
-	returns - list of string image info in the form [line, col, mag, radius, b_a, PA]
+	returns - list of string image info in the form 
+				[line, col, mag, radius, b_a, PA]
 	'''
 		
 	
@@ -765,7 +880,7 @@ def run_imexam(imageFilename, centerCoords, xStart, yStart, xStop, yStop):
 	areaStr = ('[' + str(int(xStart)) + ':' + str(int(xStop)) + "," +
 					 str(int(yStart)) + ':' + str(int(yStop)) + ']')
 
-	#writes the output of the minmax function of iraf to a file for later use. 
+	# writes the output of the minmax function of iraf to a file for later use. 
 	coordsFilename = "coords"
 	
 	# this is t prevent parallel processes from overwriting the coords.tmp file
@@ -779,8 +894,10 @@ def run_imexam(imageFilename, centerCoords, xStart, yStart, xStop, yStop):
 	write_coords.write(centerCoords[0] + " " + centerCoords[1])
 	write_coords.close()	
 	
-	#run imexam passing coords.tmp, data is returned in the last two elements of the return array of strings
-	imexam_out = iraf.imexam(imageFilename + areaStr, use_display=0, imagecur=coordsFilename, Stdout=1)[-2:]
+	# run imexam passing coords.tmp, 
+	# data is returned in the last two elements of the return array of strings
+	imexam_out = iraf.imexam(imageFilename + areaStr, 
+						use_display=0, imagecur=coordsFilename, Stdout=1)[-2:]
 
 	# ['COL	LINE X Y', 
 	# 'R MAG FLUX SKY PEAK E PA BETA ENCLOSED MOFFAT DIRECT']
@@ -802,8 +919,10 @@ def run_imexam(imageFilename, centerCoords, xStart, yStart, xStop, yStop):
 	except:
 		print("using default values for b/a")
 		b_a = 1.0
+	
+	#this gives the position angle. iraf measures up from x. Galfit down from y
 	try:
-		PA = float(data[6]) - 90.0				#this gives the position angle. iraf measures up from x. Galfit down from y
+		PA = float(data[6]) - 90.0				
 	except:
 		print("using default values for position angle")
 		PA = 0.0
@@ -811,74 +930,15 @@ def run_imexam(imageFilename, centerCoords, xStart, yStart, xStop, yStop):
 	return [line, col, mag, radius, b_a, PA]
 	
 	
-def run_sextractor(imageFilename, configFilename, outputCatFilename, sextractorOptionsList):
-	'''
-	runs sextractor on the given image, returning the galaxy id of
-	the galaxy closest to the center of the image. Also produces
-	generic.cat and check.fits in the calling directory, which 
-	are galaxy info and the segmentation map, respectively.
-	
-	parameter imageFilename -
-		the string of the full path filename of the image on which sextractor will be run
-	
-	returns - the id of the galaxy closest to the center of the image
-	'''
-
-	# SYNTAX: sex <image> [<image2>][-c <configuration_file>][-<keyword> <value>]
-	os.system("sex " + imageFilename + " -c " + configFilename + " " + " ".join(sextractorOptionsList))
-	
-	# get galaxyID of the galaxy closest to center of image from outputCatFile
-	outputCatFile = open(outputCatFilename, 'r')
-	outputCatContents = outputCatFile.readlines()
-	outputCatFile.close()
-	
-	# start on the last line
-	lineIndex = -1
-	
-	# set to a high value initially, just needs to be greater than the closest galaxy distance
-	prevBestDist = 1000.0
-	
-	# nonsense value to indicate if no galaxy is found closer than above distance
-	prevBestID = -1
-	
-	# read backwards until comment character indicates the field description section
-	while outputCatContents[lineIndex].strip()[0] != "#":
-		
-		# TODO: might be able to have indices collected from commented header
-		# gather galaxy information
-		galaxyOutputList = outputCatContents[lineIndex].strip().split()
-		galaxyID = galaxyOutputList[0]
-		galaxyXimage = galaxyOutputList[26]
-		galaxyYimage = galaxyOutputList[27]
-		
-		# TODO: generalize center
-		# compute distance from image center 
-		dx = 300.0 - float(galaxyXimage)
-		dy = 300.0 - float(galaxyYimage)
-		curDist = math.sqrt( dx*dx + dy*dy )
-		
-		# store galaxyID if closer than prev closest galaxy to center of image
-		if curDist < prevBestDist:
-			prevBestID = galaxyID
-			prevBestDist = curDist
-		
-		# go to the next (prev in file) line
-		lineIndex = lineIndex - 1
-		
-	if prevBestID == -1:
-		print ("sextractor did not yield a galaxy closer than " + str(prevBestDist))
-	else:
-		print ("closest galaxy id is " + str(prevBestID) + 
-				" at distance of " + str(prevBestDist))
-		
-	# return the id of the galaxy that was identified as the center galaxy
-	return prevBestID
-
-	
 def run_imreplace(imageFilename, lowPixVal, uppPixVal):
 	'''
-	imreplace images value lower upper
+	replace all pixels in image between lower and upper with zero
+
+	parameter imageFilename - the full path filename of the image on which to invoke imexam
+	parameter lowPixVal - the lower bound of pixels to be replaced with zero
+	parameter uppPixVal - the upper bound of pixels to be replaced with zero
 	'''
+	# TODO: this could be inlines easily, only called once in main()
 	iraf.imreplace(imageFilename, 0, lower=lowPixVal, upper=uppPixVal)
 
 
@@ -891,49 +951,52 @@ def write_galfit_single_parameter(imageFilename, galfit_single_parameter_filenam
 	'''
 	writes the galfit parameter file for the single component
 	
-	parameter imageFilename - the filename of the image on which galfit is being run
+	parameter imageFilename - 
+		the filename of the image on which galfit is being run
 	parameter galfit_single_parameter_filename - 
 		the filename of the galfit parameter file being written
 	parameter galfit_single_output_filename - 
-		the filename of the file where the output of the galfit run will be written
+		the filename where the output of the galfit run will be written
 	parameter psf - the filename of the psf to give galfit
 	parameter segmentationMapFilename - 
 		the filename of the Bad pixel mask to give galfit
-	parameter xMin, yMin, xMax, yMax - the area on the image on which to run galfit
+	parameter xMin, yMin, xMax, yMax - 
+		the area on the image on which to run galfit
 	parameter X, Y, magnitude, rad, BA, angle - 
-		initial guess at the location and description of the single galaxy component
+		initial guess at the description of the single galaxy component
 	'''
 	os.system('touch ' + galfit_single_parameter_filename)
 	galfitSingleParamFile = open(galfit_single_parameter_filename,'w')
 	galfitSingleParamFile.write("# IMAGE and GALFIT CONTROL PARAMETERS\n")
 	galfitSingleParamFile.write("A) " + imageFilename + 
-			"						#Input data image block\n")
+		"						#Input data image block\n")
 	galfitSingleParamFile.write("B) " + galfit_single_output_filename +
-			"						#Output data image block\n")
+		"						#Output data image block\n")
 	galfitSingleParamFile.write("C)" + " none" + 
-			"						#Sigma image name (made from data if blank or 'none')\n")
+		"						#Sigma image name (made from data if blank or 'none')\n")
 	galfitSingleParamFile.write("D) " + psf + 
-			"						#Input PSF image and (optional) diffusion kernel\n")
+		"						#Input PSF image and (optional) diffusion kernel\n")
 	galfitSingleParamFile.write("E)" + " 1" + 
-			"						#PSF fine sampling factor relative to data\n")
+		"						#PSF fine sampling factor relative to data\n")
 	galfitSingleParamFile.write("F) " + segmentationMapFilename +							
-			"						#Bad pixel mask (FITS file or ASCIIcoord list)\n")
+		"						#Bad pixel mask (FITS file or ASCIIcoord list)\n")
 	galfitSingleParamFile.write("G)" + " none" + 
-			"						#File with parameter constraints (ASCII file)\n")
-	galfitSingleParamFile.write("H) " + str(xMin) + " " + str(xMax) + " " + str(yMin) + " " + str(yMax) + 
-			"						#Image region to fit (xmin xmax ymin ymax)\n")
+		"						#File with parameter constraints (ASCII file)\n")
+	galfitSingleParamFile.write("H) " + str(xMin) + " " + str(xMax) + " " + 
+										str(yMin) + " " + str(yMax) + 
+		"						#Image region to fit (xmin xmax ymin ymax)\n")
 	galfitSingleParamFile.write("I)" + " 200 200" + 
-			"						#Size of the convolution box (x y)\n")
+		"						#Size of the convolution box (x y)\n")
 	galfitSingleParamFile.write("J) " + str(mpZeropoint) + 
-			"						#Magnitude photometric zeropoint\n")
+		"						#Magnitude photometric zeropoint\n")
 	galfitSingleParamFile.write("K) " + str(plateScale) + "	 " + str(plateScale) + 
-			"						#Plate scale (dx dy)  [arcsec per pixel]\n")
+		"						#Plate scale (dx dy)  [arcsec per pixel]\n")
 	galfitSingleParamFile.write("O)" + " regular" + 
-			"						#display type (regular, curses, both\n")
+		"						#display type (regular, curses, both\n")
 	galfitSingleParamFile.write("P)" + " 0" + 
-			"						#Options: 0=normal run; 1,2=make model/imgblock & quit\n")
+		"						#Options: 0=normal run; 1,2=make model/imgblock & quit\n")
 	galfitSingleParamFile.write("S)" + " 0" + 
-			"						#Modify/create components interactively?\n")
+		"						#Modify/create components interactively?\n")
 	galfitSingleParamFile.write("\n")
 	galfitSingleParamFile.write("# INITIAL FITTING PARAMETERS\n")
 	galfitSingleParamFile.write("#\n")
@@ -977,15 +1040,19 @@ def write_galfit_single_parameter(imageFilename, galfit_single_parameter_filenam
 	
 	
 def get_galfit_bulge_parameter_str(galfit_single_result_filename, 
-							galfit_bulge_output_filename, galfit_constraint_filename, rad):
+				galfit_bulge_output_filename, galfit_constraint_filename, rad):
 	'''
 	reads the results of the first run and returns it as a long string
 	with the output and constraint modified for bulge run and the
 	new bulge component appended
 	
-	parameter galfit_single_result_filename - the file being read
+	parameter galfit_single_result_filename - the parameter file being read
+	parameter galfit_bulge_output_filename - the image output filename
+	parameter galfit_constraint_filename - the constraint filename
+	parameter rad - the half light radius from original imexam estimate
 	
-	returns - the string of the read file, modified for two component
+	returns - the string of the result file given, 
+			modified to be used as parameter file for two component fit 
 	'''
 	singleResultFile = open(galfit_single_result_filename, "r")		
 	resultContents = singleResultFile.readlines()
@@ -1058,25 +1125,28 @@ if __name__ == "__main__":
 						action="store_true")
 						
 	# gauss is a boolean (true or false) specifying if the simulation should
-	# apply gaussian smoothing before running minmax
+	# apply gaussian smoothing before running sextractor and/or iraf.minmax
 	parser.add_option("-g","--gauss", 
-						help="turn on to include a gaussian smoothing before minmax is run",
+						help="turn on to include pre gaussian smoothing of image",
 						action="store_true")
 						
 	# run sextractor
-	parser.add_option("-s","--sextractor", 
-						help="turn on to run sextractor",
+	parser.add_option("-s","--simSextractor", 
+						help="turn on to run sextractor for simulation images",
+						action="store_true")
+	parser.add_option("-r","--realSextractor", 
+						help="turn on to run sextractor for real images",
 						action="store_true")
 	
-	# the constraint file. verified as file and assigned default if omitted after parsing
+	# the constraint file. verified after parsing
 	parser.add_option("-c","--constraint", 
 						help="set the file containing the galfit constraints")
 			
 	# Magnitude photometric zeropoint	
 	parser.add_option("--mpz", metavar="MagnitudePhotometricZeropoint",
 						type="float", default=26.3, 
-						help="set the magnitude photometric zeropoint for galfit to use" +
-								"[default: %default]")
+						help="set the magnitude photometric zeropoint for" +
+							" galfit to use [default: %default]")
 						
 	# Plate scale
 	parser.add_option("--plate", metavar="PlateScale",
@@ -1084,13 +1154,28 @@ if __name__ == "__main__":
 						help="set the plate scale for galfit to use" +
 								"[default: %default]")
 								
-	# PSF file. verified as file and assigned default if omitted after parsing
+	# PSF file. verified after parsing
 	parser.add_option("--psf",
 						help="set the file for galfit to use as a PSF")
 						
 	# parse the command line using above parameter rules
+	# options - list with everthing defined above, 
+	# args - anything left over after parsing options
 	[options, args] = parser.parse_args()
 	
+	# verify that there is at least one positional argument
+	if len(args) != 1:
+		parser.error("incorrect number of arguments, must provide an input" + 
+					" file containing the list of full path image filenames.")
+	# verify that the positional argument is an existing file
+	elif not os.path.isfile(args[0]):
+		parser.error("input file " + args[0] + 
+					" either does not exist or is not accessible")
+		
+	# for sextractor, if enabled on the command line
+	if options.simSextractor and options.realSextractor:
+		parser.error("options -s (--simSextractor) and -r (--realSextractor)" +
+					" are mutually exclusive")
 	sextractorOptionsList = []
 	if options.sextractor and len(args) > 1:
 		for index, sexOpt in enumerate(args[1:]):
@@ -1099,31 +1184,31 @@ if __name__ == "__main__":
 			else:				# even, consider the value for previous keyword
 				sextractorOptionsList.append(sexOpt)
 			
-		print("command line extra input: " + " ".join(sextractorOptionsList) + "\nAbove interpreted as sextractor keyword options")
+		print("command line extra input: " + " ".join(sextractorOptionsList) + 
+			"\nAbove are being interpreted as sextractor keyword options")
 		exit()
-	
-	if len(args) != 1:
-		parser.error("incorrect number of arguments, " + 
-					"must provide an input file containing the list of full path image filenames.")
-	elif not os.path.isfile(args[0]):
-		parser.error("input file " + args[0] + " either does not exist or is not accessible")
 		
-	# set constraint to default unless one is given on command line, and verify file exists
+	# galfit constraint default none unless one is given on command line
 	if not options.constraint:
 		constraintFilename = "none"
+	# verify that file exists
 	elif not os.path.isfile(options.constraint):
-		parser.error("constraint file " + options.constraint + " either does not exist or is not accessible")
+		parser.error("constraint file " + options.constraint + 
+					" either does not exist or is not accessible")
 	else:
 		constraintFilename = options.constraint
 		
-	# set psf to default unless one is given on command line, and verify file exists
+	# galfit psf default none unless one is given on command line
 	if not options.psf:
 		psf = "none"
+	# verify that the file exists
 	elif not os.path.isfile(options.psf):
-		parser.error("psf file " + options.psf + " either does not exist or is not accessible")
+		parser.error("psf file " + options.psf +
+					" either does not exist or is not accessible")
 	else:
 		psf = options.psf
 	
-	# pass pertinent info to the main method
+	# pass pertinent (and verified) info to the main method
 	main(args[0], constraintFilename, psf, options.mpz, options.plate, 
-		options.bulge, options.gauss, options.sextractor, sextractorOptionsList)
+		options.bulge, options.gauss, options.simSextractor, 
+		options.realSextractor, sextractorOptionsList)
