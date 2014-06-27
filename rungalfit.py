@@ -64,7 +64,7 @@ def main(imageListFilename, galfit_constraint_filename, psf, mpZeropoint,
 		# these can be changed on the command line with flags
 		outputCatFilename = "generic.cat" # -CATALOG_NAME <filename>
 		segmentationMapFilename = "check.fits" # -CHECKIMAGE_NAME <filename>
-		for sexIndex,sexOpt in sextractorOptionsList:
+		for sexIndex, sexOpt in enumerate(sextractorOptionsList):
 			if sexOpt == "-CATALOG_NAME":
 				outputCatFilename = sextractorOptionsList[sexIndex + 1]
 			elif sexOpt == "-CHECKIMAGE_NAME":
@@ -76,6 +76,8 @@ def main(imageListFilename, galfit_constraint_filename, psf, mpZeropoint,
 		
 		# prepend the -c <config file> option to the sextractor options list
 		sextractorOptionsList = ["-c", configFilename] + sextractorOptionsList
+		
+		print("running sextractor with options: " + str(sextractorOptionsList))
 	else:
 		segmentationMapFilename = "none"
 
@@ -439,8 +441,8 @@ def write_sextractor_config_file(sextractor_config_filename,
 			"BACK_TYPE       " + backType + 
 			"             # What background is subtracted from the images:" +
 '''
-					# AUTO - The internal interpolated background-map. In the manual it says "INTERNAL" here but the keyword is AUTO. 
-					# MANUAL A user-supplied constant value provided in BACK VALUE.")
+				# AUTO - The internal interpolated background-map. In the manual it says "INTERNAL" here but the keyword is AUTO. 
+				# MANUAL A user-supplied constant value provided in BACK VALUE.")
 ''')
 	
 	if backValue:
@@ -486,9 +488,9 @@ def write_sextractor_config_file(sextractor_config_filename,
 			"CHECKIMAGE_TYPE  " + checkImageType + 
 			"   # can be one of \"NONE\", \"BACKGROUND\"," + 
 '''
-					# "MINIBACKGROUND", "-BACKGROUND", "OBJECTS",
-					# "-OBJECTS", "SEGMENTATION", "APERTURES",
-					# or "FILTERED" (*)
+				# "MINIBACKGROUND", "-BACKGROUND", "OBJECTS",
+				# "-OBJECTS", "SEGMENTATION", "APERTURES",
+				# or "FILTERED" (*)
 ''')
 	
 	sextractorConfigFile.write(
@@ -1164,7 +1166,7 @@ if __name__ == "__main__":
 	[options, args] = parser.parse_args()
 	
 	# verify that there is at least one positional argument
-	if len(args) != 1:
+	if len(args) < 1:
 		parser.error("incorrect number of arguments, must provide an input" + 
 					" file containing the list of full path image filenames.")
 	# verify that the positional argument is an existing file
@@ -1177,7 +1179,7 @@ if __name__ == "__main__":
 		parser.error("options -s (--simSextractor) and -r (--realSextractor)" +
 					" are mutually exclusive")
 	sextractorOptionsList = []
-	if options.sextractor and len(args) > 1:
+	if (options.simSextractor or options.realSextractor) and len(args) > 1:
 		for index, sexOpt in enumerate(args[1:]):
 			if index % 2 == 0: 	# odd, consider a keyword
 				sextractorOptionsList.append("-" + sexOpt.upper())
@@ -1186,7 +1188,6 @@ if __name__ == "__main__":
 			
 		print("command line extra input: " + " ".join(sextractorOptionsList) + 
 			"\nAbove are being interpreted as sextractor keyword options")
-		exit()
 		
 	# galfit constraint default none unless one is given on command line
 	if not options.constraint:
