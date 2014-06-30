@@ -102,24 +102,25 @@ def main(imageListFilename, galfit_constraint_filename, psf, mpZeropoint,
 					sexImageFilename = imageFilename
 					
 				# run sextractor and saved return galaxy id for imreplace
-				gfitGalaxyID = run_sextractor(sexImageFilename, outputCatFilename, 
-											sextractorOptionsList)
+				[gfitGalaxyID, gfitGalaxyDist] = run_sextractor(
+					sexImageFilename, outputCatFilename, sextractorOptionsList)
 				
 				# use imreplace method to zero single galaxy in the segmentation map
 				#run_imreplace(segmentationMapFilename, gfitGalaxyID, gfitGalaxyID)
-				# TODO: so that galfit does not run, remove to run galfit
 				# rename outputs of sextractor so they will not be overwritten?
 				# use sextractor galaxy (x, y) or continue to use minmax?
-				#os.system("mv " + outputCatFilename + " " +
+				os.system("mv " + outputCatFilename + " " +
 				#		"/".join(imageFilename.split("/")[:-1]) + 
-				#		".".join(imageFilename.split("/")[-1
-				#					].split(".")[:-1]) + ".cat")
-				#os.system("mv " + segmentationMapFilename + " " +
+						".".join(imageFilename.split("/")[-1
+									].split(".")[:-1]) + ".cat")
+				os.system("mv " + segmentationMapFilename + " " +
 				#		"/".join(imageFilename.split("/")[:-1]) + 
-				#		".".join(imageFilename.split("/")[-1
-				#					].split(".")[:-1]) + "_check.fits")
-				logMsg = (logMsg + imageFilename + ": galaxy to be replaced id = " +
-						str(gfitGalaxyID) + "\n")
+						".".join(imageFilename.split("/")[-1
+									].split(".")[:-1]) + "_check.fits")
+				logMsg = (logMsg + imageFilename + 
+						": id dist = " +
+						str(gfitGalaxyID) + " " + str(gfitGalaxyDist) + "\n")
+				# TODO: so that galfit does not run, remove to run galfit
 				continue
 		
 			# galfit returns a string indicating success or some failure
@@ -600,7 +601,7 @@ def run_sextractor(imageFilename, outputCatFilename, sextractorOptionsList):
 	parameter sextractorOptionsList - 
 		list of options for sextractor
 		
-	returns - the id of the galaxy closest to the center of the image
+	returns - the [ID, dist] of the galaxy closest to the center of the image
 	'''
 
 	# SYNTAX: sex <image> [<image2>][-c <configuration_file>][-<keyword> <value>]
@@ -652,7 +653,7 @@ def run_sextractor(imageFilename, outputCatFilename, sextractorOptionsList):
 				" at distance of " + str(prevBestDist))
 		
 	# return the id of the galaxy that was identified as the center galaxy
-	return prevBestID
+	return [prevBestID, prevBestDist]
 
 
 def run_galfit(imageFilename, logMsg, galfit_constraint_filename, 
