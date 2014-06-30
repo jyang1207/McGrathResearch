@@ -60,9 +60,6 @@ def main(imageListFilename, galfit_constraint_filename, psf, mpZeropoint,
 		#not based on images, ".".join(imageFilename.split(".")[:-1]) + ".sex"
 		configFilename = "rungalfitSExtractorConfig.sex" 
 		
-		# TODO: hard coded, change that? Generate a default if none is found?
-		paramFilename = "WFC3.morphWG.param"
-		
 		# these can be changed on the command line with flags
 		outputCatFilename = "generic.cat" # -CATALOG_NAME <filename>
 		segmentationMapFilename = "check.fits" # -CHECKIMAGE_NAME <filename>
@@ -73,8 +70,7 @@ def main(imageListFilename, galfit_constraint_filename, psf, mpZeropoint,
 				segmentationMapFilename = sextractorOptionsList[sexIndex + 1]
 		
 		# write the sextractor config file, which will be used for all images
-		write_sextractor_config_file(configFilename, paramFilename,
-									runSimSextractor)
+		write_sextractor_config_file(configFilename, runSimSextractor)
 		
 		# prepend the -c <config file> option to the sextractor options list
 		sextractorOptionsList = ["-c", configFilename] + sextractorOptionsList
@@ -168,15 +164,12 @@ def main(imageListFilename, galfit_constraint_filename, psf, mpZeropoint,
 	print ("Done!\nIn order to summarize results run sumgalfit.py")
 
 	
-def write_sextractor_config_file(sextractor_config_filename, 
-				sextractor_param_filename, runSimSextractor):
+def write_sextractor_config_file(sextractor_config_filename, runSimSextractor):
 	'''
 	writes the sextractor config file
 	
 	parameter sextractor_config_filename - 
 		the filename of the sextractor config file being written
-	parameter sextractor_param_filename - 
-		name of the file containing catalog contents
 	parameter runSimSextractor - 
 		boolean for sim version (real is default) of sextractor config file
 	'''
@@ -189,6 +182,7 @@ def write_sextractor_config_file(sextractor_config_filename,
 								# ASCII VOTABLE - XML-VOTable format, together with meta-data,
 								# FITS 1.0 - FITS format as in SExtractor 1
 								# FITS LDAC - FITS "LDAC" format (the original image header is copied).
+	sextractorParamFilename = "sex.param"
 	#------------------------------- Extraction ----------------------------------
 	detectType = "CCD" 
 	#fitsUnsigned = Force 16-bit FITS input data to be interpreted as unsigned integers.
@@ -214,7 +208,7 @@ def write_sextractor_config_file(sextractor_config_filename,
 		
 	analysisThreshold = "5"	#Threshold (in surface brightness) at which CLASS STAR and FWHM operate. 1 argument: relative to Background RMS. 2 arguments: mu (mag/arcsec 2 ), Zero-point (mag).
 	filterBool = "Y"	#  If true,filtering is applied to the data before extraction.
-	filterName = "tophat_9.0_9x9.conv"	# Name and path of the file containing the filter definition
+	filterName = "sex.conv"	# Name and path of the file containing the filter definition
 	#filterThresh = ? 	# Lower and higher thresholds (in back-ground standard deviations) for a pix-el
 						#to be consideredin filtering (used for retinafiltering only).
 	#threshType = ?	# Meaning of the DETECT_THRESH and ANALYSIS_THRESH parameters:
@@ -308,10 +302,10 @@ def write_sextractor_config_file(sextractor_config_filename,
 			"CATALOG_TYPE    " + catalogType + 
 			"      # \"NONE\",\"ASCII_HEAD\",\"ASCII\",\"FITS_1.0\", or \"FITS_LDAC\"\n")
 	
-	if sextractor_param_filename:
+	if sextractorParamFilename:
 		#WFC3.morphWG.param
 		sextractorConfigFile.write(
-			"PARAMETERS_NAME " + sextractor_param_filename + 
+			"PARAMETERS_NAME " + sextractorParamFilename + 
 			"  # name of the file containing catalog contents\n")
 		
 	sextractorConfigFile.write(
@@ -1150,7 +1144,8 @@ if __name__ == "__main__":
 	NOTE: argparse is the current version as of python 2.7, 
 			but optparse is used to maintain better backwards compatibility
 	'''
-	usage = "usage: %prog [-h help] [options] inputFile" 
+	usage = ("usage: %prog [-h help] [options (with '-'|'--' prefix)]" +
+			" inputFile [sextractor options (no '-' prefix)]")
 
 	# used to parse command line arguments
 	parser = OptionParser(usage)
@@ -1158,42 +1153,42 @@ if __name__ == "__main__":
 	# bulge is a boolean (true or false) specifying if the simulation should
 	# fit an additional component after the initial fit from imexam results
 	parser.add_option("-b","--bulge", 
-						help="turn on to include a bulge fit after the initial galaxy fit",
-						action="store_true")
+				help="turn on to include a bulge fit after the initial galaxy fit",
+				action="store_true")
 						
 	# gauss is a boolean (true or false) specifying if the simulation should
 	# apply gaussian smoothing before running sextractor and/or iraf.minmax
 	parser.add_option("-g","--gauss", 
-						help="turn on to include pre gaussian smoothing of image",
-						action="store_true")
+				help="turn on to include pre gaussian smoothing of image",
+				action="store_true")
 						
 	# run sextractor
 	parser.add_option("-s","--simSextractor", 
-						help="turn on to run sextractor for simulation images",
-						action="store_true")
+				help="turn on to run sextractor for simulation images",
+				action="store_true")
 	parser.add_option("-r","--realSextractor", 
-						help="turn on to run sextractor for real images",
-						action="store_true")
+				help="turn on to run sextractor for real images",
+				action="store_true")
 	
 	# the constraint file. verified after parsing
 	parser.add_option("-c","--constraint", 
-						help="set the file containing the galfit constraints")
+				help="set the file containing the galfit constraints")
 			
 	# Magnitude photometric zeropoint	
 	parser.add_option("--mpz", metavar="MagnitudePhotometricZeropoint",
-						type="float", default=26.3, 
-						help="set the magnitude photometric zeropoint for" +
-							" galfit to use [default: %default]")
+				type="float", default=26.3, 
+				help="set the magnitude photometric zeropoint for" +
+					" galfit to use [default: %default]")
 						
 	# Plate scale
 	parser.add_option("--plate", metavar="PlateScale",
-						type="float", default=0.06, 
-						help="set the plate scale for galfit to use" +
-								"[default: %default]")
+				type="float", default=0.06, 
+				help="set the plate scale for galfit to use" +
+						"[default: %default]")
 								
 	# PSF file. verified after parsing
 	parser.add_option("--psf",
-						help="set the file for galfit to use as a PSF")
+				help="set the file for galfit to use as a PSF")
 						
 	# parse the command line using above parameter rules
 	# options - list with everthing defined above, 
@@ -1243,7 +1238,7 @@ if __name__ == "__main__":
 					" either does not exist or is not accessible")
 	else:
 		psf = options.psf
-	
+
 	# pass pertinent (and verified) info to the main method
 	main(args[0], constraintFilename, psf, options.mpz, options.plate, 
 		options.bulge, options.gauss, options.simSextractor, 
