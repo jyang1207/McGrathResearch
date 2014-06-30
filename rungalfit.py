@@ -1144,9 +1144,13 @@ if __name__ == "__main__":
 	NOTE: argparse is the current version as of python 2.7, 
 			but optparse is used to maintain better backwards compatibility
 	'''
-	usage = ("usage: %prog [-h help] [options (with '-'|'--' prefix)]" +
-			" inputFile [sextractor options (no '-' prefix)]")
-
+	usage = ("\n%prog inputFile [-h help] [options (with '-'|'--' prefix)]" +
+			"  [sextractor options (no '-' prefix)]\n" +
+			"Ex:\n" +
+			"%prog images.txt\n" +
+			"%prog images.txt -c pos.constraint -b -g\n" +
+			"%prog images.txt -s parameter_name sex.param filter_name sex.conv")
+			
 	# used to parse command line arguments
 	parser = OptionParser(usage)
 	
