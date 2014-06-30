@@ -110,14 +110,14 @@ def main(imageListFilename, galfit_constraint_filename, psf, mpZeropoint,
 				# TODO: so that galfit does not run, remove to run galfit
 				# rename outputs of sextractor so they will not be overwritten?
 				# use sextractor galaxy (x, y) or continue to use minmax?
-				os.system("mv " + outputCatFilename + " " +
-						"/".join(imageFilename.split("/")[:-1]) + 
-						".".join(imageFilename.split("/")[-1
-									].split(".")[:-1]) + ".cat")
-				os.system("mv " + segmentationMapFilename + " " +
-						"/".join(imageFilename.split("/")[:-1]) + 
-						".".join(imageFilename.split("/")[-1
-									].split(".")[:-1]) + "_check.fits")
+				#os.system("mv " + outputCatFilename + " " +
+				#		"/".join(imageFilename.split("/")[:-1]) + 
+				#		".".join(imageFilename.split("/")[-1
+				#					].split(".")[:-1]) + ".cat")
+				#os.system("mv " + segmentationMapFilename + " " +
+				#		"/".join(imageFilename.split("/")[:-1]) + 
+				#		".".join(imageFilename.split("/")[-1
+				#					].split(".")[:-1]) + "_check.fits")
 				logMsg = (logMsg + imageFilename + ": galaxy to be replaced id = " +
 						str(gfitGalaxyID) + "\n")
 				continue
