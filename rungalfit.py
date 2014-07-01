@@ -9,6 +9,7 @@ import time
 import math
 from optparse import OptionParser
 
+
 def main(imageListFilename, galfit_constraint_filename, psf, mpZeropoint, 
 		plateScale, includeBulgeComponent, includeGaussianSmoothing, 
 		runSimSextractor, runRealSextractor, sextractorOptionsList):
@@ -110,11 +111,11 @@ def main(imageListFilename, galfit_constraint_filename, psf, mpZeropoint,
 				# rename outputs of sextractor so they will not be overwritten?
 				# use sextractor galaxy (x, y) or continue to use minmax?
 				os.system("mv " + outputCatFilename + " " +
-				#		"/".join(imageFilename.split("/")[:-1]) + 
+				#		"/".join(imageFilename.split("/")[:-1]) + "/" +
 						".".join(imageFilename.split("/")[-1
 									].split(".")[:-1]) + ".cat")
 				os.system("mv " + segmentationMapFilename + " " +
-				#		"/".join(imageFilename.split("/")[:-1]) + 
+				#		"/".join(imageFilename.split("/")[:-1]) + "/" +
 						".".join(imageFilename.split("/")[-1
 									].split(".")[:-1]) + "_check.fits")
 				logMsg = (logMsg + imageFilename + 
@@ -197,7 +198,7 @@ def write_sextractor_config_file(sextractor_config_filename, runSimSextractor):
 					
 	# these variable values change for simulation template vs real template
 	if runSimSextractor:
-		detectMinArea = "100"	# Minimum number of pixels above threshold triggering detection
+		detectMinArea = "10000"	# Minimum number of pixels above threshold triggering detection
 		detectThreshold = "20"	#Detection threshold (0-2). 1 argument: (ADUs or relative to Background RMS, see THRESH TYPE). 2 arguments: R (mag.arcsec 2 ), Zero-point (mag).
 		deblendThreshold = "16"	# Minimum contrast parameter for deblending.
 		deblendMinContrast = "0.005"	# Minimum contrast parameter for deblending.
@@ -260,9 +261,9 @@ def write_sextractor_config_file(sextractor_config_filename, runSimSextractor):
 						#IDENTICAL identical to input image (useful for converting formats),
 						#NONE no check-image,
 	#--------------------- Memory (change with caution!) -------------------------
-	memoryObjStack = "2000"
-	memoryPixStack = "200000"
-	memoryBufferSize = "2048"
+	memoryObjStack = "50000"
+	memoryPixStack = "1000000"
+	memoryBufferSize = "8500"
 	#----------------------------- Miscellaneous ---------------------------------
 	verboseType = "QUIET"	#run silently,
 							#NORMAL display warnings and limited info concerning the work in progress,
@@ -1145,6 +1146,7 @@ if __name__ == "__main__":
 	NOTE: argparse is the current version as of python 2.7, 
 			but optparse is used to maintain better backwards compatibility
 	'''
+	
 	usage = ("\n%prog inputFile [-h help] [options (with '-'|'--' prefix)]" +
 			"  [sextractor options (no '-' prefix)]\n" +
 			"Ex:\n" +
