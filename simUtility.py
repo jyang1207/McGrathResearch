@@ -3,6 +3,7 @@
 import os
 import sys
 from pyraf import iraf
+from multiprocessing import Process
 import time
 import math
 from optparse import OptionParser
@@ -15,7 +16,7 @@ class SimGalaxy:
 	
 	
 	def __init__(self, id):
-		'''galaxy constructor'''
+		galaxy constructor
 		
 		# The unique identifier of the galaxy, e.g. "VELA02"
 		self.id = id
@@ -30,7 +31,7 @@ class SimImage:
 	simulated image of a galaxy
 	'''
 	
-	def __init__(self, filename, galaxyID="", timeStep="", filter="", 
+	def __init__(self, filename, galaxyID="", timeStep="", filt="", 
 					camera="", height=0, width=0, model=None):
 		'''image constructor'''
 		
@@ -44,7 +45,7 @@ class SimImage:
 		self.timeStep = timeStep
 		
 		# the filter of the image, e.g. "F160W"
-		self.filter = filter
+		self.filter = filt
 		
 		# the camera of the image, e.g. "0"
 		self.camera = camera
@@ -89,9 +90,7 @@ class SimulationProcessor:
 	'''
 		
 	def __init__(self):
-		'''
-		
-		'''
+		'''constructor sets some initial field defaults'''
 		self.outputCatFilename = "generic.cat" # -CATALOG_NAME <filename>
 		self.segmentationMapFilename = "check.fits" # -CHECKIMAGE_NAME <filename>
 		self.sextractorOptionsList = []
@@ -100,7 +99,8 @@ class SimulationProcessor:
 		
 	def parseGalfitOptions(self, parser, options):
 		'''
-		
+		parses the galfit options from the command line and uses to
+		initialize fields with options or defaults
 		'''
 		self.mpZeropoint = options.mpz
 		self.plateScale = options.plate
@@ -129,7 +129,8 @@ class SimulationProcessor:
 		
 	def parseSextractorOptions(self, parser, simSextractor, realSextractor, sextractorOptions):
 		'''
-		
+		parses the sextractor options from the command line and uses to
+		initialize fields with options or defaults
 		'''
 		self.simSextractor = simSextractor
 		self.realSextractor = realSextractor
@@ -161,10 +162,7 @@ class SimulationProcessor:
 		
 	def write_sextractor_config_file(self):
 		'''
-		writes the sextractor config file
-		
-		parameter runSimSextractor - 
-			boolean for sim version (real is default) of sextractor config file
+		writes the sextractor configuration file
 		'''
 		# variables describing the sextractor config file
 		catalogName = "generic.cat" # Name of the output catalogue. If the name "STDOUT" is given and CATALOG TYPE is set to ASCII, ASCII HEAD, ASCII SKYCAT, or ASCII VOTABLE the catalogue will be piped to the standard output (stdout
@@ -576,28 +574,31 @@ class SimulationProcessor:
 				"           # H-band magnitude zero-point\n")
 	
 	
-	def run_sextractor(image):
+	def run_sextractor(self, image):
 		'''
-		Updates image with model containing galaxy position and 
-		updates seg map to remove that galaxy by
-		running sextractor on the given image, producing
+		runs sextractor on the given image, producing
 		*.cat and *.fits in the calling directory, which 
-		are galaxy info and the segmentation map, respectively.
+		are all galaxy info and the segmentation map, respectively.
+		
+		Updates the model of the SimImage instance passed by parameter
+		Updates segmentation map to remove the galaxy closest to (300, 300)
 		
 		parameter image -
 			the image on which sextractor will be run
 		'''
 	
-		# SYNTAX: sex <image> [<image2>][-c <configuration_file>][-<keyword> <value>]
-		os.system("sex " + image.filename + " -c " + self.sextractorConfigFilename + 
+		# run sextractor
+		# sex <image> [<image2>][-c <configuration_file>][-<keyword> <value>]
+		os.system(	"sex " + image.filename + 
+					" -c " + self.sextractorConfigFilename + 
 					" " + " ".join(self.sextractorOptionsList))
 		
-		# get galaxyID of the galaxy closest to center of image from outputCatFile
+		# get galaxyID of the galaxy closest to center of image from .cat file
 		outputCatFile = open(self.outputCatFilename, 'r')
 		outputCatContents = outputCatFile.readlines()
 		outputCatFile.close()
 		
-		# start on the last line
+		# start on the last line of .cat file
 		lineIndex = -1
 		
 		# set to a high value initially, just needs to be bigger than best
@@ -616,10 +617,10 @@ class SimulationProcessor:
 			galaxyXimage = float(galaxyOutputList[26])
 			galaxyYimage = float(galaxyOutputList[27])
 			
-			# TODO: generalize center
+			# TODO: generalize center from 300.0
 			# compute distance from image center 
-			dx = 300.0 - galaxyXimage
-			dy = 300.0 - galaxyYimage
+			dx = float(image.width)/2.0 - galaxyXimage
+			dy = float(image.height)/2.0 - galaxyYimage
 			curDist = math.sqrt( dx*dx + dy*dy )
 			
 			# store galaxyID if closer than prev closest galaxy to center of image
@@ -689,7 +690,7 @@ class SimulationProcessor:
 				image.camera = image.camera + c
 	
 	
-	def run_imexam(image):
+	def run_imexam(self, image):
 		'''
 		method calls iraf's imexam method on the area defined by the four
 		
@@ -719,7 +720,7 @@ class SimulationProcessor:
 		
 		# run imexam passing coords.tmp, 
 		# data is returned in the last two elements of the return array of strings
-		imexam_out = iraf.imexam(imageFilename, use_display=0, 
+		imexam_out = iraf.imexam(image.filename, use_display=0, 
 								imagecur=coordsFilename, Stdout=1)[-2:]
 	
 		# ['COL	LINE X Y', 
@@ -730,7 +731,7 @@ class SimulationProcessor:
 		
 		xy = imexam_out[0].strip().split()
 		data = imexam_out[1].strip().split()
-		
+
 		image.model.centerCoords[0] = float(xy[0])	
 		image.model.centerCoords[1] = float(xy[1])
 		image.model.radius = float(data[0])						
@@ -751,7 +752,7 @@ class SimulationProcessor:
 			image.model.angle = 0.0
 		
 		
-	def defineGalfitFilenames(image):
+	def defineGalfitFilenames(self, image):
 		directory_location = "/".join(image.filename.split("/")[:-1]) + "/"
 		filename = (directory_location + image.galaxyID + "_" + 
 					image.timeStep + '_cam' + str(image.camera) + 
@@ -764,7 +765,7 @@ class SimulationProcessor:
 		self.galfit_bulge_result_filename =		filename + "_bulge_result.txt"
 
 	
-	def write_galfit_single_parameter(image):
+	def write_galfit_single_parameter(self, image):
 		'''
 		writes the galfit parameter file for the single component
 		
@@ -793,7 +794,7 @@ class SimulationProcessor:
 			"						#Image region to fit (xmin xmax ymin ymax)\n")
 		galfitSingleParamFile.write("I)" + " 200 200" + 
 			"						#Size of the convolution box (x y)\n")
-		galfitSingleParamFile.write("J) " + str(mpZeropoint) + 
+		galfitSingleParamFile.write("J) " + str(self.mpZeropoint) + 
 			"						#Magnitude photometric zeropoint\n")
 		galfitSingleParamFile.write("K) " + str(self.plateScale) + "	 " + str(self.plateScale) + 
 			"						#Plate scale (dx dy)  [arcsec per pixel]\n")
@@ -845,7 +846,7 @@ class SimulationProcessor:
 		galfitSingleParamFile.close()
 	
 	
-	def write_galfit_bulge_parameter():
+	def write_galfit_bulge_parameter(self):
 		'''
 		reads the results of the first run and returns it as a long string
 		with the output and constraint modified for bulge run and the
@@ -921,7 +922,7 @@ class SimulationProcessor:
 		galfitBulgeParamFile.close()
 		
 		
-	def run_galfit(image):
+	def run_galfit(self, image):
 		'''
 		opens file (parameter) containing list of images and loops over every image, 
 		running galfit and writing the results to the same directory as the images
@@ -932,9 +933,6 @@ class SimulationProcessor:
 		parameter imageFilename -
 			the image on which galfit will be run
 		'''
-		
-		# run iraf's imhead method to get image information
-		self.run_imhead(image)
 		
 		# calls iraf's imexam method, passing filename as a parameter
 		# along with center coordinates and two points defining area
@@ -1025,6 +1023,9 @@ class SimulationProcessor:
 			
 			# run galfit, preventing crashes but printing and logging errors in log
 			try:
+		
+				# run iraf's imhead method to populate image fields
+				self.run_imhead(curImage)
 						
 				# run sextractor (if command line set to do so) for each image
 				# galfit uses the resulting segmentation map
@@ -1035,17 +1036,17 @@ class SimulationProcessor:
 					
 					# rename outputs of sextractor so they will not be overwritten?
 					# use sextractor galaxy (x, y) or continue to use minmax?
-					os.system("mv " + outputCatFilename + " " +
+					os.system("mv " + self.outputCatFilename + " " +
 					#		"/".join(imageFilename.split("/")[:-1]) + "/" +
 							".".join(imageFilename.split("/")[-1
 										].split(".")[:-1]) + ".cat")
-					os.system("mv " + segmentationMapFilename + " " +
+					os.system("mv " + self.segmentationMapFilename + " " +
 					#		"/".join(imageFilename.split("/")[:-1]) + "/" +
 							".".join(imageFilename.split("/")[-1
 										].split(".")[:-1]) + "_check.fits")
 			
 				# galfit returns a string indicating success or some failure
-				run_galfit(image)
+				self.run_galfit(curImage)
 			
 			# allow user to stop the program running altogether with ctrl-c 
 			# (might require multiple escapes)
@@ -1167,6 +1168,8 @@ if __name__ == "__main__":
 		sp.parseSextractorOptions(parser, options.simSextractor, 
 									options.realSextractor, args[1:])
 		
+		# TODO: for multiprocessing, clone sp here and invoke method
+		#		in separate processes on separate image ranges
 		# pass list of images to method that orchestrates modeling
 		sp.modelImages(imageFilenames)
 		
