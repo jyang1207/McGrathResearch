@@ -3,7 +3,8 @@
 import os
 import sys
 from pyraf import iraf
-from multiprocessing import Process
+import copy
+import multiprocessing
 import time
 import math
 from optparse import OptionParser
@@ -84,7 +85,7 @@ class SimModel:
 		# the position angle of the galaxy
 		self.angle = angle
 		
-class SimulationProcessor:
+class ModelGenerator:
 	'''
 	The controller class, which holds methods for analyzing simulations
 	'''
@@ -991,98 +992,109 @@ class SimulationProcessor:
 		self.logMsg = self.logMsg + "success"
 		
 
-	def modelImages(self, imageFilenames):
+	def modelImage(self, imageFilename):
 		'''
-		takes the list of images the command line and begins analysis
+		models a single image
+		
+		parameter imageFilename - the filename of the image to be modeled
+		
+		returns - the log string of the modeling
 		'''	
+			
+		curImage = SimImage(imageFilename)
 		
-		# verify there are images to model 
-		if len(imageFilenames) == 0:
-			print("no images in given file (positional argument). Exiting.")
-			exit()
-			
-		# convenience boolean for dealing with conditionally running sextractor
-		runSextractor = self.realSextractor or self.simSextractor
-			
-		# sextractor specific tasks that can be done outside of image loop
-		if runSextractor:
-		
-			# write the sextractor config file, which will be used for all images
-			self.write_sextractor_config_file()
-	
-		# set the log header
-		self.logMsg = "run on " + time.strftime("%m-%d-%Y") + "\n"
-		
-		# this loops through every image in images file and removes whitespace
-		imageFilenames = [imageFilename.strip() for imageFilename in imageFilenames]
-		
-		# this loops through every image, runs galfit, and writes the log string 
-		for imageFilename in imageFilenames:
-			
-			curImage = SimImage(imageFilename)
-			
-			# run galfit, preventing crashes but printing and logging errors in log
-			try:
-		
-				# run iraf's imhead method to populate image fields
-				self.run_imhead(curImage)
-						
-				# run sextractor (if command line set to do so) for each image
-				# galfit uses the resulting segmentation map
-				if runSextractor:
-						
-					# run sextractor, which updates image and seg map
-					self.run_sextractor(curImage)
-					
-					# rename outputs of sextractor so they will not be overwritten?
-					# use sextractor galaxy (x, y) or continue to use minmax?
-					os.system("mv " + self.outputCatFilename + " " +
-					#		"/".join(imageFilename.split("/")[:-1]) + "/" +
-							".".join(imageFilename.split("/")[-1
-										].split(".")[:-1]) + ".cat")
-					os.system("mv " + self.segmentationMapFilename + " " +
-					#		"/".join(imageFilename.split("/")[:-1]) + "/" +
-							".".join(imageFilename.split("/")[-1
-										].split(".")[:-1]) + "_check.fits")
-			
-				# galfit returns a string indicating success or some failure
-				self.run_galfit(curImage)
-			
-			# allow user to stop the program running altogether with ctrl-c 
-			# (might require multiple escapes)
-			except KeyboardInterrupt:
-				print ("Escape sequence ctrl-c used to terminate rungalfit. " + 
-						"Log file will still be written.")
-				break
-			
-			# catch, log, and ignore all runtime errors except explicit exits 
-			# (for debugging). move on to the next image regardless
-			except not SystemExit:
-				errorMsg = str(sys.exc_info()[0]) + str(sys.exc_info()[1])
-				print (errorMsg)
-				self.logMsg = self.logMsg + errorMsg
-			
-			# every image on its own line in the log file
-			self.logMsg = self.logMsg + "\n"
-		
-		# create the log file in the same directory as python was called
+		# run galfit, preventing crashes but printing and logging errors in log
 		try:
-			logFilename = ("rungalfit_log_" + 
-				imageFilenames[0].split("/")[-1].split("_")[1].split(".")[1] + 
-				"_to_" + 
-				imageFilenames[-1].split("/")[-1].split("_")[1].split(".")[1] +
-				"_" + time.strftime("%m-%d-%Y") + ".txt")
-		except:
-			logFilename = ("rungalfit_log.txt")
-		
-		# write the log file
-		print ("writing log file to " + logFilename)
-		log = open(logFilename, 'w')
-		log.write(self.logMsg)
-		log.close()
-		
-		print ("Done!\nIn order to summarize results run sumgalfit.py")
 	
+			# run iraf's imhead method to populate image fields
+			self.run_imhead(curImage)
+					
+			# run sextractor (if command line set to do so) for each image
+			# galfit uses the resulting segmentation map
+			if self.simSextractor or self.realSextractor:
+					
+				# run sextractor, which updates image and seg map
+				self.run_sextractor(curImage)
+				
+				# rename outputs of sextractor so they will not be overwritten?
+				# use sextractor galaxy (x, y) or continue to use minmax?
+				os.system("mv " + self.outputCatFilename + " " +
+				#		"/".join(imageFilename.split("/")[:-1]) + "/" +
+						".".join(imageFilename.split("/")[-1
+									].split(".")[:-1]) + ".cat")
+				os.system("mv " + self.segmentationMapFilename + " " +
+				#		"/".join(imageFilename.split("/")[:-1]) + "/" +
+						".".join(imageFilename.split("/")[-1
+									].split(".")[:-1]) + "_check.fits")
+		
+			# galfit returns a string indicating success or some failure
+			self.run_galfit(curImage)
+		
+		# catch, log, and ignore all runtime errors except explicit exits 
+		# (for debugging). move on to the next image regardless
+		except not (SystemExit or KeyboardInterrupt):
+			errorMsg = str(sys.exc_info()[0]) + str(sys.exc_info()[1])
+			print (errorMsg)
+			self.logMsg = self.logMsg + errorMsg
+		
+		return self.logMsg
+
+
+def runModelGenerator(imageFilenames, parallelBool):
+	'''
+	
+	'''
+	
+	# holds methods for analyzing simulations
+	modelGen = ModelGenerator()
+	
+	# parse the command line options
+	modelGen.parseGalfitOptions(parser, options)
+	modelGen.parseSextractorOptions(parser, options.simSextractor, 
+								options.realSextractor, args[1:])
+	
+				
+	# sextractor specific tasks that can be done outside of image loop
+	if modelGen.realSextractor or modelGen.simSextractor:
+	
+		# write the sextractor config file, which will be used for all images
+		modelGen.write_sextractor_config_file()
+	
+	# this loops through every image in images file and removes whitespace
+	imageFilenames = [imageFilename.strip() for imageFilename in imageFilenames]
+
+	# TODO: for multiprocessing, clone modelGen here and invoke method
+	#		in separate processes on separate image ranges
+	# pass list of images to method that orchestrates modeling
+	if parallelBool:
+		pool = multiprocessing.Pool()
+		results = pool.map(modelGen.modelImage, imageFilenames)
+	else:
+		results = []
+		for imageFilename in imageFilenames:
+			results.append(modelGen.modelImage(imageFilename.strip()))
+			
+	# compose the log
+	log = "run on " + time.strftime("%m-%d-%Y") + "\n"
+	for result in results:
+		log = log + result + "\n"
+	
+	# create the log file in the same directory as python was called
+	try:
+		logFilename = ("rungalfit_log_" + 
+			imageFilenames[0].split("/")[-1].split("_")[1].split(".")[1] + 
+			"_to_" + 
+			imageFilenames[-1].split("/")[-1].split("_")[1].split(".")[1] +
+			"_" + time.strftime("%m-%d-%Y") + ".txt")
+	except:
+		logFilename = ("rungalfit_log.txt")
+	
+	# write the log file
+	print ("writing log file to " + logFilename)
+	logFile = open(logFilename, 'w')
+	logFile.write(log)
+	logFile.close()
+
 	
 if __name__ == "__main__":
 	'''
@@ -1119,6 +1131,11 @@ if __name__ == "__main__":
 				action="store_true")
 	parser.add_option("-r","--realSextractor", 
 				help="turn on to run sextractor for real images",
+				action="store_true")
+	
+	# run sextractor
+	parser.add_option("-p","--parallel", 
+				help="turn on to run images in parallel, otherwise series",
 				action="store_true")
 	
 	# the constraint file. verified after parsing
@@ -1160,27 +1177,9 @@ if __name__ == "__main__":
 		imageFilenames = inputFile.readlines()
 		inputFile.close()
 		
-		# holds methods for analyzing simulations
-		sp = SimulationProcessor()
+		# verify there are images to model 
+		if len(imageFilenames) == 0:
+			print("no images in given file (positional argument). Exiting.")
+			exit()
 		
-		# parse the command line options
-		sp.parseGalfitOptions(parser, options)
-		sp.parseSextractorOptions(parser, options.simSextractor, 
-									options.realSextractor, args[1:])
-		
-		# TODO: for multiprocessing, clone sp here and invoke method
-		#		in separate processes on separate image ranges
-		# pass list of images to method that orchestrates modeling
-		sp.modelImages(imageFilenames)
-		
-	
-		
-		
-		
-		
-		
-		
-		
-		
-		
-	
+		runModelGenerator(imageFilenames, options.parallel)
