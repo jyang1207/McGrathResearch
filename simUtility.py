@@ -862,17 +862,9 @@ class ModelGenerator:
 	
 	def write_galfit_bulge_parameter(self):
 		'''
-		reads the results of the first run and returns it as a long string
+		reads the results of the first run and writes it to a new file
 		with the output and constraint modified for bulge run and the
 		new bulge component appended
-		
-		parameter galfit_single_result_filename - the parameter file being read
-		parameter galfit_bulge_output_filename - the image output filename
-		parameter galfit_constraint_filename - the constraint filename
-		parameter rad - the half light radius from original imexam estimate
-		
-		returns - the string of the result file given, 
-				modified to be used as parameter file for two component fit 
 		'''
 		singleResultFile = open(self.galfit_single_result_filename, "r")		
 		resultContents = singleResultFile.readlines()
