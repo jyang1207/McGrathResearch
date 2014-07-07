@@ -594,6 +594,19 @@ class ModelGenerator:
 					" -c " + self.sextractorConfigFilename + 
 					" " + " ".join(self.sextractorOptionsList))
 		
+		# TODO: rename outputs of sextractor so they will not be overwritten?
+		# use sextractor galaxy (x, y) or continue to use minmax?
+		newOutCatFilename = (self.destDirectory + 
+				".".join(image.filename.split("/")[-1
+							].split(".")[:-1]) + ".cat")
+		newSegMapFilename = (self.destDirectory + 
+				".".join(image.filename.split("/")[-1
+							].split(".")[:-1]) + "_check.fits")
+		os.system("mv " + self.outputCatFilename + " " + newOutCatFilename)
+		self.outputCatFilename = newOutCatFilename
+		os.system("cp " + self.segmentationMapFilename + " " + newSegMapFilename)
+		self.segmentationMapFilename = newSegMapFilename
+				
 		# get galaxyID of the galaxy closest to center of image from .cat file
 		outputCatFile = open(self.outputCatFilename, 'r')
 		outputCatContents = outputCatFile.readlines()
@@ -646,7 +659,8 @@ class ModelGenerator:
 		
 		# use the id of the galaxy that was identified as the center galaxy
 		# to replace the appropriate pixels in segmentation map for galfit mask
-		iraf.imreplace(self.segmentationMapFilename, 0, prevBestID, prevBestID)
+		iraf.imreplace(self.segmentationMapFilename, 0, 
+					lower=prevBestID, upper=prevBestID)
 
 
 	def run_imhead(self, image):
@@ -687,7 +701,7 @@ class ModelGenerator:
 		# these statements accomodate for camera numbers
 		image.camera = ""
 		for c in cam_str:
-			if c.isDigit():
+			if c.isdigit():
 				image.camera = image.camera + c
 	
 	
@@ -715,8 +729,8 @@ class ModelGenerator:
 		# create coords[x*].tmp for writing max coordinate to pass to imexam
 		os.system('touch '+ coordsFilename)
 		write_coords = open(coordsFilename, 'w')
-		write_coords.write(	image.model.centerCoords[0] + " " + 
-							image.model.centerCoords[1])
+		write_coords.write(	str(image.model.centerCoords[0]) + " " + 
+							str(image.model.centerCoords[1]))
 		write_coords.close()	
 		
 		# run imexam passing coords.tmp, 
@@ -754,8 +768,7 @@ class ModelGenerator:
 		
 		
 	def defineGalfitFilenames(self, image):
-		directory_location = "/".join(image.filename.split("/")[:-1]) + "/"
-		filename = (directory_location + image.galaxyID + "_" + 
+		filename = (self.destDirectory + image.galaxyID + "_" + 
 					image.timeStep + '_cam' + str(image.camera) + 
 					'_' + image.filter)
 		self.galfit_single_parameter_filename =	filename + '_single_param.txt'
@@ -947,7 +960,7 @@ class ModelGenerator:
 			self.logMsg = self.logMsg + "Default position angle used. "
 		
 		# define filenames
-		self.defineGalfitFilenames()
+		self.defineGalfitFilenames(image)
 		
 		# writes the single component parameter file, given filenames and galxy parameters
 		self.write_galfit_single_parameter(image)
@@ -1002,6 +1015,12 @@ class ModelGenerator:
 		'''	
 			
 		curImage = SimImage(imageFilename)
+		self.logMsg = imageFilename + ": "
+		self.destDirectory = "results/" # "/".join(image.filename.split("/")[:-1]) + "/"
+		try:
+			os.mkdir(self.destDirectory)
+		except:
+			pass
 		
 		# run galfit, preventing crashes but printing and logging errors in log
 		try:
@@ -1015,17 +1034,6 @@ class ModelGenerator:
 					
 				# run sextractor, which updates image and seg map
 				self.run_sextractor(curImage)
-				
-				# rename outputs of sextractor so they will not be overwritten?
-				# use sextractor galaxy (x, y) or continue to use minmax?
-				os.system("mv " + self.outputCatFilename + " " +
-				#		"/".join(imageFilename.split("/")[:-1]) + "/" +
-						".".join(imageFilename.split("/")[-1
-									].split(".")[:-1]) + ".cat")
-				os.system("mv " + self.segmentationMapFilename + " " +
-				#		"/".join(imageFilename.split("/")[:-1]) + "/" +
-						".".join(imageFilename.split("/")[-1
-									].split(".")[:-1]) + "_check.fits")
 		
 			# galfit returns a string indicating success or some failure
 			self.run_galfit(curImage)
@@ -1052,7 +1060,6 @@ def runModelGenerator(imageFilenames, parallelBool):
 	modelGen.parseGalfitOptions(parser, options)
 	modelGen.parseSextractorOptions(parser, options.simSextractor, 
 								options.realSextractor, args[1:])
-	
 				
 	# sextractor specific tasks that can be done outside of image loop
 	if modelGen.realSextractor or modelGen.simSextractor:
@@ -1081,13 +1088,13 @@ def runModelGenerator(imageFilenames, parallelBool):
 	
 	# create the log file in the same directory as python was called
 	try:
-		logFilename = ("rungalfit_log_" + 
+		logFilename = (modelGen.destDirectory + "rungalfit_log_" + 
 			imageFilenames[0].split("/")[-1].split("_")[1].split(".")[1] + 
 			"_to_" + 
 			imageFilenames[-1].split("/")[-1].split("_")[1].split(".")[1] +
 			"_" + time.strftime("%m-%d-%Y") + ".txt")
 	except:
-		logFilename = ("rungalfit_log.txt")
+		logFilename = (modelGen.destDirectory + "rungalfit_log.txt")
 	
 	# write the log file
 	print ("writing log file to " + logFilename)
@@ -1172,6 +1179,7 @@ if __name__ == "__main__":
 		parser.error("input file " + args[0] + 
 					" either does not exist or is not accessible")
 	else:		
+		
 		# read list of image filenames from input file
 		inputFile = open(args[0], 'r')
 		imageFilenames = inputFile.readlines()
