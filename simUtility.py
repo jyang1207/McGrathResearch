@@ -33,7 +33,7 @@ class SimImage:
 	'''
 	
 	def __init__(self, filename, galaxyID="", timeStep="", filt="", 
-					camera="", height=0, width=0, model=None):
+					camera="", height=0, width=0, models=[]):
 		'''image constructor'''
 		
 		# the full path filename of the image
@@ -58,7 +58,7 @@ class SimImage:
 		self.width = width
 		
 		# the model of the galaxy in the image
-		self.model = model
+		self.models = models
 
 class SimModel:
 	'''
@@ -163,9 +163,6 @@ class ModelGenerator:
 				self.sextractorOptionsList.append("-" + sexOpt.upper())
 			else:				# even, consider the value for previous keyword
 				self.sextractorOptionsList.append(sexOpt)
-					
-		print("command line extra input: " + " ".join(self.sextractorOptionsList) + 
-			"\nAbove are being interpreted as sextractor keyword options")
 			
 		
 	def write_sextractor_config_file(self):
@@ -214,7 +211,7 @@ class ModelGenerator:
 							# RELATIVE - scaling factor to the background RMS,
 							# ABSOLUTE - absolute level (in ADUs or in surface brightness)
 			
-		cleanBool = "Y" # If true, a cleaning of the catalog is done before being written to disk.
+		cleanBool = "N" # If true, a cleaning of the catalog is done before being written to disk.
 		cleanParam = "1.0"	# Efficiency of cleaning.
 		maskType = "CORRECT"	#CORRECT - replace by values of pixels symmetric with respect to the source center.
 								#BLANK --put detected pixels belonging to neighbors to zero,
@@ -585,8 +582,8 @@ class ModelGenerator:
 	def run_sextractor(self, image):
 		'''
 		runs sextractor on the given image, producing
-		*.cat and *.fits in the calling directory, which 
-		are all galaxy info and the segmentation map, respectively.
+		*.cat and *.fits in the destination directory, which 
+		are galaxy info and the segmentation map, respectively.
 		
 		Updates the model of the SimImage instance passed by parameter
 		Updates segmentation map to remove the galaxy closest to (300, 300)
@@ -609,20 +606,6 @@ class ModelGenerator:
 					" -CHECKIMAGE_NAME " + self.segmentationMapFilename + 
 					" " + " ".join(self.sextractorOptionsList))
 		
-		# TODO: rename outputs of sextractor so they will not be overwritten?
-		# use sextractor galaxy (x, y) or continue to use minmax?
-		'''		
-		newOutCatFilename = (self.destDirectory + 
-				".".join(image.filename.split("/")[-1
-							].split(".")[:-1]) + ".cat")
-		newSegMapFilename = (self.destDirectory + 
-				".".join(image.filename.split("/")[-1
-							].split(".")[:-1]) + "_check.fits")
-		os.system("mv " + self.outputCatFilename + " " + newOutCatFilename)
-		self.outputCatFilename = newOutCatFilename
-		os.system("cp " + self.segmentationMapFilename + " " + newSegMapFilename)
-		self.segmentationMapFilename = newSegMapFilename
-		'''				
 		# get galaxyID of the galaxy closest to center of image from .cat file
 		outputCatFile = open(self.outputCatFilename, 'r')
 		outputCatContents = outputCatFile.readlines()
@@ -644,21 +627,27 @@ class ModelGenerator:
 			# gather galaxy information
 			galaxyOutputList = outputCatContents[lineIndex].strip().split()
 			galaxyID = galaxyOutputList[0]
-			galaxyXimage = float(galaxyOutputList[26])
-			galaxyYimage = float(galaxyOutputList[27])
+			galaxyX = float(galaxyOutputList[1])
+			galaxyY = float(galaxyOutputList[2])
 			
-			# TODO: generalize center from 300.0
+			# store (x,y) of the galaxy as the image's model
+			image.model.append(SimModel(centerCoords=[galaxyX,galaxyY],
+										magnitude=float(galaxyOutputList[3]),
+										radius=float(galaxyOutputList[4]),
+										ba=1.0-float(galaxyOutputList[5]),
+										angle=float(galaxyOutputList[6]),)
+			
 			# compute distance from image center 
-			dx = float(image.width)/2.0 - galaxyXimage
-			dy = float(image.height)/2.0 - galaxyYimage
+			dx = float(image.width)/2.0 - galaxyX
+			dy = float(image.height)/2.0 - galaxyY
 			curDist = math.sqrt( dx*dx + dy*dy )
 			
 			# store galaxyID if closer than prev closest galaxy to center of image
 			if curDist < prevBestDist:
 				prevBestID = galaxyID
 				prevBestDist = curDist
-				prevBestX = galaxyXimage
-				prevBestY = galaxyYimage
+				prevBestX = galaxyX
+				prevBestY = galaxyY
 			
 			# go to the next (prev in file) line
 			lineIndex = lineIndex - 1
@@ -669,14 +658,6 @@ class ModelGenerator:
 		else:
 			print ("closest galaxy id is " + str(prevBestID) + 
 					" at distance of " + str(prevBestDist))
-			
-		# store (x,y) of the galaxy as the image's model
-		image.model = SimModel(centerCoords=[prevBestX,prevBestY])
-		
-		# use the id of the galaxy that was identified as the center galaxy
-		# to replace the appropriate pixels in segmentation map for galfit mask
-		iraf.imreplace(self.segmentationMapFilename, 0, 
-					lower=prevBestID, upper=prevBestID)
 
 
 	def run_imhead(self, image):
