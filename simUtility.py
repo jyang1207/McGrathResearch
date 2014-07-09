@@ -25,6 +25,7 @@ class SimGalaxy:
 		# and the values are a list of the particular images
 		self.timeSteps = {}
 '''
+
 class SimImage:
 	'''
 	class to hold the methods and data for a particular 
@@ -66,7 +67,7 @@ class SimModel:
 	'''
 	
 	def __init__(self, centerCoords=[0.0,0.0], magnitude=0.0, 
-					radius=0.0, ba=0.0, angle=0.0):
+					radius=0.0, ba=0.0, angle=0.0, sers=0.0):
 		'''model constructor'''
 		
 		# the center coordinates of the galaxy
@@ -83,6 +84,9 @@ class SimModel:
 	
 		# the position angle of the galaxy
 		self.angle = angle
+	
+		# the sersic index of the galaxy
+		self.sers = sers
 		
 class ModelGenerator:
 	'''
@@ -95,7 +99,8 @@ class ModelGenerator:
 		self.segmentationMapFilename = "check.fits" # -CHECKIMAGE_NAME <filename>
 		self.sextractorOptionsList = []
 		self.sextractorConfigFilename = "config.sex"
-		self.destDirectory = destDirectory # "/".join(image.filename.split("/")[:-1]) + "/"
+		# "/".join(image.filename.split("/")[:-1]) + "/"
+		self.destDirectory = destDirectory
 		
 		
 	def parseGalfitOptions(self, parser, options):
@@ -108,7 +113,7 @@ class ModelGenerator:
 		self.mpZeropoint = options.mpz
 		self.plateScale = options.plate
 		self.includeBulgeComponent = options.bulge
-		self.includeGaussianSmoothing = options.gauss
+		self.galfitOff = options.galfitOff
 		
 		# galfit constraint default none unless one is given on command line
 		if not options.constraint:
@@ -131,7 +136,7 @@ class ModelGenerator:
 			self.psf = options.psf
 		
 		
-	def parseSextractorOptions(self, parser, simSextractor, realSextractor, sextractorOptions):
+	def parseSextractorOptions(self, parser, realSextractor, sextractorOptions):
 		'''
 		parses the sextractor options from the command line and uses to
 		initialize fields with options or defaults
@@ -143,13 +148,7 @@ class ModelGenerator:
 				"Expecting sextractor options to be <keyword> <value> pairs")
 				
 		# store running sextractor booleans
-		self.simSextractor = simSextractor
 		self.realSextractor = realSextractor
-		
-		# store a default value and return if not running sextractor
-		if not (self.simSextractor or self.realSextractor):
-			self.segmentationMapFilename = "none"
-			return
 		
 		# if running sextractor, gather options in a list and update fields
 		self.sextractorOptionsList = []
@@ -190,16 +189,16 @@ class ModelGenerator:
 						# MOST most common flag value.
 						
 		# these variable values change for simulation template vs real template
-		if self.simSextractor:
-			detectMinArea = "10000" # Minimum number of pixels above threshold triggering detection
-			detectThreshold = "20"	#Detection threshold (0-2). 1 argument: (ADUs or relative to Background RMS, see THRESH TYPE). 2 arguments: R (mag.arcsec 2 ), Zero-point (mag).
-			deblendThreshold = "16" # Minimum contrast parameter for deblending.
-			deblendMinContrast = "0.02"	# Minimum contrast parameter for deblending.
-		else:
+		if self.realSextractor:
 			detectMinArea = "5" # Minimum number of pixels above threshold triggering detection
 			detectThreshold = "0.75"	#Detection threshold (0-2). 1 argument: (ADUs or relative to Background RMS, see THRESH TYPE). 2 arguments: R (mag.arcsec 2 ), Zero-point (mag).
 			deblendThreshold = "16" # Minimum contrast parameter for deblending.
 			deblendMinContrast = "0.0001"
+		else:
+			detectMinArea = "10000" # Minimum number of pixels above threshold triggering detection
+			detectThreshold = "20"	#Detection threshold (0-2). 1 argument: (ADUs or relative to Background RMS, see THRESH TYPE). 2 arguments: R (mag.arcsec 2 ), Zero-point (mag).
+			deblendThreshold = "16" # Minimum contrast parameter for deblending.
+			deblendMinContrast = "0.02"	# Minimum contrast parameter for deblending.
 			
 		analysisThreshold = "5" #Threshold (in surface brightness) at which CLASS STAR and FWHM operate. 1 argument: relative to Background RMS. 2 arguments: mu (mag/arcsec 2 ), Zero-point (mag).
 		filterBool = "Y"	#  If true,filtering is applied to the data before extraction.
@@ -589,6 +588,8 @@ class ModelGenerator:
 		
 		parameter image -
 			the image on which sextractor will be run
+			
+		returns - boolean indicating if a necessary parameter is missing
 		'''
 	
 		# run sextractor
@@ -646,10 +647,16 @@ class ModelGenerator:
 				
 				if "FLUX_RADIUS" in indexDict:
 					galaxyRad = float(galaxyOutputList[indexDict["FLUX_RADIUS"]])
+					'''if "KRON_RADIUS" in indexDict:
+						galaxySers = galaxyRad/float(galaxyOutputList[indexDict["KRON_RADIUS"]])
+					else:
+						defaultStr = defaultStr + "KRON_RADIUS(for sersic index = FLUX_RADIUS/KRON_RADIUS) "
+						galaxySers = 2.5'''
 				else:
 					defaultStr = defaultStr + "FLUX_RADIUS "
 					galaxyRad = 50.0
-				
+				galaxySers = 2.5 # need to have accurate KronRadius for above
+								
 				if "A_IMAGE" in indexDict:
 					galaxyA = float(galaxyOutputList[indexDict["A_IMAGE"]])
 				else:
@@ -689,9 +696,10 @@ class ModelGenerator:
 											magnitude=galaxyMag,
 											radius=galaxyRad,
 											ba=galaxyBA,
-											angle=galaxyAng))
+											angle=galaxyAng,
+											sers=galaxySers))
 				
-				self.logMsg = " ".join([self.logMsg,galaxyID,
+				self.logMsg = " ".join([self.logMsg,str(galaxyID),
 								str(image.models[-1].centerCoords),
 								str(image.models[-1].radius)])
 		return True
@@ -805,9 +813,11 @@ class ModelGenerator:
 		filename = (self.destDirectory + image.galaxyID + "_" + 
 					image.timeStep + '_cam' + str(image.camera) + 
 					'_' + image.filter)
+		self.galfit_single_const_filename = 	filename + '_single_const.txt'
 		self.galfit_single_parameter_filename = filename + '_single_param.txt'
 		self.galfit_single_output_filename =	filename + "_single_multi.fits"
 		self.galfit_single_result_filename =	filename + "_single_result.txt"
+		self.galfit_bulge_const_filename = 		filename + '_bulge_const.txt'
 		self.galfit_bulge_parameter_filename =	filename + '_bulge_param.txt'
 		self.galfit_bulge_output_filename =		filename + "_bulge_multi.fits"
 		self.galfit_bulge_result_filename =		filename + "_bulge_result.txt"
@@ -868,22 +878,25 @@ class ModelGenerator:
 		galfitSingleParamFile.write("#		par)	par value(s)	fit toggle(s)	# parameter description\n")
 		galfitSingleParamFile.write("# ------------------------------------------------------------------------------\n")
 		galfitSingleParamFile.write("\n")
-		galfitSingleParamFile.write("# Componenet number: 1\n")
-		galfitSingleParamFile.write(" 0) sersic					#Component type\n")
-		galfitSingleParamFile.write(" 1) " + str(image.model.centerCoords[0]) + "	" + str(image.model.centerCoords[1]) + "	1	1			#Position x,y\n")
-		galfitSingleParamFile.write(" 3) " + str(image.model.magnitude) + " 1			#Integrated Magnitude\n")
-		galfitSingleParamFile.write(" 4) " + str(image.model.radius) + "			1			#R_e (half-light radius)	[pix]\n")
-		galfitSingleParamFile.write(" 5) " + "1.0000		1			#Sersic index n (de Vaucouleurs n=4)\n")
-		galfitSingleParamFile.write(" 6) 0.0000		0			#	-----\n")
-		galfitSingleParamFile.write(" 7) 0.0000		0			#	-----\n")
-		galfitSingleParamFile.write(" 8) 0.0000		0			#	-----\n")
-		galfitSingleParamFile.write(" 9) " + str(image.model.ba) + "			1			#Axis ratio (b/a)\n")
-		galfitSingleParamFile.write(" 10) " + str(image.model.angle) + "		1			#Position angle (PA) [deg: Up=0, left=90]\n")
-		galfitSingleParamFile.write(" Z) 0							#Leave in [1] or subtract [0] this comp from data?\n")
-		galfitSingleParamFile.write("\n")
+		
+		compNum = 1
+		for model in image.models:
+			galfitSingleParamFile.write("# Componenet number: " + str(compNum) + "\n")
+			galfitSingleParamFile.write(" 0) sersic					#Component type\n")
+			galfitSingleParamFile.write(" 1) " + str(model.centerCoords[0]) + "	" + str(model.centerCoords[1]) + "	1	1			#Position x,y\n")
+			galfitSingleParamFile.write(" 3) " + str(model.magnitude) + " 1			#Integrated Magnitude\n")
+			galfitSingleParamFile.write(" 4) " + str(model.radius) + "			1			#R_e (half-light radius)	[pix]\n")
+			galfitSingleParamFile.write(" 5) " + str(model.sers) + "		1			#Sersic index n (de Vaucouleurs n=4)\n")
+			galfitSingleParamFile.write(" 6) 0.0000		0			#	-----\n")
+			galfitSingleParamFile.write(" 7) 0.0000		0			#	-----\n")
+			galfitSingleParamFile.write(" 8) 0.0000		0			#	-----\n")
+			galfitSingleParamFile.write(" 9) " + str(model.ba) + "			1			#Axis ratio (b/a)\n")
+			galfitSingleParamFile.write(" 10) " + str(model.angle) + "		1			#Position angle (PA) [deg: Up=0, left=90]\n")
+			galfitSingleParamFile.write(" Z) 0							#Leave in [1] or subtract [0] this comp from data?\n")
+			galfitSingleParamFile.write("\n")
+			compNum = compNum + 1
 	
-	
-		galfitSingleParamFile.write("# Componenet number: 2\n")
+		galfitSingleParamFile.write("# Componenet number: " + str(compNum) + "\n")
 		galfitSingleParamFile.write(" 0) sky						#Component type\n")
 		galfitSingleParamFile.write(" 1) 0.0000		0			#	Sky background at center of fitting region [ADUs]\n")
 		galfitSingleParamFile.write(" 2) 0.0000		0			#	dsky/dx (sky gradient in x) [ADUs/pix]\n")
@@ -919,6 +932,7 @@ class ModelGenerator:
 				bulgeParamStr = (bulgeParamStr + "G) " + self.galfit_constraint_filename + 
 							"						#File with parameter constraints (ASCII file)\n")
 			
+			#TODO: generalize to get the sersic component closest to center
 			elif not positionLine and resultLine.strip()[:2] == "1)":
 				positionLine = resultLine.strip().split(" ")
 				bulgeParamStr = bulgeParamStr + resultLine
@@ -984,13 +998,11 @@ class ModelGenerator:
 		os.system('galfit ' + self.galfit_single_parameter_filename)
 	
 		# detects atomic galfit error
-		# If not failure then removes temp files, otherwise returns
 		if os.path.isfile(self.galfit_single_output_filename):
-			# remove temp files
 			os.system("rm " + "fit.log")
 			os.system("mv galfit.01 " + self.galfit_single_result_filename)
 		else:
-			self.logMsg = self.logMsg + ("galfit failed on single component, " + 
+			self.logMsg = self.logMsg + (" galfit failed on single component, " + 
 								"probably mushroom (atomic galfit error)")
 		
 		# done unless command line specified that a second galfit run
@@ -1013,11 +1025,11 @@ class ModelGenerator:
 				os.system("mv galfit.01 " + self.galfit_bulge_result_filename)
 				#os.system('mv ' + galfit_output_filename + ' ' + galfit_bulge_output_filename)
 			else:
-				self.logMsg = self.logMsg + ("galfit failed on bulge component, " + 
+				self.logMsg = self.logMsg + (" galfit failed on bulge component, " + 
 									"probably mushroom (atomic galfit error)")
 		
 		# if we get here then nothing went wrong!
-		self.logMsg = self.logMsg + "success"
+		self.logMsg = self.logMsg + " success"
 		
 
 	def modelImage(self, imageFilename):
@@ -1040,15 +1052,13 @@ class ModelGenerator:
 			# run iraf's imhead method to populate image fields
 			self.run_imhead(curImage)
 					
-			# run sextractor for each image
-			if self.simSextractor or self.realSextractor:
-					
-				# run sextractor, which updates image and seg map
-				if not self.run_sextractor(curImage):
-					exit()
+			# run sextractor, exiting if a necessary parameter is missing
+			if not self.run_sextractor(curImage):
+				exit()
 		
-			# run galfit, which will use the models collected by sextractor
-			#self.run_galfit(curImage)
+			# run galfit if not suppressed by command line
+			if not self.galfitOff:
+				self.run_galfit(curImage)
 		
 		# catch, log, and ignore all runtime errors except explicit exits 
 		# (for debugging). move on to the next image regardless
@@ -1057,6 +1067,7 @@ class ModelGenerator:
 			print (errorMsg)
 			self.logMsg = self.logMsg + errorMsg
 		
+		# not sure how well this is working in parallel
 		except KeyboardInterrupt:
 			print("User cancelled execution with ctrl-c")
 			exit()
@@ -1066,7 +1077,13 @@ class ModelGenerator:
 
 def runModelGenerator(parameterList):
 	'''
+	uses the command line inputs gathered in __main__ to create an
+	instance of the model generator class and invoke its methods
 	
+	parameter parameterList -
+		wierd way of receiving parameters needed to facilitate parallel
+		first four elements are parser, options, sexOptions, and destDirectory,
+		respectively, and the rest is the list of image filenames to model
 	'''
 	
 	# handle parameters this way to enable parallelism
@@ -1083,19 +1100,16 @@ def runModelGenerator(parameterList):
 	
 	# parse the command line options
 	modelGen.parseGalfitOptions(parser, options)
-	modelGen.parseSextractorOptions(parser, options.simSextractor, 
-							options.realSextractor, sextractorKeywordOptions)
+	modelGen.parseSextractorOptions(parser, options.realSextractor, 
+									sextractorKeywordOptions)
 				
 	# sextractor specific tasks that can be done outside of image loop
-	if ((modelGen.realSextractor or modelGen.simSextractor)
-			and not os.path.isfile(modelGen.sextractorConfigFilename)):
+	if not os.path.isfile(modelGen.sextractorConfigFilename):
 	
 		# write the sextractor config file, which will be used for all images
 		modelGen.write_sextractor_config_file()
 
-	# TODO: for multiprocessing, clone modelGen here and invoke method
-	#		in separate processes on separate image ranges
-	# pass list of images to method that orchestrates modeling
+	# store log result of modeling each image using modelGen instance
 	results = []
 	for imageFilename in imageFilenames:
 		results.append(modelGen.modelImage(imageFilename.strip()))
@@ -1143,26 +1157,23 @@ if __name__ == "__main__":
 	# bulge is a boolean (true or false) specifying if the simulation should
 	# fit an additional component after the initial fit from imexam results
 	parser.add_option("-b","--bulge", 
-				help="turn on to include a bulge fit after the initial galaxy fit",
+				help="include to run a galfit bulge fit after the initial galaxy fit",
 				action="store_true")
 						
 	# gauss is a boolean (true or false) specifying if the simulation should
 	# apply gaussian smoothing before running sextractor and/or iraf.minmax
-	parser.add_option("-g","--gauss", 
-				help="turn on to include pre gaussian smoothing of image",
+	parser.add_option("-g","--galfitOff", 
+				help="include to suppress running galfit after sextractor",
 				action="store_true")
 						
 	# run sextractor
-	parser.add_option("-s","--simSextractor", 
-				help="turn on to run sextractor for simulation images",
-				action="store_true")
 	parser.add_option("-r","--realSextractor", 
-				help="turn on to run sextractor for real images",
+				help="include to run sextractor for real images, otherwise sim images assumed",
 				action="store_true")
 	
 	# run sextractor
 	parser.add_option("-p","--parallel", 
-				help="turn on to run images in parallel, otherwise series",
+				help="include to run images in parallel, otherwise series",
 				action="store_true")
 	
 	# the constraint file. verified after parsing
@@ -1212,7 +1223,7 @@ if __name__ == "__main__":
 					" has no contents (full path image filenames).")
 	
 	# for parallel, only use half the cpus available
-	numCPUs = int(multiprocessing.cpu_count()/2)
+	numCPUs = int(multiprocessing.cpu_count())
 	
 	# only do parallel if rerquested and if enough images to warrant
 	if not (options.parallel and (numImages >= numCPUs)):
@@ -1223,7 +1234,7 @@ if __name__ == "__main__":
 		
 		# construct list, each element is a list of arguments for separate cpu
 		imageArgs = []
-		chunkSize = int(numImages/(numCPUs-1))
+		chunkSize = int(math.ceil(float(numImages)/float(numCPUs)))
 		print ("running in parallel, the list of images is being divided among" + 
 				" your available processors in the following chunk sizes")
 		for i in range(0, numImages, chunkSize):
@@ -1233,7 +1244,7 @@ if __name__ == "__main__":
 		
 		# see documentation on multiprocessing pool and map function
 		print ("passing job to " + str(numCPUs) + " out of " + 
-				multiprocessing.cpu_count() + " CPUs, logs will be written as completed")
+				str(multiprocessing.cpu_count()) + " CPUs, logs will be written as completed")
 		pool = multiprocessing.Pool(numCPUs)
 		results = pool.map(runModelGenerator, imageArgs)
 			
