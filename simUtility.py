@@ -3,7 +3,6 @@
 import os
 import sys
 from pyraf import iraf
-import copy
 import multiprocessing
 import time
 import math
@@ -606,42 +605,34 @@ class ModelGenerator:
 					" -CHECKIMAGE_NAME " + self.segmentationMapFilename + 
 					" " + " ".join(self.sextractorOptionsList))
 		
-		# get galaxyID of the galaxy closest to center of image from .cat file
+		# gather galaxy info from .cat file into image.models
 		outputCatFile = open(self.outputCatFilename, 'r')
 		outputCatContents = outputCatFile.readlines()
 		outputCatFile.close()
-		
-		# set to galaxyA high value initially, just needs to be bigger than best
-		'''prevBestDist = 1000.0
-		
-		# value to indicate if no galaxy is found closer than above distance
-		prevBestID = -1'''
-		
-		# read backwards until comment character indicates end of galaxies
 		indexDict = {}
 		errorStr = ""
+		galaxyID = 0
 		for catalogOutputLine in outputCatContents:
+			defaultStr = ""
 			galaxyOutputList = catalogOutputLine.strip().split()
 			
 			if galaxyOutputList[0] == "#":
 				indexDict[galaxyOutputList[2].upper()] = int(galaxyOutputList[1]) - 1
 			else:
-			
-				# gather galaxy information
-				if "NUMBER" in indexDict:
-					galaxyID = galaxyOutputList[indexDict["NUMBER"]]
-				else:
-					errorStr = errorStr + "NUMBER is a required field of the parameter file\n"
+				galaxyID = galaxyID + 1
 				
+				# gather galaxy information
 				if "X_IMAGE" in indexDict:
 					galaxyX = float(galaxyOutputList[indexDict["X_IMAGE"]])
 				else:
-					errorStr = errorStr + "X_IMAGE is a required field of the parameter file\n"
+					errorStr = (errorStr + 
+						"X_IMAGE is a required field of the parameter file\n")
 				
 				if "Y_IMAGE" in indexDict:
 					galaxyY = float(galaxyOutputList[indexDict["Y_IMAGE"]])
 				else:
-					errorStr = errorStr + "Y_IMAGE is a required field of the parameter file\n"
+					errorStr = (errorStr + 
+						"Y_IMAGE is a required field of the parameter file\n")
 				
 				if errorStr:
 					print(errorStr)
@@ -650,32 +641,42 @@ class ModelGenerator:
 				if "MAG_AUTO" in indexDict:
 					galaxyMag = float(galaxyOutputList[indexDict["MAG_AUTO"]])
 				else:
-					galaxyMag = 0.0
+					defaultStr = defaultStr + "MAG_AUTO "
+					galaxyMag = 22.3
 				
 				if "FLUX_RADIUS" in indexDict:
 					galaxyRad = float(galaxyOutputList[indexDict["FLUX_RADIUS"]])
 				else:
-					galaxyRad = 0.0
+					defaultStr = defaultStr + "FLUX_RADIUS "
+					galaxyRad = 50.0
 				
 				if "A_IMAGE" in indexDict:
 					galaxyA = float(galaxyOutputList[indexDict["A_IMAGE"]])
 				else:
+					defaultStr = defaultStr + "A_IMAGE "
 					galaxyA = 0.0	
 					
 				if "B_IMAGE" in indexDict:
 					galaxyB = float(galaxyOutputList[indexDict["B_IMAGE"]])
 				else:
+					defaultStr = defaultStr + "B_IMAGE "
 					galaxyB = 0.0	
 					
 				if "ELLIPTICITY" in indexDict:
 					galaxyE = float(galaxyOutputList[indexDict["ELLIPTICITY"]])
 				else:
-					galaxyE = 0.0
+					defaultStr = defaultStr + "ELLIPTICITY "
+					galaxyE = 1.0
 					
 				if "THETA_IMAGE" in indexDict:
 					galaxyAng = float(galaxyOutputList[indexDict["THETA_IMAGE"]])
 				else:
+					defaultStr = defaultStr + "THETA_IMAGE "
 					galaxyAng = 0.0
+					
+				if defaultStr:
+					print(defaultStr + "are missing from the sextractor" + 
+								" parameter file, default(s) are being used")
 					
 				# if eith a or b are zero, use 1-ellipticity, otherwise use b/a
 				if galaxyA and galaxyB:
@@ -690,28 +691,9 @@ class ModelGenerator:
 											ba=galaxyBA,
 											angle=galaxyAng))
 				
-				self.logMsg = (self.logMsg + ", " + galaxyID + " at " +
-								str(image.models[-1].centerCoords) + " radius " +
-								str(image.models[-1].radius))
-				# compute distance from image center 
-				'''dx = float(image.width)/2.0 - galaxyX
-				dy = float(image.height)/2.0 - galaxyY
-				
-				curDist = math.sqrt( dx*dx + dy*dy )
-				
-				# store galaxyID if closer than prev closest galaxy to center of image
-				if curDist < prevBestDist:
-					prevBestID = galaxyID
-					prevBestDist = curDist
-					prevBestX = galaxyX
-					prevBestY = galaxyY
-			
-		if prevBestID == -1:
-			print ("sextractor did not yield galaxyA galaxy closer than " + 
-					str(prevBestDist))
-		else:
-			print ("closest galaxy id is " + str(prevBestID) + 
-					" at distance of " + str(prevBestDist))'''
+				self.logMsg = " ".join([self.logMsg,galaxyID,
+								str(image.models[-1].centerCoords),
+								str(image.models[-1].radius)])
 		return True
 				
 
@@ -851,7 +833,7 @@ class ModelGenerator:
 			"						#Input PSF image and (optional) diffusion kernel\n")
 		galfitSingleParamFile.write("E)" + " 1" + 
 			"						#PSF fine sampling factor relative to data\n")
-		galfitSingleParamFile.write("F) " + self.segmentationMapFilename +							
+		galfitSingleParamFile.write("F) none" + 					
 			"						#Bad pixel mask (FITS file or ASCIIcoord list)\n")
 		galfitSingleParamFile.write("G)" + " none" + 
 			"						#File with parameter constraints (ASCII file)\n")
@@ -991,17 +973,6 @@ class ModelGenerator:
 		parameter imageFilename -
 			the image on which galfit will be run
 		'''
-		
-		# calls iraf's imexam method, passing filename as a parameter
-		# along with center coordinates and two points defining area
-		# stores initial estimates in image model
-		self.run_imexam(image)
-		
-		# write to the log if default values are being used
-		if float(image.model.ba) == 1.0:
-			self.logMsg = self.logMsg + "Default b/a used. "
-		if float(image.model.angle) == 0.0:
-			self.logMsg = self.logMsg + "Default position angle used. "
 		
 		# define filenames
 		self.defineGalfitFilenames(image)
