@@ -195,7 +195,7 @@ class ModelGenerator:
 			detectMinArea = "10000" # Minimum number of pixels above threshold triggering detection
 			detectThreshold = "20"	#Detection threshold (0-2). 1 argument: (ADUs or relative to Background RMS, see THRESH TYPE). 2 arguments: R (mag.arcsec 2 ), Zero-point (mag).
 			deblendThreshold = "16" # Minimum contrast parameter for deblending.
-			deblendMinContrast = "0.005"	# Minimum contrast parameter for deblending.
+			deblendMinContrast = "0.02"	# Minimum contrast parameter for deblending.
 		else:
 			detectMinArea = "5" # Minimum number of pixels above threshold triggering detection
 			detectThreshold = "0.75"	#Detection threshold (0-2). 1 argument: (ADUs or relative to Background RMS, see THRESH TYPE). 2 arguments: R (mag.arcsec 2 ), Zero-point (mag).
@@ -618,71 +618,66 @@ class ModelGenerator:
 		prevBestID = -1'''
 		
 		# read backwards until comment character indicates end of galaxies
+		indexDict = {}
+		errorStr = ""
 		for catalogOutputLine in outputCatContents:
-			errorStr = ""
 			galaxyOutputList = catalogOutputLine.strip().split()
-			indexDict = {strID:None for strID in [	"NUMBER",
-													"X_IMAGE",
-													"Y_IMAGE",
-													"MAG_AUTO",
-													"FLUX_RADIUS",
-													"A_IMAGE",
-													"B_IMAGE",
-													"ELLIPTICITY",
-													"THETA_IMAGE"]}
-			if galaxyOutputList[0][0] == "#":
-				try:
-					indexDict[galaxyOutputList[2].ucase()] = int(galaxyOutputList[1])
-				except:
-					pass
+			
+			if galaxyOutputList[0] == "#":
+				indexDict[galaxyOutputList[2].upper()] = int(galaxyOutputList[1]) - 1
 			else:
 			
 				# gather galaxy information
-				if indexDict["NUMBER"]:
+				if "NUMBER" in indexDict:
 					galaxyID = galaxyOutputList[indexDict["NUMBER"]]
 				else:
 					errorStr = errorStr + "NUMBER is a required field of the parameter file\n"
 				
-				if indexDict["X_IMAGE"]:
+				if "X_IMAGE" in indexDict:
 					galaxyX = float(galaxyOutputList[indexDict["X_IMAGE"]])
 				else:
 					errorStr = errorStr + "X_IMAGE is a required field of the parameter file\n"
 				
-				if indexDict["Y_IMAGE"]:
+				if "Y_IMAGE" in indexDict:
 					galaxyY = float(galaxyOutputList[indexDict["Y_IMAGE"]])
 				else:
 					errorStr = errorStr + "Y_IMAGE is a required field of the parameter file\n"
 				
-				if indexDict["MAG_AUTO"]:
+				if errorStr:
+					print(errorStr)
+					return False
+
+				if "MAG_AUTO" in indexDict:
 					galaxyMag = float(galaxyOutputList[indexDict["MAG_AUTO"]])
 				else:
 					galaxyMag = 0.0
 				
-				if indexDict["FLUX_RADIUS"]:
+				if "FLUX_RADIUS" in indexDict:
 					galaxyRad = float(galaxyOutputList[indexDict["FLUX_RADIUS"]])
 				else:
 					galaxyRad = 0.0
 				
-				if indexDict["A_IMAGE"]:
+				if "A_IMAGE" in indexDict:
 					galaxyA = float(galaxyOutputList[indexDict["A_IMAGE"]])
 				else:
-					galaxyA = 0.0
-				
-				if indexDict["B_IMAGE"]:
+					galaxyA = 0.0	
+					
+				if "B_IMAGE" in indexDict:
 					galaxyB = float(galaxyOutputList[indexDict["B_IMAGE"]])
 				else:
-					galaxyB = 0.0
+					galaxyB = 0.0	
 					
-				if indexDict["ELLIPTICITY"]:
+				if "ELLIPTICITY" in indexDict:
 					galaxyE = float(galaxyOutputList[indexDict["ELLIPTICITY"]])
 				else:
 					galaxyE = 0.0
-				
-				if indexDict["THETA_IMAGE"]:
+					
+				if "THETA_IMAGE" in indexDict:
 					galaxyAng = float(galaxyOutputList[indexDict["THETA_IMAGE"]])
 				else:
 					galaxyAng = 0.0
-				
+					
+				# if eith a or b are zero, use 1-ellipticity, otherwise use b/a
 				if galaxyA and galaxyB:
 					galaxyBA = galaxyB/galaxyA
 				else:
@@ -717,6 +712,7 @@ class ModelGenerator:
 		else:
 			print ("closest galaxy id is " + str(prevBestID) + 
 					" at distance of " + str(prevBestDist))'''
+		return True
 				
 
 	def run_imhead(self, image):
@@ -1073,14 +1069,14 @@ class ModelGenerator:
 			# run iraf's imhead method to populate image fields
 			self.run_imhead(curImage)
 					
-			# run sextractor (if command line set to do so) for each image
-			# galfit uses the resulting segmentation map
+			# run sextractor for each image
 			if self.simSextractor or self.realSextractor:
 					
 				# run sextractor, which updates image and seg map
-				self.run_sextractor(curImage)
+				if not self.run_sextractor(curImage):
+					exit()
 		
-			# galfit returns a string indicating success or some failure
+			# run galfit, which will use the models collected by sextractor
 			#self.run_galfit(curImage)
 		
 		# catch, log, and ignore all runtime errors except explicit exits 
@@ -1090,6 +1086,10 @@ class ModelGenerator:
 			print (errorMsg)
 			self.logMsg = self.logMsg + errorMsg
 		
+		except KeyboardInterrupt:
+			print("User cancelled execution with ctrl-c")
+			exit()
+			
 		return self.logMsg
 		
 
@@ -1121,9 +1121,6 @@ def runModelGenerator(parameterList):
 	
 		# write the sextractor config file, which will be used for all images
 		modelGen.write_sextractor_config_file()
-	
-	# this loops through every image in images file and removes whitespace
-	imageFilenames = [imageFilename.strip() for imageFilename in imageFilenames]
 
 	# TODO: for multiprocessing, clone modelGen here and invoke method
 	#		in separate processes on separate image ranges
@@ -1256,12 +1253,16 @@ if __name__ == "__main__":
 		# construct list, each element is a list of arguments for separate cpu
 		imageArgs = []
 		chunkSize = int(numImages/(numCPUs-1))
+		print ("running in parallel, the list of images is being divided among" + 
+				" your available processors in the following chunk sizes")
 		for i in range(0, numImages, chunkSize):
 			print(len(imageFilenames[i:i+chunkSize]))
 			imageArgs.append([parser, options, args[1:], "results" + str(i)] + 
 								imageFilenames[i:i+chunkSize])
 		
 		# see documentation on multiprocessing pool and map function
+		print ("passing job to " + str(numCPUs) + " out of " + 
+				multiprocessing.cpu_count() + " CPUs, logs will be written as completed")
 		pool = multiprocessing.Pool(numCPUs)
 		results = pool.map(runModelGenerator, imageArgs)
 			
