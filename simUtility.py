@@ -611,54 +611,113 @@ class ModelGenerator:
 		outputCatContents = outputCatFile.readlines()
 		outputCatFile.close()
 		
-		# start on the last line of .cat file
-		lineIndex = -1
-		
-		# set to a high value initially, just needs to be bigger than best
-		prevBestDist = 1000.0
+		# set to galaxyA high value initially, just needs to be bigger than best
+		'''prevBestDist = 1000.0
 		
 		# value to indicate if no galaxy is found closer than above distance
-		prevBestID = -1
+		prevBestID = -1'''
 		
 		# read backwards until comment character indicates end of galaxies
-		while outputCatContents[lineIndex].strip()[0] != "#":
+		for catalogOutputLine in outputCatContents:
+			errorStr = ""
+			galaxyOutputList = catalogOutputLine.strip().split()
+			indexDict = {strID:None for strID in [	"NUMBER",
+													"X_IMAGE",
+													"Y_IMAGE",
+													"MAG_AUTO",
+													"FLUX_RADIUS",
+													"A_IMAGE",
+													"B_IMAGE",
+													"ELLIPTICITY",
+													"THETA_IMAGE"]}
+			if galaxyOutputList[0][0] == "#":
+				try:
+					indexDict[galaxyOutputList[2].ucase()] = int(galaxyOutputList[1])
+				except:
+					pass
+			else:
 			
-			# TODO: might be able to have indices collected from commented header
-			# gather galaxy information
-			galaxyOutputList = outputCatContents[lineIndex].strip().split()
-			galaxyID = galaxyOutputList[0]
-			galaxyX = float(galaxyOutputList[1])
-			galaxyY = float(galaxyOutputList[2])
-			
-			# store (x,y) of the galaxy as the image's model
-			image.model.append(SimModel(centerCoords=[galaxyX,galaxyY],
-										magnitude=float(galaxyOutputList[3]),
-										radius=float(galaxyOutputList[4]),
-										ba=1.0-float(galaxyOutputList[5]),
-										angle=float(galaxyOutputList[6]),)
-			
-			# compute distance from image center 
-			dx = float(image.width)/2.0 - galaxyX
-			dy = float(image.height)/2.0 - galaxyY
-			curDist = math.sqrt( dx*dx + dy*dy )
-			
-			# store galaxyID if closer than prev closest galaxy to center of image
-			if curDist < prevBestDist:
-				prevBestID = galaxyID
-				prevBestDist = curDist
-				prevBestX = galaxyX
-				prevBestY = galaxyY
-			
-			# go to the next (prev in file) line
-			lineIndex = lineIndex - 1
+				# gather galaxy information
+				if indexDict["NUMBER"]:
+					galaxyID = galaxyOutputList[indexDict["NUMBER"]]
+				else:
+					errorStr = errorStr + "NUMBER is a required field of the parameter file\n"
+				
+				if indexDict["X_IMAGE"]:
+					galaxyX = float(galaxyOutputList[indexDict["X_IMAGE"]])
+				else:
+					errorStr = errorStr + "X_IMAGE is a required field of the parameter file\n"
+				
+				if indexDict["Y_IMAGE"]:
+					galaxyY = float(galaxyOutputList[indexDict["Y_IMAGE"]])
+				else:
+					errorStr = errorStr + "Y_IMAGE is a required field of the parameter file\n"
+				
+				if indexDict["MAG_AUTO"]:
+					galaxyMag = float(galaxyOutputList[indexDict["MAG_AUTO"]])
+				else:
+					galaxyMag = 0.0
+				
+				if indexDict["FLUX_RADIUS"]:
+					galaxyRad = float(galaxyOutputList[indexDict["FLUX_RADIUS"]])
+				else:
+					galaxyRad = 0.0
+				
+				if indexDict["A_IMAGE"]:
+					galaxyA = float(galaxyOutputList[indexDict["A_IMAGE"]])
+				else:
+					galaxyA = 0.0
+				
+				if indexDict["B_IMAGE"]:
+					galaxyB = float(galaxyOutputList[indexDict["B_IMAGE"]])
+				else:
+					galaxyB = 0.0
+					
+				if indexDict["ELLIPTICITY"]:
+					galaxyE = float(galaxyOutputList[indexDict["ELLIPTICITY"]])
+				else:
+					galaxyE = 0.0
+				
+				if indexDict["THETA_IMAGE"]:
+					galaxyAng = float(galaxyOutputList[indexDict["THETA_IMAGE"]])
+				else:
+					galaxyAng = 0.0
+				
+				if galaxyA and galaxyB:
+					galaxyBA = galaxyB/galaxyA
+				else:
+					galaxyBA = 1.0-galaxyE
+
+				# store (x,y) of the galaxy as the image's model
+				image.models.append(SimModel(centerCoords=[galaxyX,galaxyY],
+											magnitude=galaxyMag,
+											radius=galaxyRad,
+											ba=galaxyBA,
+											angle=galaxyAng))
+				
+				self.logMsg = (self.logMsg + ", " + galaxyID + " at " +
+								str(image.models[-1].centerCoords) + " radius " +
+								str(image.models[-1].radius))
+				# compute distance from image center 
+				'''dx = float(image.width)/2.0 - galaxyX
+				dy = float(image.height)/2.0 - galaxyY
+				
+				curDist = math.sqrt( dx*dx + dy*dy )
+				
+				# store galaxyID if closer than prev closest galaxy to center of image
+				if curDist < prevBestDist:
+					prevBestID = galaxyID
+					prevBestDist = curDist
+					prevBestX = galaxyX
+					prevBestY = galaxyY
 			
 		if prevBestID == -1:
-			print ("sextractor did not yield a galaxy closer than " + 
+			print ("sextractor did not yield galaxyA galaxy closer than " + 
 					str(prevBestDist))
 		else:
 			print ("closest galaxy id is " + str(prevBestID) + 
-					" at distance of " + str(prevBestDist))
-
+					" at distance of " + str(prevBestDist))'''
+				
 
 	def run_imhead(self, image):
 		'''
