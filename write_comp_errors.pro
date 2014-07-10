@@ -9,7 +9,7 @@
 ;			the center of the component model before being called an error
 ; SERSIC_INDEX (e.g. SERS = 0.5) the minimum sersic index of component before being called an error
 ;			
-pro write_comp_errors, infile, DIST_FROM_CENTER = distLimit, SERSIC_INDEX = sersLimit
+pro write_comp_errors, infile, DIST_FROM_CENTER = distLimit, SERS_LOWER_LIMIT = sersLowLimit, SERS_UPPER_LIMIT = sersHighLimit
 
 	; if an error is detected anywhere in the procedure
 	; stores the detection in file_error variable
@@ -17,8 +17,8 @@ pro write_comp_errors, infile, DIST_FROM_CENTER = distLimit, SERSIC_INDEX = sers
 
 	; read the summary.txt file, full path name is in infile parameter
 	; store arrays for each field in 14 named variables (id, ts, etc.)
-	readcol,infile,id,ts,age,cam,fil,typ,px,py,ser,mag,rad,ba,ang,dis,$
-		SKIPLINE=2,FORMAT="A,A,F,A,A,A"
+	readcol,infile,id,ts,age,cam,fil,px,py,ser,mag,rad,ba,ang,$
+		SKIPLINE=2,FORMAT="A,A,F,A,A"
 
 	; stop execution if an error has been detected
 	if file_error NE 0 then STOP
@@ -37,15 +37,15 @@ pro write_comp_errors, infile, DIST_FROM_CENTER = distLimit, SERSIC_INDEX = sers
 	out_filename = (strmid(infile,0,strpos(infile,".",start_index))+'_all_errors.txt') 
 
 	; array of all records that start with a *, which indicates sersic or component seperation error
-	errors = where(strmid(id,0,1) EQ "*", errorCount)
+	; errors = where(strmid(id,0,1) EQ "*", errorCount)
 
 	; open a file for writing the output		
 	get_lun,outfile
 	openw,outfile,out_filename
 
 	; write the number of components with leading * to the output file
-	printf,outfile,errorCount," errors detected by sersic index and component separation (components with leading *s)"
-	printf,outfile,''
+	; printf,outfile,errorCount," errors detected by sersic index and component separation (components with leading *s)"
+	; printf,outfile,''
 
 	; based on named param, write number and list of components too far from (300,300)
 	if not(n_elements(distLimit) eq 0) then begin
@@ -61,16 +61,27 @@ pro write_comp_errors, infile, DIST_FROM_CENTER = distLimit, SERSIC_INDEX = sers
 	endif
 	
 	; based on named param, write number and list of components with sersic index too low
-	if not(n_elements(sersLimit) eq 0) then begin
-		sersErrors = where( ( ser LT float(sersLimit) ), sersCount )
-		printf,outfile,sersCount," components with sersic index less than ",sersLimit
-                for i=0,sersCount-1 do $
-                        printf,outfile,id[sersErrors[i]]," time:",ts[sersErrors[i]],$
-                                        " camera:",cam[sersErrors[i]]," type:",typ[sersErrors[i]],$
-                                        " with a sersic index of ",ser[sersErrors[i]]
+	if not(n_elements(sersLowLimit) eq 0) then begin
+		sersLowErrors = where( ( ser LT float(sersLowLimit) ), sersLowCount )
+		printf,outfile,sersLowCount," components with sersic index less than ",sersLowLimit
+		for i=0,sersLowCount-1 do $
+			printf,outfile,id[sersLowErrors[i]]," time:",ts[sersLowErrors[i]],$
+					" camera:",cam[sersLowErrors[i]]," type:",typ[sersLowErrors[i]],$
+					" with a sersic index of ",ser[sersLowErrors[i]]
 		printf,outfile,''
 	endif
 
+	; based on named param, write number and list of components with sersic index too high
+	if not(n_elements(sersHighLimit) eq 0) then begin
+		sersHighErrors = where( ( ser GT float(sersHighLimit) ), sersHighCount )
+		printf,outfile,sersHighCount," components with sersic index less than ",sersHighLimit
+		for i=0,sersHighCount-1 do $
+			printf,outfile,id[sersHighErrors[i]]," time:",ts[sersHighErrors[i]],$
+					" camera:",cam[sersHighErrors[i]]," type:",typ[sersHighErrors[i]],$
+					" with a sersic index of ",ser[sersHighErrors[i]]
+		printf,outfile,''
+	endif
+	
 	; close output file
 	free_lun,outfile
 

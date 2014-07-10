@@ -613,10 +613,13 @@ class ModelGenerator:
 		indexDict = {}
 		errorStr = ""
 		galaxyID = 0
+		
+		# loop over every line in catalog
 		for catalogOutputLine in outputCatContents:
 			defaultStr = ""
 			galaxyOutputList = catalogOutputLine.strip().split()
 			
+			# if in the top comment section
 			if galaxyOutputList[0] == "#":
 				indexDict[galaxyOutputList[2].upper()] = int(galaxyOutputList[1]) - 1
 			else:

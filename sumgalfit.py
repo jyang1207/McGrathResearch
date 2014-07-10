@@ -234,9 +234,9 @@ def sum_galfit(resultFilename, maxDist, minSersIndex, maxSersIndex):
 		else:
 			type0 = "disk"
 			
-		return (errorFlag1 + galaxyID + delim + timeStep + delim + age_gyr + delim + 
-				camera + delim + filt + delim + type0 + delim + px1 + delim + py1 + delim + 
-				sersIndex1 + delim + mag1 + delim + rad1 + delim + ba1 + delim + pa1 + delim + "0\n")
+		return delim.join(errorFlag1 + galaxyID, timeStep, age_gyr, 
+				camera, filt, type0, px1, py1, 
+				sersIndex1, mag1, rad1, ba1, pa1, "0\n")
 				
 	
 	# component seperation of greater than 5 is bad 
@@ -272,12 +272,12 @@ def sum_galfit(resultFilename, maxDist, minSersIndex, maxSersIndex):
 			type2 = "bulge"
 			type1 = "disk"
 			
-	result1 = (errorFlag1 + galaxyID + delim + timeStep + delim + age_gyr + delim + 
-				camera + delim + filt + delim + type1 + delim + px1 + delim + py1 + delim + 
-				sersIndex1 + delim + mag1 + delim + rad1 + delim + ba1 + delim + pa1 + delim + str(dist) + "\n")
-	result2 = (errorFlag2 + galaxyID + delim + timeStep + delim + age_gyr + delim + 
-				camera + delim + filt + delim + type2 + delim + px2 + delim + py2 + delim + 
-				sersIndex2 + delim + mag2 + delim + rad2 + delim + ba2 + delim + pa2 + delim + str(dist) + "\n")
+	result1 = delim.join(errorFlag1 + galaxyID, timeStep, age_gyr, 
+				camera, filt, type1, px1, py1, 
+				sersIndex1, mag1, rad1, ba1, pa1, str(dist) + "\n")
+	result2 = delim.join(errorFlag2 + galaxyID, timeStep, age_gyr, 
+				camera, filt, type2, px2, py2, 
+				sersIndex2, mag2, rad2, ba2, pa2, str(dist) + "\n")
 	
 	# just to get rid of unused variable warnings, these flags are not used anymore
 	if not (sersFlag1 + sersFlag2 + posFlag):
@@ -340,11 +340,7 @@ if __name__ == "__main__":
 				"px py sersicIndex mag rad b/a angle" + 
 				", component separation distance\n")
 	
-	outFile.close()
-	
-	outFile = open(args[1], 'a')
-
-	# this loops through every image in images file and
+	# this loops through every result, writing summary to output
 	for resultFilename in resultFilenames:
 	
 		try:
@@ -352,7 +348,7 @@ if __name__ == "__main__":
 			outFile.write( sum_galfit(resultFilename.strip(), 
 										options.maxDistance, 
 										options.minSersicIndex, 
-										options.maxSersicIndex) )
+										options.maxSersicIndex))
 		except:
 			print (str(sys.exc_info()[0]) + str(sys.exc_info()[1]))
 		
