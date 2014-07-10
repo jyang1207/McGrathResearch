@@ -7,86 +7,6 @@ import multiprocessing
 import time
 import math
 from optparse import OptionParser
-
-'''
-class SimGalaxy:
-	
-	class to hold the methods and data for a particular 
-	simulated galaxy
-	
-	
-	def __init__(self, id):
-		galaxy constructor
-		
-		# The unique identifier of the galaxy, e.g. "VELA02"
-		self.id = id
-		
-		# a dictionary where the galaxies time steps are the keys
-		# and the values are a list of the particular images
-		self.timeSteps = {}
-'''
-
-class SimImage:
-	'''
-	class to hold the methods and data for a particular 
-	simulated image of a galaxy
-	'''
-	
-	def __init__(self, filename, galaxyID="", timeStep="", filt="", 
-					camera="", height=0, width=0, models=[]):
-		'''image constructor'''
-		
-		# the full path filename of the image
-		self.filename = filename
-		
-		# the galaxy that the image is of
-		self.galaxyID = galaxyID
-		
-		# the time step of the image
-		self.timeStep = timeStep
-		
-		# the filter of the image, e.g. "F160W"
-		self.filter = filt
-		
-		# the camera of the image, e.g. "0"
-		self.camera = camera
-		
-		# the height of the image, e.g. 600
-		self.height = height
-		
-		# the width of the image, e.g. 600
-		self.width = width
-		
-		# the model of the galaxy in the image
-		self.models = models
-
-class SimModel:
-	'''
-	class to hold the methods and data for a particular 
-	model of a simulated galaxy from an image
-	'''
-	
-	def __init__(self, centerCoords=[0.0,0.0], magnitude=0.0, 
-					radius=0.0, ba=0.0, angle=0.0, sers=0.0):
-		'''model constructor'''
-		
-		# the center coordinates of the galaxy
-		self.centerCoords = centerCoords
-	
-		# the magnitude of the galaxy
-		self.magnitude = magnitude
-	
-		# the half light radius of the galaxy
-		self.radius = radius
-	
-		# the b/a of the galaxy
-		self.ba = ba
-	
-		# the position angle of the galaxy
-		self.angle = angle
-	
-		# the sersic index of the galaxy
-		self.sers = sers
 		
 class ModelGenerator:
 	'''
@@ -108,13 +28,13 @@ class ModelGenerator:
 		parses the galfit options from the command line and uses to
 		initialize fields of this class instance with options or defaults
 		'''
-		
+
 		# store command line options into fields of this class instance
 		self.mpZeropoint = options.mpz
 		self.plateScale = options.plate
 		self.includeBulgeComponent = options.bulge
 		self.galfitOff = options.galfitOff
-		
+
 		# galfit constraint default none unless one is given on command line
 		if not options.constraint:
 			self.constraintFilename = "none"
@@ -124,7 +44,7 @@ class ModelGenerator:
 						" either does not exist or is not accessible")
 		else:
 			self.constraintFilename = options.constraint
-			
+
 		# galfit psf default none unless one is given on command line
 		if not options.psf:
 			self.psf = "none"
@@ -595,18 +515,18 @@ class ModelGenerator:
 		# run sextractor
 		# sex <image> [<image2>][-c <configuration_file>][-<keyword> <value>]
 		self.outputCatFilename = (self.destDirectory + 
-				".".join(image.filename.split("/")[-1
+				".".join(image["filename"].split("/")[-1
 							].split(".")[:-1]) + ".cat")
 		self.segmentationMapFilename = (self.destDirectory + 
-				".".join(image.filename.split("/")[-1
+				".".join(image["filename"].split("/")[-1
 							].split(".")[:-1]) + "_check.fits")
-		os.system(	"sex " + image.filename + 
+		os.system(	"sex " + image["filename"] + 
 					" -c " + self.sextractorConfigFilename + 
 					" -CATALOG_NAME " + self.outputCatFilename + 
 					" -CHECKIMAGE_NAME " + self.segmentationMapFilename + 
 					" " + " ".join(self.sextractorOptionsList))
 		
-		# gather galaxy info from .cat file into image.models
+		# gather galaxy info from .cat file into image["models"]
 		outputCatFile = open(self.outputCatFilename, 'r')
 		outputCatContents = outputCatFile.readlines()
 		outputCatFile.close()
@@ -695,16 +615,20 @@ class ModelGenerator:
 					galaxyBA = 1.0-galaxyE
 
 				# store (x,y) of the galaxy as the image's model
-				image.models.append(SimModel(centerCoords=[galaxyX,galaxyY],
-											magnitude=galaxyMag,
-											radius=galaxyRad,
-											ba=galaxyBA,
-											angle=galaxyAng,
-											sers=galaxySers))
+				image["models"].append({"centerCoords":[galaxyX,galaxyY],
+										"magnitude":galaxyMag,
+										"radius":galaxyRad,
+										"ba":galaxyBA,
+										"angle":galaxyAng,
+										"sers":galaxySers})
 				
-				self.logMsg = " ".join([self.logMsg,str(galaxyID),
-								str(image.models[-1].centerCoords),
-								str(image.models[-1].radius)])
+				self.logMsg = " ".join(
+								[
+								self.logMsg,
+								str(galaxyID),
+								str(image["models"][-1]["centerCoords"]),
+								str(image["models"][-1]["radius"])
+								])
 		return True
 				
 
@@ -717,7 +641,7 @@ class ModelGenerator:
 			the image on which to invoke imexam
 		'''
 		
-		imhead_return = iraf.imhead(image.filename, Stdout=1)[0].strip()
+		imhead_return = iraf.imhead(image["filename"], Stdout=1)[0].strip()
 		imhead_info = imhead_return.split("/")[-1]
 		# "VELA01_a0.110_0006317__skipir_CAMERA0-BROADBAND_F125W_simulation.fits[600,600][real]:" 
 		
@@ -725,97 +649,35 @@ class ModelGenerator:
 		frame_dimensions = imhead_info.split("[")[1].replace("]", "").split(",")
 		# ["600","600"]
 	
-		image.width = frame_dimensions[0]
+		image["width"] = frame_dimensions[0]
 		# "600"
 		
-		image.height = frame_dimensions[1]
+		image["height"] = frame_dimensions[1]
 		# "600"
 		
-		image.galaxyID = imhead_info.split("_")[0]
+		image["galaxyID"] = imhead_info.split("_")[0]
 		#"VELA01"
 		
-		image.filter = imhead_info.split("_")[6]
+		image["filter"] = imhead_info.split("_")[6]
 		#"F125W"	
 		
-		image.timeStep = imhead_info.split("_")[1].split(".")[1]
+		image["timeStep"] = imhead_info.split("_")[1].split(".")[1]
 		# "110"
 		
 		cam_str = imhead_info.split("_")[5].split("-")[0]
 		# "CAMERA0"
 		
 		# these statements accomodate for camera numbers
-		image.camera = ""
+		image["camera"] = ""
 		for c in cam_str:
 			if c.isdigit():
-				image.camera = image.camera + c
-	
-	
-	def run_imexam(self, image):
-		'''
-		method calls iraf's imexam method on the area defined by the four
-		
-		parameter image - 
-			the image on which to invoke imexam
-		'''
-	
-		# writes the center coordinates to a file for imexam
-		coordsFilename = "coords"
-		
-		# this is t prevent parallel processes from overwriting the coords.tmp file
-		while os.path.isfile(coordsFilename + ".tmp"):
-			coordsFilename = coordsFilename + "x"
-		coordsFilename = coordsFilename + ".tmp"
-		
-		# TODO: should we run minmax to get them if the user doesnt use sextractor?
-		if not image.model.centerCoords[0] or not image.model.centerCoords[1]:
-			print("need center coordinates to run imexam., exiting")
-			exit()
-			
-		# create coords[x*].tmp for writing max coordinate to pass to imexam
-		os.system('touch '+ coordsFilename)
-		write_coords = open(coordsFilename, 'w')
-		write_coords.write( str(image.model.centerCoords[0]) + " " + 
-							str(image.model.centerCoords[1]))
-		write_coords.close()	
-		
-		# run imexam passing coords.tmp, 
-		# data is returned in the last two elements of the return array of strings
-		imexam_out = iraf.imexam(image.filename, use_display=0, 
-								imagecur=coordsFilename, Stdout=1)[-2:]
-	
-		# ['COL LINE X Y', 
-		# 'R MAG FLUX SKY PEAK E PA BETA ENCLOSED MOFFAT DIRECT']
-		
-		# delete coords.tmp, no longer needed
-		os.system('rm ' + coordsFilename) 
-		
-		xy = imexam_out[0].strip().split()
-		data = imexam_out[1].strip().split()
-
-		image.model.centerCoords[0] = float(xy[0])	
-		image.model.centerCoords[1] = float(xy[1])
-		image.model.radius = float(data[0])						
-		image.model.magnitude = float(data[1])						
-		
-		# these might be indef, if so then set to default values
-		try:
-			image.model.ba = 1.0 - float(data[5])				# b/a=1-e
-		except:
-			print("using default values for b/a")
-			image.model.ba = 1.0
-		
-		#this gives the position angle. iraf measures up from x. Galfit down from y
-		try:
-			image.model.angle = float(data[6]) - 90.0				
-		except:
-			print("using default values for position angle")
-			image.model.angle = 0.0
+				image["camera"] = image["camera"] + c
 		
 		
 	def defineGalfitFilenames(self, image):
-		filename = (self.destDirectory + image.galaxyID + "_" + 
-					image.timeStep + '_cam' + str(image.camera) + 
-					'_' + image.filter)
+		filename = (self.destDirectory + image["galaxyID"] + "_" + 
+					image["timeStep"] + '_cam' + str(image["camera"]) + 
+					'_' + image["filter"])
 		self.galfit_single_const_filename = 	filename + '_single_const.txt'
 		self.galfit_single_parameter_filename = filename + '_single_param.txt'
 		self.galfit_single_output_filename =	filename + "_single_multi.fits"
@@ -836,7 +698,7 @@ class ModelGenerator:
 		os.system('touch ' + self.galfit_single_parameter_filename)
 		galfitSingleParamFile = open(self.galfit_single_parameter_filename,'w')
 		galfitSingleParamFile.write("# IMAGE and GALFIT CONTROL PARAMETERS\n")
-		galfitSingleParamFile.write("A) " + image.filename + 
+		galfitSingleParamFile.write("A) " + image["filename"] + 
 			"						#Input data image block\n")
 		galfitSingleParamFile.write("B) " + self.galfit_single_output_filename +
 			"						#Output data image block\n")
@@ -850,8 +712,8 @@ class ModelGenerator:
 			"						#Bad pixel mask (FITS file or ASCIIcoord list)\n")
 		galfitSingleParamFile.write("G)" + " none" + 
 			"						#File with parameter constraints (ASCII file)\n")
-		galfitSingleParamFile.write("H) " + "1" + " " + str(image.width) + " " + 
-											"1" + " " + str(image.height) + 
+		galfitSingleParamFile.write("H) " + "1" + " " + str(image["width"]) + " " + 
+											"1" + " " + str(image["height"]) + 
 			"						#Image region to fit (xmin xmax ymin ymax)\n")
 		galfitSingleParamFile.write("I)" + " 200 200" + 
 			"						#Size of the convolution box (x y)\n")
@@ -883,18 +745,18 @@ class ModelGenerator:
 		galfitSingleParamFile.write("\n")
 		
 		compNum = 1
-		for model in image.models:
+		for model in image["models"]:
 			galfitSingleParamFile.write("# Componenet number: " + str(compNum) + "\n")
 			galfitSingleParamFile.write(" 0) sersic					#Component type\n")
-			galfitSingleParamFile.write(" 1) " + str(model.centerCoords[0]) + "	" + str(model.centerCoords[1]) + "	1	1			#Position x,y\n")
-			galfitSingleParamFile.write(" 3) " + str(model.magnitude) + " 1			#Integrated Magnitude\n")
-			galfitSingleParamFile.write(" 4) " + str(model.radius) + "			1			#R_e (half-light radius)	[pix]\n")
-			galfitSingleParamFile.write(" 5) " + str(model.sers) + "		1			#Sersic index n (de Vaucouleurs n=4)\n")
+			galfitSingleParamFile.write(" 1) " + str(model["centerCoords"][0]) + "	" + str(model["centerCoords"][1]) + "	1	1			#Position x,y\n")
+			galfitSingleParamFile.write(" 3) " + str(model["magnitude"]) + " 1			#Integrated Magnitude\n")
+			galfitSingleParamFile.write(" 4) " + str(model["radius"]) + "			1			#R_e (half-light radius)	[pix]\n")
+			galfitSingleParamFile.write(" 5) " + str(model["sers"]) + "		1			#Sersic index n (de Vaucouleurs n=4)\n")
 			galfitSingleParamFile.write(" 6) 0.0000		0			#	-----\n")
 			galfitSingleParamFile.write(" 7) 0.0000		0			#	-----\n")
 			galfitSingleParamFile.write(" 8) 0.0000		0			#	-----\n")
-			galfitSingleParamFile.write(" 9) " + str(model.ba) + "			1			#Axis ratio (b/a)\n")
-			galfitSingleParamFile.write(" 10) " + str(model.angle) + "		1			#Position angle (PA) [deg: Up=0, left=90]\n")
+			galfitSingleParamFile.write(" 9) " + str(model["ba"]) + "			1			#Axis ratio (b/a)\n")
+			galfitSingleParamFile.write(" 10) " + str(model["angle"]) + "		1			#Position angle (PA) [deg: Up=0, left=90]\n")
 			galfitSingleParamFile.write(" Z) 0							#Leave in [1] or subtract [0] this comp from data?\n")
 			galfitSingleParamFile.write("\n")
 			compNum = compNum + 1
@@ -1003,6 +865,7 @@ class ModelGenerator:
 		# detects atomic galfit error
 		if os.path.isfile(self.galfit_single_output_filename):
 			os.system("rm " + "fit.log")
+			
 			os.system("mv galfit.01 " + self.galfit_single_result_filename)
 		else:
 			self.logMsg = self.logMsg + (" galfit failed on single component, " + 
@@ -1044,7 +907,7 @@ class ModelGenerator:
 		returns - the log string of the modeling
 		''' 
 			
-		curImage = SimImage(imageFilename)
+		curImage = {"filename":imageFilename, "models":[]}
 		self.logMsg = imageFilename + ": "
 		if self.destDirectory and not os.path.isdir(self.destDirectory):
 			os.mkdir(self.destDirectory)
@@ -1228,6 +1091,7 @@ if __name__ == "__main__":
 	# for parallel, only use half the cpus available
 	numCPUs = int(multiprocessing.cpu_count())
 	
+	start = time.clock()
 	# only do parallel if rerquested and if enough images to warrant
 	if not (options.parallel and (numImages >= numCPUs)):
 		runModelGenerator([parser, options, args[1:], "results"] + imageFilenames)
@@ -1273,5 +1137,7 @@ if __name__ == "__main__":
 		logFile.write(log)
 		logFile.close()
 		
+	elapsed = time.clock() - start
+	print ("total runtime of " + str(elapsed) + " seconds")
 		
 		
