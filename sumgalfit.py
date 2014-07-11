@@ -214,7 +214,7 @@ def sum_galfit(resultFilename, maxDist, minSersIndex, maxSersIndex):
 	
 	# a = 1/(1+z)
 	# z = 1/a - 1
-	age_gyr = str(red_shift_to_gyr(1/(float(timeStep)/1000) - 1))
+	age_gyr = str(red_shift_to_gyr(1/float("0."+timeStep) - 1))
 	
 	errorFlag1 = ""
 	errorFlag2 = ""

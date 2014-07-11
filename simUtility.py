@@ -114,11 +114,15 @@ class ModelGenerator:
 			detectThreshold = "0.75"	#Detection threshold (0-2). 1 argument: (ADUs or relative to Background RMS, see THRESH TYPE). 2 arguments: R (mag.arcsec 2 ), Zero-point (mag).
 			deblendThreshold = "16" # Minimum contrast parameter for deblending.
 			deblendMinContrast = "0.0001"
+			cleanBool = "Y" # If true, a cleaning of the catalog is done before being written to disk.
+			cleanParam = "1.0"	# Efficiency of cleaning.
 		else:
 			detectMinArea = "10000" # Minimum number of pixels above threshold triggering detection
 			detectThreshold = "20"	#Detection threshold (0-2). 1 argument: (ADUs or relative to Background RMS, see THRESH TYPE). 2 arguments: R (mag.arcsec 2 ), Zero-point (mag).
 			deblendThreshold = "16" # Minimum contrast parameter for deblending.
 			deblendMinContrast = "0.02"	# Minimum contrast parameter for deblending.
+			cleanBool = "Y" # If true, a cleaning of the catalog is done before being written to disk.
+			cleanParam = "1.0"	# Efficiency of cleaning.
 			
 		analysisThreshold = "5" #Threshold (in surface brightness) at which CLASS STAR and FWHM operate. 1 argument: relative to Background RMS. 2 arguments: mu (mag/arcsec 2 ), Zero-point (mag).
 		filterBool = "Y"	#  If true,filtering is applied to the data before extraction.
@@ -129,8 +133,6 @@ class ModelGenerator:
 							# RELATIVE - scaling factor to the background RMS,
 							# ABSOLUTE - absolute level (in ADUs or in surface brightness)
 			
-		cleanBool = "N" # If true, a cleaning of the catalog is done before being written to disk.
-		cleanParam = "1.0"	# Efficiency of cleaning.
 		maskType = "CORRECT"	#CORRECT - replace by values of pixels symmetric with respect to the source center.
 								#BLANK --put detected pixels belonging to neighbors to zero,
 								#NONE no masking,
