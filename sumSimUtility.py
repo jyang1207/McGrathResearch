@@ -168,28 +168,28 @@ def sum_galfit(resultFilename, delim):
 			if resultLine.strip()[:2] == "1)":
 			
 				#1) 301.6210 299.7872 1 1  #  Position x, y
-				componentList.append(resultLine.strip().split(" ")[1])
-				componentList.append(resultLine.strip().split(" ")[2])
+				componentList.append(resultLine.strip().split()[1])
+				componentList.append(resultLine.strip().split()[2])
 			
 			# magnitude
 			elif resultLine.strip()[:2] == "3)":
-				componentList.append(resultLine.strip().split(" ")[1])
+				componentList.append(resultLine.strip().split()[1])
 	
 			# radius
 			elif resultLine.strip()[:2] == "4)":
-				componentList.append(resultLine.strip().split(" ")[1])
+				componentList.append(resultLine.strip().split()[1])
 				
 			# sersic index
 			elif resultLine.strip()[:2] == "5)":
-				componentList.append(resultLine.strip().split(" ")[1])
+				componentList.append(resultLine.strip().split()[1])
 				
 			# b/a
 			elif resultLine.strip()[:2] == "9)":
-				componentList.append(resultLine.strip().split(" ")[1])
+				componentList.append(resultLine.strip().split()[1])
 				
 			# position angle
 			elif resultLine.strip()[:3] == "10)":
-				componentList.append(resultLine.strip().split(" ")[1])
+				componentList.append(resultLine.strip().split()[1])
 				
 				# add this completed component as a line to the string of results
 				componentResults = componentResults + delim.join(componentList) + "\n"
@@ -232,8 +232,8 @@ if __name__ == "__main__":
 	
 	outFile.write("galfit result file run on " + time.strftime("%m-%d-%Y") + "\n" + 
 				delim.join(["galaxyID", "timeStep", "age(GYr)", "camera", 
-							"filter", "px", "py", "sersicIndex", "mag", 
-							"rad", "b/a", "angle"]) + "\n")
+							"filter", "px", "py", "mag", "rad", 
+							"sersicIndex", "b/a", "angle"]) + "\n")
 	
 	# this loops through every result, writing summary to output
 	for resultFilename in resultFilenames:

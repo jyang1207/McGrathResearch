@@ -17,7 +17,7 @@ pro write_comp_errors, infile, DIST_FROM_CENTER = distLimit, SERS_LOWER_LIMIT = 
 
 	; read the summary.txt file, full path name is in infile parameter
 	; store arrays for each field in 14 named variables (id, ts, etc.)
-	readcol,infile,id,ts,age,cam,fil,px,py,ser,mag,rad,ba,ang,$
+	readcol,infile,id,ts,age,cam,fil,px,py,mag,rad,ser,ba,ang,$
 		SKIPLINE=2,FORMAT="A,A,F,A,A"
 
 	; stop execution if an error has been detected
