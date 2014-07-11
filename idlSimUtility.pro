@@ -5,9 +5,7 @@
 ; infile - the full path filename of the component summary info (*summary.txt)
 ;
 ; named parameters:
-; DIST_FROM_CENTER (e.g. DIST = 20.0) the maximum distance from (300,300) of
-;			the center of the component model before being called an error
-; SERSIC_INDEX (e.g. SERS = 0.5) the minimum sersic index of component before being called an error
+; TODO
 ;			
 pro write_comp_errors, infile,  DIS_LOWER_LIMIT = distLowLimit, $
                                 DIS_UPPER_LIMIT = distHighLimit, $
@@ -24,10 +22,10 @@ pro write_comp_errors, infile,  DIS_LOWER_LIMIT = distLowLimit, $
   ;sersHighLimit = 10.0
 	; if an error is detected anywhere in the procedure
 	; stores the detection in file_error variable
-	catch, file_error
+	;catch, file_error
 	
 	; stop execution if an error has been detected
-	if file_error NE 0 then STOP
+	;if file_error NE 0 then STOP
 
 	; read the summary.txt file, full path name is in infile parameter
 	; store arrays for each field in 14 named variables (id, ts, etc.)
@@ -166,5 +164,48 @@ pro write_comp_errors, infile,  DIS_LOWER_LIMIT = distLowLimit, $
 
 	; print the location of the written output file
 	print,"file ",out_filename," written"
+end
 
+; procedure to plot age vs sersic index, maybe eventually allow
+; parameter for y part of plot
+;
+; positional parameters:
+; infile - the full path filename of the component summary info (*summary.txt)
+;
+pro plot_comp_vs_age, infile
+  
+  ; read the summary.txt file, full path name is in infile parameter
+  ; store arrays for each field in 14 named variables (id, ts, etc.)
+  readcol,infile,id,ts,age,cam,fil,px,py,mag,rad,ser,ba,ang,$
+    SKIPLINE=2,FORMAT="A,A,F,A,A"
+    
+  gridDef = [1,2]
+  plotSymb = "*"
+  title1 = "VELA02MRP"
+  x1 = age[where(id EQ title1)]
+	y1 = ser[where(id EQ title1)]
+	plot1 = SCATTERPLOT(x1, y1,  SYMBOL=plotSymb, $
+	
+	  TITLE=title1, YRANGE=[0,5],$
+	  
+	  XTITLE='Age (GYr)s', YTITLE='Sersic Index', $
+	  
+	  SYM_SIZE=1.0, LAYOUT=[gridDef,[1]])
+	  
+	param1 = LINFIT(x1, y1, /Double, YFIT=fit1)
+	plotFit1 = PLOT(x1, fit1, LAYOUT=[gridDef,[1]], /CURRENT, /Overplot)
+	  
+	title2 = "VELA02"
+	x2 = age[where(id EQ title2)]
+	y2 = ser[where(id EQ title2)]
+	plot2 = SCATTERPLOT(x2, y2,  SYMBOL=plotSymb, $
+	
+	  TITLE=title2, YRANGE=[0,5],$
+	  
+	  XTITLE='Age (GYr)s', YTITLE='Sersic Index', $
+	  
+	  SYM_SIZE=1.0, LAYOUT=[gridDef,[2]], /CURRENT)
+	  
+	param2 = LINFIT(x2, y2, /Double, YFIT=fit2)
+	plotFit2 = PLOT(x2, fit2, LAYOUT=[gridDef,[2]], /CURRENT, /Overplot)
 end
