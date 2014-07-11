@@ -218,7 +218,7 @@ end
 ;		xtitle:"Age (GYr)", ytitle:"Sersic Index", yrange:[0,5]}
 		
 ;	for i=1,n_elements(imageFilenames) do $
-;		curImage = IMAGE(strmid(imageFilenames[i]), LAYOUT=[gridDef,[i]],/CURRENT,$
+;		curImage = IMAGE(imageFilenames[i], LAYOUT=[gridDef,[i]],/CURRENT,$
 ;						TITLE=strmid(imageFilenames[i],$
 ;								strpos(imageFilenames[i],"/",/REVERSE_SEARCH),$
 ;								strlen(imageFilenames[i])-1))
