@@ -67,7 +67,7 @@ if __name__=="__main__":
 		filenames.close()
 		
 		for catalogFilename in catalogs:
-			if not getXYRadius(catalogFilename):
+			if not getXYRadius(catalogFilename.strip()):
 				print "failed because of parameter file missing parameters."
 		
 	
