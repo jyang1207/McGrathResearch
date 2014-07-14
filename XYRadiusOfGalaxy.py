@@ -12,7 +12,8 @@ def getXYRadius(catalogueFileName):
 	
 	errorStr = ""
 	
-	outPutFileName = catalogueFileName.split(".")[0]+".reg"
+	# join method is to handle the relative path names
+	outPutFileName = ".".join(catalogueFileName.split(".")[:-1])+".reg"
 	
 	outFile = open(outPutFileName, 'w')
 	
