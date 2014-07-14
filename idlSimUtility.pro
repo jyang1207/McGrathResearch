@@ -15,11 +15,7 @@ pro write_comp_errors, infile,	DIS_LOWER_LIMIT = distLowLimit, $
 								MAG_UPPER_LIMIT = magHighLimit, $
 								RAD_LOWER_LIMIT = radLowLimit, $
 								RAD_UPPER_LIMIT = radHighLimit
-  
-  ;infile = 'summary_07-11-2014.txt'
-  ;distLimit = 10.0
-  ;sersLowLimit = 0.5
-  ;sersHighLimit = 10.0
+
 	; if an error is detected anywhere in the procedure
 	; stores the detection in file_error variable
 	;catch, file_error

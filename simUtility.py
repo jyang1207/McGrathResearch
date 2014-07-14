@@ -122,7 +122,7 @@ class ModelGenerator:
 			deblendThreshold = "16" # Minimum contrast parameter for deblending.
 			deblendMinContrast = "0.02"	# Minimum contrast parameter for deblending.
 			cleanBool = "Y" # If true, a cleaning of the catalog is done before being written to disk.
-			cleanParam = "1.0"	# Efficiency of cleaning.
+			cleanParam = "0.5"	# Efficiency of cleaning.
 			
 		analysisThreshold = "5" #Threshold (in surface brightness) at which CLASS STAR and FWHM operate. 1 argument: relative to Background RMS. 2 arguments: mu (mag/arcsec 2 ), Zero-point (mag).
 		filterBool = "Y"	#  If true,filtering is applied to the data before extraction.
@@ -843,6 +843,18 @@ class ModelGenerator:
 		galfitBulgeParamFile.close()
 		
 		
+	def write_galfit_result(self):
+		'''
+		use the output of galfit to write a result file, which is of the same
+		format as the parameter file
+		'''
+		
+		# use pyfits to gather info from output of galfit
+		
+		
+		# write info to the galfit result filename
+		
+		
 	def run_galfit(self, image):
 		'''
 		opens file (parameter) containing list of images and loops over every image, 
@@ -864,6 +876,8 @@ class ModelGenerator:
 		# run galfit on paramter file
 		os.system('galfit ' + self.galfit_single_parameter_filename)
 	
+		# write the result using the resulting *_multi.fits[2] header
+		
 		# detects atomic galfit error
 		if os.path.isfile(self.galfit_single_output_filename):
 			os.system("rm " + "fit.log")
@@ -930,7 +944,7 @@ class ModelGenerator:
 		
 		# catch, log, and ignore all runtime errors except explicit exits 
 		# (for debugging). move on to the next image regardless
-		except not (SystemExit or KeyboardInterrupt):
+		except not (KeyboardInterrupt):
 			errorMsg = str(sys.exc_info()[0]) + str(sys.exc_info()[1])
 			print (errorMsg)
 			self.logMsg = self.logMsg + errorMsg
@@ -980,7 +994,10 @@ def runModelGenerator(parameterList):
 	# store log result of modeling each image using modelGen instance
 	results = []
 	for imageFilename in imageFilenames:
-		results.append(modelGen.modelImage(imageFilename.strip()))
+		if os.path.isfile(imageFilename.strip()):
+			results.append(modelGen.modelImage(imageFilename.strip()))
+		else:
+			results.append(imageFilename.strip() + ": image file does not exist")
 	
 	# compose the log
 	log = "run on " + time.strftime("%m-%d-%Y") + "\n"
@@ -1089,11 +1106,26 @@ if __name__ == "__main__":
 	if numImages == 0:
 		parser.error("input file " + args[0] +
 					" has no contents (full path image filenames).")
-	
+	elif not os.path.isfile(imageFilenames[0].strip()):
+		parser.error("first line of input file " + imageFilenames[0].strip() + 
+					" does not exist or is not accessible\n" +
+					"input file " + args[0] + 
+					" must be only full path image filenames, one per line.")
+					
+	# verify that the calling computer has the necessary commands in PATH
+	if os.system("sex --help"):
+		print("Must have Sextractor's 'sex' command available by PATH " + 
+				"environment variable. Exiting execution")
+		exit()
+	if os.system("galfit -help"):
+		print("Must have Galfit's 'galfit' command available by PATH " + 
+				"environment variable. Exiting execution")
+		exit()
+		
 	# for parallel, only use half the cpus available
 	numCPUs = int(multiprocessing.cpu_count())
 	
-	start = time.clock()
+	startTime = time.time()
 	# only do parallel if rerquested and if enough images to warrant
 	if not (options.parallel and (numImages >= numCPUs)):
 		runModelGenerator([parser, options, args[1:], "results"] + imageFilenames)
@@ -1138,8 +1170,6 @@ if __name__ == "__main__":
 		logFile = open(logFilename, 'w')
 		logFile.write(log)
 		logFile.close()
-		
-	elapsed = time.clock() - start
-	print ("total runtime of " + str(elapsed) + " seconds")
+	print("time elapsed = " + str(time.time() - startTime) + " seconds")
 		
 		

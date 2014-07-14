@@ -156,9 +156,9 @@ def sum_galfit(resultFilename, delim):
 			componentList = [galaxyID, timeStep, age_gyr, camera, filt]
 			
 		# toggle flag on the line indicating sky for use by future lines
-		if resultLine.strip()[:6] == "0) sky":
+		if resultLine.strip().split()[1] == "sky":
 			skipSky = True
-		elif resultLine.strip()[:6] == "0) ser":
+		elif resultLine.strip().split()[1] == "sersic":
 			skipSky = False
 			
 		# dont record results for sky component
