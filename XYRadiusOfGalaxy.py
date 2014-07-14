@@ -1,4 +1,4 @@
-
+import os
 # getting the parameters for radius and location of a galaxy from generic.cat
 
 	
@@ -57,8 +57,16 @@ physical
 	return True
 	
 if __name__=="__main__":
-	if not getXYRadius('generic.cat'):
-		print "failed."
+	if not os.path.isfile(sys.argv[1]):
+		print("argument is not a file")
+	else:
+		filenames = open(sys.argv[1],'r')
+		catalogs = filenames.readlines()
+		filenames.close()
+		
+		for catalogFilename in catalogs:
+			if not getXYRadius(catalogFilename):
+				print "failed because of parameter file missing parameters."
 		
 	
 	
