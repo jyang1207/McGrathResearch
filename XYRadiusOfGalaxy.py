@@ -1,4 +1,5 @@
 import os
+import sys
 # getting the parameters for radius and location of a galaxy from generic.cat
 
 	
