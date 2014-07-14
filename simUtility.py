@@ -3,6 +3,7 @@
 import os
 import sys
 from pyraf import iraf
+import pyfits
 import multiprocessing
 import time
 import math
@@ -843,49 +844,88 @@ class ModelGenerator:
 		galfitBulgeParamFile.close()
 		
 		
-	def write_galfit_result(self):
+	def write_galfit_result(self, multiFitsFilename, resultFilename):
 		'''
 		use the output of galfit to write a result file, which is of the same
 		format as the parameter file
+		
+		parameter multiFitsFilename - Galfit's output (*multi.fits)
+		parameter resultFilename - desired filename of the result
+		returns - boolean indicating if the result was written or not
 		'''
 		
+		# not using, getting info from multi fits instead
+		# because auto naming is a timing problem in parallel
+		os.system("rm galfit.*")
+		
+		# detects atomic galfit error
+		if not os.path.isfile(multiFitsFilename):
+			self.logMsg = (	self.logMsg + 
+							" galfit failed on single component, " + 
+							"probably mushroom (atomic galfit error)")
+			return False
+		
 		# use pyfits to gather info from output of galfit
+		imageHeaders = pyfits.open(multiFitsFilename)
 		
+		# get the dictionary mapping header keywords to their values
+		try:
+			modelHeader = imageHeaders[2]
+		except KeyError:
+			self.logMsg = (	self.logMsg + 
+							" write_galfit_result must be called on" +
+							" a multi-extension cube (which galfit outputs)")
+			return False
+							
+		# update image models to reflect galfit results
+		resultModels = []
+		for mIndex, model in enumerate(image["models"]):
+			modelX = float(modelHeader[str(mIndex+1) + "_XC"].split()[0])
+			modelY = float(modelHeader[str(mIndex+1) + "_YC"].split()[0])
+			modelMag = float(modelHeader[str(mIndex+1) + "_MAG"].split()[0])
+			modelRad = float(modelHeader[str(mIndex+1) + "_RE"].split()[0])
+			modelSers = float(modelHeader[str(mIndex+1) + "_N"].split()[0])
+			modelBA = float(modelHeader[str(mIndex+1) + "_AR"].split()[0])
+			modelAng = float(modelHeader[str(mIndex+1) + "_PA"].split()[0])
+			resultModels.append({	"centerCoords":[modelX,modelY],
+									"magnitude":modelMag,
+									"radius":modelRad,
+									"ba":modelBA,
+									"angle":modelAng,
+									"sers":modelSers})
+		image["models"] = resultModels
+									
+		# write info to the galfit result filename, using existing method
+		singleParamFilename = self.galfit_single_parameter_filename
+		self.galfit_single_parameter_filename = resultFilename
+		write_galfit_single_parameter(image)
 		
-		# write info to the galfit result filename
+		# restore field value
+		self.galfit_single_parameter_filename = singleParamFilename
+		
+		return True
 		
 		
 	def run_galfit(self, image):
 		'''
-		opens file (parameter) containing list of images and loops over every image, 
-		running galfit and writing the results to the same directory as the images
+		runs galfit on the given image, using the image filename
+		to define the filenames of all of the resulting files
 		
-		calls methods to invoke iraf methods to write the initial galfit param file
-		for each image
-		
-		parameter imageFilename -
-			the image on which galfit will be run
+		parameter image - the image on which galfit will be run
 		'''
 		
 		# define filenames
 		self.defineGalfitFilenames(image)
 		
-		# writes the single component parameter file, given filenames and galxy parameters
+		# writes the single component parameter file
 		self.write_galfit_single_parameter(image)
 	
 		# run galfit on paramter file
 		os.system('galfit ' + self.galfit_single_parameter_filename)
 	
 		# write the result using the resulting *_multi.fits[2] header
-		
-		# detects atomic galfit error
-		if os.path.isfile(self.galfit_single_output_filename):
-			os.system("rm " + "fit.log")
-			
-			os.system("mv galfit.01 " + self.galfit_single_result_filename)
-		else:
-			self.logMsg = self.logMsg + (" galfit failed on single component, " + 
-								"probably mushroom (atomic galfit error)")
+		galFlags = write_galfit_result(self.galfit_single_output_filename,
+							self.galfit_single_result_filename)
 		
 		# done unless command line specified that a second galfit run
 		# should be done by adding a bulge component to the result of the first run
@@ -898,17 +938,10 @@ class ModelGenerator:
 
 			# run galfit on paramter file
 			os.system('galfit ' + self.galfit_bulge_parameter_filename)
-		
-			# detects atomic galfit error
-			# If not failure then removes temp files, otherwise returns
-			if os.path.isfile(self.galfit_bulge_output_filename):
-				# remove temp files
-				os.system("rm " + "fit.log")
-				os.system("mv galfit.01 " + self.galfit_bulge_result_filename)
-				#os.system('mv ' + galfit_output_filename + ' ' + galfit_bulge_output_filename)
-			else:
-				self.logMsg = self.logMsg + (" galfit failed on bulge component, " + 
-									"probably mushroom (atomic galfit error)")
+					
+			# write the result using the resulting *_multi.fits[2] header
+			galFlags = write_galfit_result(self.galfit_bulge_output_filename,
+								self.galfit_bulge_result_filename)
 		
 		# if we get here then nothing went wrong!
 		self.logMsg = self.logMsg + " success"
@@ -998,6 +1031,8 @@ def runModelGenerator(parameterList):
 			results.append(modelGen.modelImage(imageFilename.strip()))
 		else:
 			results.append(imageFilename.strip() + ": image file does not exist")
+	
+	os.system("rm " + "fit.log")
 	
 	# compose the log
 	log = "run on " + time.strftime("%m-%d-%Y") + "\n"
