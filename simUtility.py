@@ -817,10 +817,7 @@ class ModelGenerator:
 			resultContents = singleResultFile.readlines()
 			
 		# gather info about first fit while modifying output and coonstraint parameters
-		bulgeParamStr = ""		
-		positionLine = ""
-		magnitudeLine = ""
-		radiusLine = ""
+		bulgeParamStr = ""
 		for resultLine in resultContents:
 			resultLineList = resultLine.split()
 				
@@ -831,33 +828,29 @@ class ModelGenerator:
 			elif resultLineList[:2] == "G)":
 				bulgeParamStr = (bulgeParamStr + "G) " + self.galfit_constraint_filename + 
 							"						#File with parameter constraints (ASCII file)\n")
-			
-			#TODO: generalize to get the sersic component closest to center
-			if ((len(resultLineList) > 1) 
-				and (resultLineList[1].upper() == "COMPONENT")
-				and (resultLineList[-1].isidigit())
-				and (currentID = int(resultLineList[-1]))):
-				
-				if resultLineList[:2] == "1)":
-					positionLine = resultLineList
-					
-				elif resultLineList[:2] == "3)":
-					magnitudeLine = resultLineList
-					
-				elif resultLineList[:2] == "4)":
-					radiusLine = resultLineList
-					
+							
+			else:
 				bulgeParamStr = bulgeParamStr + resultLine
-				
-		# store results of single component run into variables
-		resultX = positionLine[1]
-		resultY = positionLine[2]
-		resultMag = magnitudeLine[1]
-		resultRad = radiusLine[1]
-		
+			
+				#TODO: generalize to get the sersic component closest to center
+				if ((len(resultLineList) > 1) 
+					and (resultLineList[1].upper() == "COMPONENT")
+					and (resultLineList[-1].isidigit())):
+					
+					currentID = int(resultLineList[-1])
+					if centerID = currentID:
+						if resultLineList[:2] == "1)":
+							resultX = resultLineList[1]
+							resultY = resultLineList[2]
+							
+						elif resultLineList[:2] == "3)":
+							resultMag = resultLineList[1]
+							
+						elif resultLineList[:2] == "4)":
+							resultRad = resultLineList[1]
 		
 		# write the third component to the end of galfit_single_result_filename
-		bulgeParamStr = bulgeParamStr + ("# Componenet number: 3\n")
+		bulgeParamStr = bulgeParamStr + ("# Componenet number: " + str(currentID+1) + "\n")
 		bulgeParamStr = bulgeParamStr + (" 0) sersic					#Component type\n")
 		bulgeParamStr = bulgeParamStr + (" 1) " + resultX + " " + resultY + " 1 1			#Position x,y\n")
 		bulgeParamStr = bulgeParamStr + (" 3) " + resultMag + " 1			#Integrated Magnitude\n")
