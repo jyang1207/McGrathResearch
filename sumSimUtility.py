@@ -136,6 +136,11 @@ def sum_galfit(resultFilename, delim):
 	
 	resultFile.close()
 	
+	if resultLines[-1][-1] == "*":
+		errorFlag = "*"
+	else:
+		errorFlag = ""
+		
 	skipSky = False
 	componentResults = ""
 	for resultLine in resultLines:
@@ -192,7 +197,7 @@ def sum_galfit(resultFilename, delim):
 				componentList.append(resultLine.strip().split()[1])
 				
 				# add this completed component as a line to the string of results
-				componentResults = componentResults + delim.join(componentList) + "\n"
+				componentResults = componentResults + errorFlag + delim.join(componentList) + "\n"
 				
 				# reset component list for any remaining components in this file
 				componentList = [galaxyID, timeStep, age_gyr, camera, filt]
