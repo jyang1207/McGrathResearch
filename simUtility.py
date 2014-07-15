@@ -22,7 +22,8 @@ class ModelGenerator:
 		self.sextractorConfigFilename = "config.sex"
 		# "/".join(image.filename.split("/")[:-1]) + "/"
 		self.destDirectory = destDirectory
-		
+		if self.destDirectory and not os.path.isdir(self.destDirectory):
+			os.mkdir(self.destDirectory)
 		
 	def parseGalfitOptions(self, parser, options):
 		'''
@@ -994,8 +995,6 @@ class ModelGenerator:
 			
 		curImage = {"filename":imageFilename, "models":[]}
 		self.logMsg = imageFilename + ": "
-		if self.destDirectory and not os.path.isdir(self.destDirectory):
-			os.mkdir(self.destDirectory)
 		
 		# run galfit, preventing crashes but printing and logging errors in log
 		try:
@@ -1054,7 +1053,7 @@ def runModelGenerator(parameterList):
 	modelGen.parseGalfitOptions(parser, options)
 	modelGen.parseSextractorOptions(parser, options.realSextractor, 
 									sextractorKeywordOptions)
-				
+	
 	# sextractor specific tasks that can be done outside of image loop
 	if not os.path.isfile(modelGen.sextractorConfigFilename):
 	
@@ -1088,6 +1087,7 @@ def runModelGenerator(parameterList):
 	print ("writing log file to " + logFilename)
 	with open(logFilename, 'w') as logFile:
 		logFile.write(log)
+	
 	return results
 
 		
@@ -1210,7 +1210,7 @@ if __name__ == "__main__":
 			print(len(imageFilenames[i:i+chunkSize]))
 			imageArgs.append([parser, options, args[1:], "results" + str(i)] + 
 								imageFilenames[i:i+chunkSize])
-		
+								
 		# see documentation on multiprocessing pool and map function
 		print ("passing job to " + str(numCPUs) + " out of " + 
 				str(multiprocessing.cpu_count()) + " CPUs, logs will be written as completed")

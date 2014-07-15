@@ -161,9 +161,9 @@ def sum_galfit(resultFilename, delim):
 			componentList = [galaxyID, timeStep, age_gyr, camera, filt]
 			
 		# toggle flag on the line indicating sky for use by future lines
-		if resultLine.strip().split()[1] == "sky":
+		if resultLine.strip()[:6] == "A) sky":
 			skipSky = True
-		elif resultLine.strip().split()[1] == "sersic":
+		elif resultLine.strip()[:6] == "B) ser":
 			skipSky = False
 			
 		# dont record results for sky component
@@ -243,11 +243,8 @@ if __name__ == "__main__":
 	# this loops through every result, writing summary to output
 	for resultFilename in resultFilenames:
 	
-		try:
-			# summarize galfit and write to output
-			outFile.write( sum_galfit(resultFilename.strip(), delim) )
-		except:
-			print (str(sys.exc_info()[0]) + str(sys.exc_info()[1]))
+		# summarize galfit and write to output
+		outFile.write( sum_galfit(resultFilename.strip(), delim) )
 		
 	outFile.close()
 	
