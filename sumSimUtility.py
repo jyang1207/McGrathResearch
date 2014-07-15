@@ -7,14 +7,6 @@ import time
 import sys
 from math import sqrt, exp, sin, pi
 
-
-def compute_distance(p0, p1):
-	'''
-	http://stackoverflow.com/questions/5407969/distance-formula-between-two-points-in-a-list
-	'''
-	
-	return sqrt((float(p0[0]) - float(p1[0]))**2 + (float(p0[1]) - float(p1[1]))**2)
-	
 	
 def red_shift_to_gyr(z):
 	'''

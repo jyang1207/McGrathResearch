@@ -777,7 +777,37 @@ class ModelGenerator:
 		galfitSingleParamFile.close()
 	
 	
-	def write_galfit_bulge_parameter(self):
+	def getCentermostID(self, centerCoords, resultFilename):
+		'''
+		return the integer ID of the galaxy closest to the images center
+		'''
+		with open(resultFilename, "r") as resultFile:
+			resultContents = resultFile.readlines()
+		
+		closestDist = 1000.0
+		closestID = -1
+		currentID = -1
+		for resultLine in resultContents:
+			resultLineList = resultLine.split()
+			if ((len(resultLineList) > 1) 
+				and (resultLineList[1].upper() == "COMPONENT")
+				and (resultLineList[-1].isidigit())):
+				
+				currentID = int(resultLineList[-1])
+			
+			if resultLine.strip()[:2] == "1)":
+				px = resultLineList[1]
+				py = resultLineList[2]
+				dx = centerCoords[0] - float(px)
+				dy = centerCoords[1] - float(py)
+				dist = math.sqrt(dx^2 + dy^2)
+				if dist < closestDist:
+					closestDist = dist
+					closestID = currentID
+		return closestID
+	
+	
+	def write_galfit_bulge_parameter(self, centerID):
 		'''
 		reads the results of the first run and writes it to a new file
 		with the output and constraint modified for bulge run and the
@@ -792,29 +822,31 @@ class ModelGenerator:
 		magnitudeLine = ""
 		radiusLine = ""
 		for resultLine in resultContents:
-		
-			if resultLine.strip()[:2] == "B)":
+			resultLineList = resultLine.split()
+				
+			if resultLineList[:2] == "B)":
 				bulgeParamStr = (bulgeParamStr + "B) " + self.galfit_bulge_output_filename +
 							"						#Output data image block\n")
 				
-			elif resultLine.strip()[:2] == "G)":
+			elif resultLineList[:2] == "G)":
 				bulgeParamStr = (bulgeParamStr + "G) " + self.galfit_constraint_filename + 
 							"						#File with parameter constraints (ASCII file)\n")
 			
 			#TODO: generalize to get the sersic component closest to center
-			elif not positionLine and resultLine.strip()[:2] == "1)":
-				positionLine = resultLine.strip().split(" ")
-				bulgeParamStr = bulgeParamStr + resultLine
+			if ((len(resultLineList) > 1) 
+				and (resultLineList[1].upper() == "COMPONENT")
+				and (resultLineList[-1].isidigit())
+				and (currentID = int(resultLineList[-1]))):
 				
-			elif not magnitudeLine and resultLine.strip()[:2] == "3)":
-				magnitudeLine = resultLine.strip().split(" ")
-				bulgeParamStr = bulgeParamStr + resultLine
-				
-			elif not radiusLine and resultLine.strip()[:2] == "4)":
-				radiusLine = resultLine.strip().split(" ")
-				bulgeParamStr = bulgeParamStr + resultLine
-				
-			else:
+				if resultLineList[:2] == "1)":
+					positionLine = resultLineList
+					
+				elif resultLineList[:2] == "3)":
+					magnitudeLine = resultLineList
+					
+				elif resultLineList[:2] == "4)":
+					radiusLine = resultLineList
+					
 				bulgeParamStr = bulgeParamStr + resultLine
 				
 		# store results of single component run into variables
@@ -956,10 +988,14 @@ class ModelGenerator:
 		# should be done by adding a bulge component to the result of the first run
 		if self.includeBulgeComponent:
 		
-			# reads the results of the first run and returns it as a long string
+			# determine the centermost galaxy, on which the bulge component will be run
+			centerID = self.getCentermostID(image["centerCoords"], 
+											self.galfit_single_result_filename)
+		
+			# reads the results of the first run and writes it 
 			# with the output and constraint modified for bulge run and the
 			# new bulge component appended with some intitial guess parameters
-			self.write_galfit_bulge_parameter()
+			self.write_galfit_bulge_parameter(centerID)
 
 			# run galfit on paramter file
 			os.system('galfit ' + self.galfit_bulge_parameter_filename)
