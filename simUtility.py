@@ -88,6 +88,8 @@ class ModelGenerator:
 		'''
 		writes the sextractor configuration file
 		'''
+		
+		requiredFilesDirectory = "requiredFiles/"
 		# variables describing the sextractor config file
 		catalogName = "generic.cat" # Name of the output catalogue. If the name "STDOUT" is given and CATALOG TYPE is set to ASCII, ASCII HEAD, ASCII SKYCAT, or ASCII VOTABLE the catalogue will be piped to the standard output (stdout
 		catalogType = "ASCII_HEAD"	# Format of output catalog:
@@ -97,7 +99,7 @@ class ModelGenerator:
 									# ASCII VOTABLE - XML-VOTable format, together with meta-data,
 									# FITS 1.0 - FITS format as in SExtractor 1
 									# FITS LDAC - FITS "LDAC" format (the original image header is copied).
-		sextractorParamFilename = "sex.param"
+		sextractorParamFilename = requiredFilesDirectory + "sex.param"
 		#------------------------------- Extraction ----------------------------------
 		detectType = "CCD" 
 		#fitsUnsigned = Force 16-bit FITS input data to be interpreted as unsigned integers.
@@ -121,13 +123,13 @@ class ModelGenerator:
 			detectMinArea = "10000" # Minimum number of pixels above threshold triggering detection
 			detectThreshold = "20"	#Detection threshold (0-2). 1 argument: (ADUs or relative to Background RMS, see THRESH TYPE). 2 arguments: R (mag.arcsec 2 ), Zero-point (mag).
 			deblendThreshold = "16" # Minimum contrast parameter for deblending.
-			deblendMinContrast = "0.02"	# Minimum contrast parameter for deblending.
+			deblendMinContrast = "0.005"	# Minimum contrast parameter for deblending.
 			cleanBool = "Y" # If true, a cleaning of the catalog is done before being written to disk.
 			cleanParam = "0.5"	# Efficiency of cleaning.
 			
 		analysisThreshold = "5" #Threshold (in surface brightness) at which CLASS STAR and FWHM operate. 1 argument: relative to Background RMS. 2 arguments: mu (mag/arcsec 2 ), Zero-point (mag).
 		filterBool = "Y"	#  If true,filtering is applied to the data before extraction.
-		filterName = "sex.conv" # Name and path of the file containing the filter definition
+		filterName = requiredFilesDirectory + "sex.conv" # Name and path of the file containing the filter definition
 		#filterThresh = ?	# Lower and higher thresholds (in back-ground standard deviations) for a pix-el
 							#to be consideredin filtering (used for retinafiltering only).
 		#threshType = ? # Meaning of the DETECT_THRESH and ANALYSIS_THRESH parameters:
@@ -149,7 +151,7 @@ class ModelGenerator:
 		#------------------------- Star/Galaxy Separation ----------------------------
 		seeingFWHM = "0.18"# ????? Seeing_FWHM FWHM of stellar images in arcsec.This quantity is used only
 							#for the neural network star/galaxy separation as expressed in the CLASS STAR output.
-		starNNWFilename = "default.nnw" #Name of the file containing the neural network weights for star/galaxy separation.
+		starNNWFilename = requiredFilesDirectory + "default.nnw" #Name of the file containing the neural network weights for star/galaxy separation.
 		#------------------------------ Background -----------------------------------
 		backSize = "600"	# Size, or Width, Height (inpixels) of a background mesh.
 		backFilterSize = "9"	#Size, or Width, Height (inbackground meshes) of the background-filtering mask.
@@ -530,13 +532,12 @@ class ModelGenerator:
 					" " + " ".join(self.sextractorOptionsList))
 		
 		# gather galaxy info from .cat file into image["models"]
-		outputCatFile = open(self.outputCatFilename, 'r')
-		outputCatContents = outputCatFile.readlines()
-		outputCatFile.close()
+		with open(self.outputCatFilename, 'r') as outputCatFile:
+			outputCatContents = outputCatFile.readlines()
+			
 		indexDict = {}
 		errorStr = ""
 		galaxyID = 0
-		
 		# loop over every line in catalog
 		for catalogOutputLine in outputCatContents:
 			defaultStr = ""
@@ -781,10 +782,9 @@ class ModelGenerator:
 		with the output and constraint modified for bulge run and the
 		new bulge component appended
 		'''
-		singleResultFile = open(self.galfit_single_result_filename, "r")		
-		resultContents = singleResultFile.readlines()
-		singleResultFile.close()
-		
+		with open(self.galfit_single_result_filename, "r") as singleResultFile:
+			resultContents = singleResultFile.readlines()
+			
 		# gather info about first fit while modifying output and coonstraint parameters
 		bulgeParamStr = ""		
 		positionLine = ""
@@ -839,9 +839,8 @@ class ModelGenerator:
 		bulgeParamStr = bulgeParamStr + ("\n")
 	
 		# write the bulge parameter file using the modified contents of the single results
-		galfitBulgeParamFile = open(self.galfit_bulge_parameter_filename, "w")
-		galfitBulgeParamFile.write(bulgeParamStr)
-		galfitBulgeParamFile.close()
+		with open(self.galfit_bulge_parameter_filename, "w") as galfitBulgeParamFile:
+			galfitBulgeParamFile.write(bulgeParamStr)
 		
 		
 	def getGalfitNNFIlename(self, multiFitsFilename):#, image, resultFilename):
@@ -909,11 +908,15 @@ class ModelGenerator:
 		# use pyfits to gather info from output of galfit
 		imageHeaders = pyfits.open(multiFitsFilename)
 		
-		# get the dictionary 
-		modelHeader = imageHeaders[2]
+		# get the filename from the dictionary mapping header keywords to their values
+		gNN = imageHeaders[2].header["LOGFILE"]
+		if "2" in imageHeaders[2].header["FLAGS"].split():
+			errorFlag = "# numerical error detected *"
+		else:
+			errorFlag = ""
+		imageHeaders.close()
+		return [gNN, errorFlag]
 		
-		# return the filename from the dictionary mapping header keywords to their values
-		return
 		
 	def run_galfit(self, image):
 		'''
@@ -940,8 +943,13 @@ class ModelGenerator:
 			return
 
 		# write the result using the resulting *_multi.fits[2] header
-		galfitNNFilename = self.getGalfitNNFIlename(self.galfit_single_output_filename)#, self.galfit_single_result_filename)
-		os.system("mv " + galfitNNFilename + " " + self.galfit_single_result_filename)
+		[galfitNNFilename, errorFlag] = self.getGalfitNNFIlename(
+											self.galfit_single_output_filename)
+		os.system("mv " + galfitNNFilename + " " + 
+					self.galfit_single_result_filename)
+		if errorFlag:
+			with open (self.galfit_single_result_filename, 'a') as resultFile:
+				resultFile.write(errorFlag)
 		
 		# done unless command line specified that a second galfit run
 		# should be done by adding a bulge component to the result of the first run
@@ -963,8 +971,13 @@ class ModelGenerator:
 				return
 			
 			# write the result using the resulting *_multi.fits[2] header
-			galfitNNFilename = self.getGalfitNNFIlename(self.galfit_bulge_output_filename)#, self.galfit_bulge_result_filename)
-			os.system("mv " + galfitNNFilename + " " + self.galfit_bulge_result_filename)
+			[galfitNNFilename, errorFlag] = self.getGalfitNNFIlename(
+												self.galfit_bulge_output_filename)
+			os.system("mv " + galfitNNFilename + " " + 
+						self.galfit_bulge_result_filename)
+			if errorFlag:
+				with open (self.galfit_bulge_result_filename, 'a') as resultFile:
+					resultFile.write(errorFlag)
 		
 		# if we get here then nothing went wrong!
 		self.logMsg = self.logMsg + " success"
@@ -997,6 +1010,7 @@ class ModelGenerator:
 			# run galfit if not suppressed by command line
 			if not self.galfitOff:
 				self.run_galfit(curImage)
+				os.system("rm fit.log")
 		
 		# catch, log, and ignore all runtime errors except explicit exits 
 		# (for debugging). move on to the next image regardless
@@ -1054,9 +1068,7 @@ def runModelGenerator(parameterList):
 			results.append(modelGen.modelImage(imageFilename.strip()))
 		else:
 			results.append(imageFilename.strip() + ": image file does not exist")
-	
-	os.system("rm " + "fit.log")
-	
+
 	# compose the log
 	log = "run on " + time.strftime("%m-%d-%Y") + "\n"
 	for result in results:
@@ -1074,9 +1086,8 @@ def runModelGenerator(parameterList):
 	
 	# write the log file
 	print ("writing log file to " + logFilename)
-	logFile = open(logFilename, 'w')
-	logFile.write(log)
-	logFile.close()
+	with open(logFilename, 'w') as logFile:
+		logFile.write(log)
 	return results
 
 		
@@ -1155,9 +1166,8 @@ if __name__ == "__main__":
 					" either does not exist or is not accessible")
 
 	# read list of image filenames from input file
-	inputFile = open(args[0], 'r')
-	imageFilenames = inputFile.readlines()
-	inputFile.close()
+	with open(args[0], 'r') as inputFile:
+		imageFilenames = inputFile.readlines()
 	
 	# verify there are images to model 
 	numImages = len(imageFilenames)
@@ -1225,9 +1235,9 @@ if __name__ == "__main__":
 		
 		# write the log file
 		print ("writing log file to " + logFilename)
-		logFile = open(logFilename, 'w')
-		logFile.write(log)
-		logFile.close()
+		with open(logFilename, 'w') as logFile:
+			logFile.write(log)
+			
 	print("time elapsed = " + str(time.time() - startTime) + " seconds")
 		
 		
