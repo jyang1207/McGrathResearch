@@ -844,15 +844,16 @@ class ModelGenerator:
 		galfitBulgeParamFile.close()
 		
 		
-	def write_galfit_result(self, multiFitsFilename, resultFilename):
+	def getGalfitNNFIlename(self, multiFitsFilename):#, image, resultFilename):
 		'''
 		use the output of galfit to write a result file, which is of the same
 		format as the parameter file
 		
+		parameter image - the image corresponding to the galfit run
 		parameter multiFitsFilename - Galfit's output (*multi.fits)
 		parameter resultFilename - desired filename of the result
 		returns - boolean indicating if the result was written or not
-		'''
+		
 		
 		# not using, getting info from multi fits instead
 		# because auto naming is a timing problem in parallel
@@ -873,10 +874,10 @@ class ModelGenerator:
 			modelHeader = imageHeaders[2]
 		except KeyError:
 			self.logMsg = (	self.logMsg + 
-							" write_galfit_result must be called on" +
+							" getGalfitNNFIlename must be called on" +
 							" a multi-extension cube (which galfit outputs)")
 			return False
-							
+						
 		# update image models to reflect galfit results
 		resultModels = []
 		for mIndex, model in enumerate(image["models"]):
@@ -898,13 +899,21 @@ class ModelGenerator:
 		# write info to the galfit result filename, using existing method
 		singleParamFilename = self.galfit_single_parameter_filename
 		self.galfit_single_parameter_filename = resultFilename
-		write_galfit_single_parameter(image)
+		self.write_galfit_single_parameter(image)
 		
 		# restore field value
 		self.galfit_single_parameter_filename = singleParamFilename
 		
 		return True
+		'''
+		# use pyfits to gather info from output of galfit
+		imageHeaders = pyfits.open(multiFitsFilename)
 		
+		# get the dictionary 
+		modelHeader = imageHeaders[2]
+		
+		# return the filename from the dictionary mapping header keywords to their values
+		return
 		
 	def run_galfit(self, image):
 		'''
@@ -922,10 +931,17 @@ class ModelGenerator:
 	
 		# run galfit on paramter file
 		os.system('galfit ' + self.galfit_single_parameter_filename)
-	
+			
+		# detects atomic galfit error
+		if not os.path.isfile(self.galfit_single_output_filename):
+			self.logMsg = (	self.logMsg + 
+							" galfit failed on single component, " + 
+							"probably mushroom (atomic galfit error)")
+			return
+
 		# write the result using the resulting *_multi.fits[2] header
-		galFlags = write_galfit_result(self.galfit_single_output_filename,
-							self.galfit_single_result_filename)
+		galfitNNFilename = self.getGalfitNNFIlename(self.galfit_single_output_filename)#, self.galfit_single_result_filename)
+		os.system("mv " + galfitNNFilename + " " + self.galfit_single_result_filename)
 		
 		# done unless command line specified that a second galfit run
 		# should be done by adding a bulge component to the result of the first run
@@ -938,10 +954,17 @@ class ModelGenerator:
 
 			# run galfit on paramter file
 			os.system('galfit ' + self.galfit_bulge_parameter_filename)
-					
+						
+			# detects atomic galfit error
+			if not os.path.isfile(self.galfit_bulge_output_filename):
+				self.logMsg = (	self.logMsg + 
+								" galfit failed on bulge component, " + 
+								"probably mushroom (atomic galfit error)")
+				return
+			
 			# write the result using the resulting *_multi.fits[2] header
-			galFlags = write_galfit_result(self.galfit_bulge_output_filename,
-								self.galfit_bulge_result_filename)
+			galfitNNFilename = self.getGalfitNNFIlename(self.galfit_bulge_output_filename)#, self.galfit_bulge_result_filename)
+			os.system("mv " + galfitNNFilename + " " + self.galfit_bulge_result_filename)
 		
 		# if we get here then nothing went wrong!
 		self.logMsg = self.logMsg + " success"
