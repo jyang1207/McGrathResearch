@@ -654,10 +654,10 @@ class ModelGenerator:
 		frame_dimensions = imhead_info.split("[")[1].replace("]", "").split(",")
 		# ["600","600"]
 	
-		image["width"] = frame_dimensions[0]
+		image["width"] = float(frame_dimensions[0])
 		# "600"
 		
-		image["height"] = frame_dimensions[1]
+		image["height"] = float(frame_dimensions[1])
 		# "600"
 		
 		image["galaxyID"] = imhead_info.split("_")[0]
@@ -715,7 +715,7 @@ class ModelGenerator:
 			"						#PSF fine sampling factor relative to data\n")
 		galfitSingleParamFile.write("F) none" + 					
 			"						#Bad pixel mask (FITS file or ASCIIcoord list)\n")
-		galfitSingleParamFile.write("G)" + " none" + 
+		galfitSingleParamFile.write("G)" + self.constraintFilename + 
 			"						#File with parameter constraints (ASCII file)\n")
 		galfitSingleParamFile.write("H) " + "1" + " " + str(image["width"]) + " " + 
 											"1" + " " + str(image["height"]) + 
@@ -787,23 +787,38 @@ class ModelGenerator:
 		closestDist = 1000.0
 		closestID = -1
 		currentID = -1
+		skipSky = False
 		for resultLine in resultContents:
+		
+			# toggle flag on the line indicating sky for use by future lines
+			if resultLine.strip()[:6] == "A) sky":
+				skipSky = True
+			elif resultLine.strip()[:6] == "B) ser":
+				skipSky = False
+			
+			# create an array version of the current result line
 			resultLineList = resultLine.split()
-			if ((len(resultLineList) > 1) 
-				and (resultLineList[1].upper() == "COMPONENT")
-				and (resultLineList[-1].isidigit())):
-				
+			
+			# get the component number if on the component header comment 
+			if (resultLineList
+				and (resultLine.strip()[0] == "#")
+				and (resultLine.strip()[-1].isdigit())):
 				currentID = int(resultLineList[-1])
 			
-			if resultLine.strip()[:2] == "1)":
+			# if on the position line of a non-sky component, check if it is
+			# the closest yet to the center of the image and, if so, save ID
+			if not skipSky and resultLine.strip()[:2] == "1)":
 				px = resultLineList[1]
 				py = resultLineList[2]
-				dx = imageWidth/2 - float(px)
-				dy = imageHeight/2 - float(py)
-				dist = math.sqrt(dx^2 + dy^2)
+				dx = imageWidth/2.0 - float(px)
+				dy = imageHeight/2.0 - float(py)
+				dist = math.sqrt(math.pow(dx,2) + math.pow(dy,2))
 				if dist < closestDist:
 					closestDist = dist
 					closestID = currentID
+				print "ID: " + str(currentID) + ", distance: " + atr(dist)
+		
+		# return the ID of the component closest to the center of the image
 		return closestID
 	
 	
@@ -816,38 +831,39 @@ class ModelGenerator:
 		with open(self.galfit_single_result_filename, "r") as singleResultFile:
 			resultContents = singleResultFile.readlines()
 			
-		# gather info about first fit while modifying output and coonstraint parameters
+		# gather info about first fit while modifying output and constraint parameters
 		bulgeParamStr = ""
+		currentID = -1
 		for resultLine in resultContents:
 			resultLineList = resultLine.split()
 				
-			if resultLineList[:2] == "B)":
+			if resultLine.strip()[:2] == "B)":
 				bulgeParamStr = (bulgeParamStr + "B) " + self.galfit_bulge_output_filename +
 							"						#Output data image block\n")
 				
-			elif resultLineList[:2] == "G)":
-				bulgeParamStr = (bulgeParamStr + "G) " + self.galfit_constraint_filename + 
+			elif resultLine.strip()[:2] == "G)":
+				bulgeParamStr = (bulgeParamStr + "G) " + self.constraintFilename + 
 							"						#File with parameter constraints (ASCII file)\n")
 							
 			else:
 				bulgeParamStr = bulgeParamStr + resultLine
 			
 				#TODO: generalize to get the sersic component closest to center
-				if ((len(resultLineList) > 1) 
-					and (resultLineList[1].upper() == "COMPONENT")
-					and (resultLineList[-1].isidigit())):
-					
+				if (resultLineList
+					and (resultLine.strip()[0] == "#")
+					and (resultLine.strip()[-1].isdigit())):
 					currentID = int(resultLineList[-1])
-					if centerID == currentID:
-						if resultLineList[:2] == "1)":
-							resultX = resultLineList[1]
-							resultY = resultLineList[2]
-							
-						elif resultLineList[:2] == "3)":
-							resultMag = resultLineList[1]
-							
-						elif resultLineList[:2] == "4)":
-							resultRad = resultLineList[1]
+					
+				if centerID == currentID:
+					if resultLine.strip()[:2] == "1)":
+						resultX = resultLineList[1]
+						resultY = resultLineList[2]
+						
+					elif resultLine.strip()[:2] == "3)":
+						resultMag = resultLineList[1]
+						
+					elif resultLine.strip()[:2] == "4)":
+						resultRad = resultLineList[1]
 		
 		# write the third component to the end of galfit_single_result_filename
 		bulgeParamStr = bulgeParamStr + ("# Componenet number: " + str(currentID+1) + "\n")
