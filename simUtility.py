@@ -816,7 +816,7 @@ class ModelGenerator:
 				if dist < closestDist:
 					closestDist = dist
 					closestID = currentID
-				print "ID: " + str(currentID) + ", distance: " + atr(dist)
+				print "ID: " + str(currentID) + ", distance: " + str(dist)
 		
 		# return the ID of the component closest to the center of the image
 		return closestID
@@ -1283,6 +1283,8 @@ if __name__ == "__main__":
 		with open(logFilename, 'w') as logFile:
 			logFile.write(log)
 			
-	print("time elapsed = " + str(time.time() - startTime) + " seconds")
+	elapsed = time.time() - startTime
+	print(" ".join(["time elapsed =",str(int(elapsed)),"seconds",
+			u"\u2245",str(int(elapsed/60.0)),"minutes"])
 		
 		
