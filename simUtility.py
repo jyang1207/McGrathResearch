@@ -777,7 +777,7 @@ class ModelGenerator:
 		galfitSingleParamFile.close()
 	
 	
-	def getCentermostID(self, centerCoords, resultFilename):
+	def getCentermostID(self, imageHeight, imageWidth, resultFilename):
 		'''
 		return the integer ID of the galaxy closest to the images center
 		'''
@@ -798,8 +798,8 @@ class ModelGenerator:
 			if resultLine.strip()[:2] == "1)":
 				px = resultLineList[1]
 				py = resultLineList[2]
-				dx = centerCoords[0] - float(px)
-				dy = centerCoords[1] - float(py)
+				dx = imageWidth/2 - float(px)
+				dy = imageHeight/2 - float(py)
 				dist = math.sqrt(dx^2 + dy^2)
 				if dist < closestDist:
 					closestDist = dist
@@ -838,7 +838,7 @@ class ModelGenerator:
 					and (resultLineList[-1].isidigit())):
 					
 					currentID = int(resultLineList[-1])
-					if centerID = currentID:
+					if centerID == currentID:
 						if resultLineList[:2] == "1)":
 							resultX = resultLineList[1]
 							resultY = resultLineList[2]
@@ -982,7 +982,7 @@ class ModelGenerator:
 		if self.includeBulgeComponent:
 		
 			# determine the centermost galaxy, on which the bulge component will be run
-			centerID = self.getCentermostID(image["centerCoords"], 
+			centerID = self.getCentermostID(image["height"], image["width"],
 											self.galfit_single_result_filename)
 		
 			# reads the results of the first run and writes it 
