@@ -28,6 +28,8 @@ pro write_comp_errors, infile,	DIS_LOWER_LIMIT = distLowLimit, $
 	readcol,infile,id,ts,age,cam,fil,px,py,mag,rad,ser,ba,ang,$
 		SKIPLINE=2,FORMAT="A,A,F,A,A"
 
+  stop
+  
 	; use above info to define output filename
 	out_filename = (strmid(infile,0,strpos(infile,".",/REVERSE_SEARCH))+'_all_errors.txt') 
 
@@ -164,32 +166,35 @@ pro plot_comp_vs_age, infile
 	; store arrays for each field in 14 named variables (id, ts, etc.)
 	readcol,infile,id,ts,age,cam,fil,px,py,mag,rad,ser,ba,ang,$
 		SKIPLINE=2,FORMAT="A,A,F,A,A"
-	
+		
 	gridDef = [1,2]
 	props = {symbol:'triangle', sym_size:1.0,$
-	xtitle:"Age (GYr)", ytitle:"Sersic Index", yrange:[0,5]}
+	xtitle:"Age (GYr)", ytitle:"Sersic Index", yrange:[0,5], xrange:[0,8]}
 	
 	distlimit = 10.0
-	title1 = "VELA02MRP"
+	title = ""
+	id1 = "VELA02MRP"
 	dx = (300-px)
 	dy = (300-py)
 	distFromCenter = (dx^2 + dy^2)^(0.5)
-	x1 = age[where( (id EQ title1) and (distFromCenter LT distLimit) )]
-	y1 = ser[where( (id EQ title1) and (distFromCenter LT distLimit) )]
-	plot1 = SCATTERPLOT(x1, y1, TITLE=title1, LAYOUT=[gridDef,[1]], _EXTRA=props)
+	
+	conditions = 1;distFromCenter LT distLimit
+	x1 = age[where( (id EQ id1) and conditions )]
+	y1 = ser[where( (id EQ id1) and conditions )]
+	plot1 = SCATTERPLOT(x1, y1, TITLE=(id1+title), LAYOUT=[gridDef,[1]], _EXTRA=props)
 	  
 	param1 = LINFIT(x1, y1, /Double, YFIT=fit1)
 	plotFit1 = PLOT(x1, fit1, /Overplot)
-	print,"slope of fit for ",title1,":",(param1[1]/param1[0])
+	print,"slope of fit for ",id1,":",(param1[1]/param1[0])
 	
-	title2 = "VELA02"
-	x2 = age[where( (id EQ title2) and (distFromCenter LT distLimit) )]
-	y2 = ser[where( (id EQ title2) and (distFromCenter LT distLimit) )]
-	plot2 = SCATTERPLOT(x2, y2, TITLE=title2, LAYOUT=[gridDef,[2]], /CURRENT, _EXTRA=props)
+	id2 = "VELA02"
+	x2 = age[where( (id EQ id2) and conditions )]
+	y2 = ser[where( (id EQ id2) and conditions )]
+	plot2 = SCATTERPLOT(x2, y2, TITLE=(id2+title), LAYOUT=[gridDef,[2]], /CURRENT, _EXTRA=props)
 	  
 	param2 = LINFIT(x2, y2, /Double, YFIT=fit2)
 	plotFit2 = PLOT(x2, fit2, /Overplot)
-	print,"slope of fit for ",title2,":",(param2[1]/param2[0])
+	print,"slope of fit for ",id2,":",(param2[1]/param2[0])
 end
 
 ; tile list of pictures
