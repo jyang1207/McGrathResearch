@@ -25,6 +25,7 @@ class ModelGenerator:
 		if self.destDirectory and not os.path.isdir(self.destDirectory):
 			os.mkdir(self.destDirectory)
 		
+		
 	def parseGalfitOptions(self, parser, options):
 		'''
 		parses the galfit options from the command line and uses to
@@ -1143,6 +1144,7 @@ if __name__ == "__main__":
 			but optparse is used to maintain better backwards compatibility
 	'''
 	
+	#define the command line interface with simUtility.py
 	usage = ("\n%prog inputFile [-h help] [options (with '-'|'--' prefix)]" +
 			"  [sextractor options (no '-' prefix)]\n" +
 			"Ex:\n" +
@@ -1234,7 +1236,8 @@ if __name__ == "__main__":
 		print("Must have Galfit's 'galfit' command available by PATH " + 
 				"environment variable. Exiting execution")
 		exit()
-		
+	# done verifying comamnd line #
+	
 	# for parallel, only use half the cpus available
 	numCPUs = int(multiprocessing.cpu_count())
 	
