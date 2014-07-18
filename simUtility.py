@@ -1045,7 +1045,7 @@ class ModelGenerator:
 		# run galfit, preventing crashes but printing and logging errors in log
 		try:
 	
-			# run iraf's imhead method to populate image fields
+			# run iraf's imhead method to populate image dimensions
 			self.run_imhead(curImage)
 					
 			# run sextractor, exiting if a necessary parameter is missing
