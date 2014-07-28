@@ -19,7 +19,8 @@ class ModelGenerator:
 		self.outputCatFilename = "generic.cat" # -CATALOG_NAME <filename>
 		self.segmentationMapFilename = "check.fits" # -CHECKIMAGE_NAME <filename>
 		self.sextractorOptionsList = []
-		self.sextractorConfigFilename = "config.sex"
+		self.sextractorConfigFilename = "configInit.sex"
+		self.sextractorReduceComponentConfigFilename = "configFewerComp.sex"
 		# "/".join(image.filename.split("/")[:-1]) + "/"
 		self.destDirectory = destDirectory
 		if self.destDirectory and not os.path.isdir(self.destDirectory):
@@ -86,7 +87,7 @@ class ModelGenerator:
 				self.sextractorOptionsList.append(sexOpt)
 			
 		
-	def write_sextractor_config_file(self):
+	def write_sextractor_config_file(self, fname):
 		'''
 		writes the sextractor configuration file
 		'''
@@ -112,7 +113,7 @@ class ModelGenerator:
 						# MIN minimum of all flag values,
 						# MAX maximum of all flag values,
 						# MOST most common flag value.
-						
+		
 		# these variable values change for simulation template vs real template
 		if self.realSextractor:
 			detectMinArea = "5" # Minimum number of pixels above threshold triggering detection
@@ -121,7 +122,14 @@ class ModelGenerator:
 			deblendMinContrast = "0.0001"
 			cleanBool = "Y" # If true, a cleaning of the catalog is done before being written to disk.
 			cleanParam = "1.0"	# Efficiency of cleaning.
-		else:
+		elif fname == self.sextractorConfigFilename:
+			detectMinArea = "1000" # Minimum number of pixels above threshold triggering detection
+			detectThreshold = "20"	#Detection threshold (0-2). 1 argument: (ADUs or relative to Background RMS, see THRESH TYPE). 2 arguments: R (mag.arcsec 2 ), Zero-point (mag).
+			deblendThreshold = "16" # Minimum contrast parameter for deblending.
+			deblendMinContrast = "0.005"	# Minimum contrast parameter for deblending.
+			cleanBool = "Y" # If true, a cleaning of the catalog is done before being written to disk.
+			cleanParam = "0.5"	# Efficiency of cleaning.
+		else:# fname == self.sextractorReduceComponentConfigFilename:
 			detectMinArea = "10000" # Minimum number of pixels above threshold triggering detection
 			detectThreshold = "20"	#Detection threshold (0-2). 1 argument: (ADUs or relative to Background RMS, see THRESH TYPE). 2 arguments: R (mag.arcsec 2 ), Zero-point (mag).
 			deblendThreshold = "16" # Minimum contrast parameter for deblending.
@@ -201,8 +209,8 @@ class ModelGenerator:
 		
 		
 		# use above variables to write the config file
-		os.system('touch ' + self.sextractorConfigFilename)
-		sextractorConfigFile = open(self.sextractorConfigFilename,'w')
+		os.system('touch ' + fname)
+		sextractorConfigFile = open(fname,'w')
 		sextractorConfigFile.write(
 '''
 # Default configuration file for SExtractor V1.2b14 - > 2.0
@@ -504,7 +512,7 @@ class ModelGenerator:
 				"			# H-band magnitude zero-point\n")
 	
 	
-	def run_sextractor(self, image):
+	def run_sextractor(self, image, configFilename):
 		'''
 		runs sextractor on the given image, producing
 		*.cat and *.fits in the destination directory, which 
@@ -528,7 +536,7 @@ class ModelGenerator:
 				".".join(image["filename"].split("/")[-1
 							].split(".")[:-1]) + "_check.fits")
 		os.system(	"sex " + image["filename"] + 
-					" -c " + self.sextractorConfigFilename + 
+					" -c " + configFilename + 
 					" -CATALOG_NAME " + self.outputCatFilename + 
 					" -CHECKIMAGE_NAME " + self.segmentationMapFilename + 
 					" " + " ".join(self.sextractorOptionsList))
@@ -537,10 +545,22 @@ class ModelGenerator:
 		with open(self.outputCatFilename, 'r') as outputCatFile:
 			outputCatContents = outputCatFile.readlines()
 			
+		# count the number of components in the catalog output
+		numGalaxies = 0
+		for catalogOutputLine in reversed(outputCatContents):
+			if catalogOutputLine[0] == "#":
+				break
+			else:
+				numGalaxies = numGalaxies + 1
+		
+		# if there are too many galaxies after the first fit, recursively
+		# run sextractor again, now with a different configuration file
+		if (configFilename == self.sextractorConfigFilename) and (numGalaxies > 3):
+			return self.run_sextractor(image, self.sextractorReduceComponentConfigFilename)
+		
+		# loop over every line in catalog to build list of image models				
 		indexDict = {}
 		errorStr = ""
-		galaxyID = 0
-		# loop over every line in catalog
 		for catalogOutputLine in outputCatContents:
 			defaultStr = ""
 			galaxyOutputList = catalogOutputLine.strip().split()
@@ -548,8 +568,9 @@ class ModelGenerator:
 			# if in the top comment section
 			if galaxyOutputList[0] == "#":
 				indexDict[galaxyOutputList[2].upper()] = int(galaxyOutputList[1]) - 1
+			
+			# if in the bottom components section
 			else:
-				galaxyID = galaxyID + 1
 				
 				# gather galaxy information
 				if "X_IMAGE" in indexDict:
@@ -628,13 +649,8 @@ class ModelGenerator:
 										"angle":galaxyAng,
 										"sers":galaxySers})
 				
-				self.logMsg = " ".join(
-								[
-								self.logMsg,
-								str(galaxyID),
-								str(image["models"][-1]["centerCoords"]),
-								str(image["models"][-1]["radius"])
-								])
+		self.logMsg = (self.logMsg + " configFilename = " + configFilename + 
+						" numGalaxies = " + str(numGalaxies))
 		return True
 				
 
@@ -872,7 +888,7 @@ class ModelGenerator:
 		bulgeParamStr = bulgeParamStr + (" 1) " + resultX + " " + resultY + " 1 1			#Position x,y\n")
 		bulgeParamStr = bulgeParamStr + (" 3) " + resultMag + " 1			#Integrated Magnitude\n")
 		bulgeParamStr = bulgeParamStr + (" 4) " + resultRad + "			1			#R_e (half-light radius)	[pix]\n")
-		bulgeParamStr = bulgeParamStr + (" 5) " + "1.0000		1			#Sersic index n (de Vaucouleurs n=4)\n")
+		bulgeParamStr = bulgeParamStr + (" 5) " + "2.5		1			#Sersic index n (de Vaucouleurs n=4)\n")
 		bulgeParamStr = bulgeParamStr + (" 6) 0.0000		0			#	-----\n")
 		bulgeParamStr = bulgeParamStr + (" 7) 0.0000		0			#	-----\n")
 		bulgeParamStr = bulgeParamStr + (" 8) 0.0000		0			#	-----\n")
@@ -1049,7 +1065,7 @@ class ModelGenerator:
 			self.run_imhead(curImage)
 					
 			# run sextractor, exiting if a necessary parameter is missing
-			if not self.run_sextractor(curImage):
+			if not self.run_sextractor(curImage, self.sextractorConfigFilename):
 				exit()
 		
 			# run galfit if not suppressed by command line
@@ -1100,11 +1116,9 @@ def runModelGenerator(parameterList):
 	modelGen.parseSextractorOptions(parser, options.realSextractor, 
 									sextractorKeywordOptions)
 	
-	# sextractor specific tasks that can be done outside of image loop
-	if not os.path.isfile(modelGen.sextractorConfigFilename):
-	
-		# write the sextractor config file, which will be used for all images
-		modelGen.write_sextractor_config_file()
+	# write the sextractor config file, which will be used for all images
+	modelGen.write_sextractor_config_file(modelGen.sextractorConfigFilename)
+	modelGen.write_sextractor_config_file(modelGen.sextractorReduceComponentConfigFilename)
 
 	# store log result of modeling each image using modelGen instance
 	results = []
@@ -1146,56 +1160,53 @@ if __name__ == "__main__":
 	
 	#define the command line interface with simUtility.py
 	usage = ("\n%prog inputFile [-h help] [options (with '-'|'--' prefix)]" +
-			"  [sextractor options (no '-' prefix)]\n" +
-			"Ex:\n" +
-			"%prog images.txt\n" +
-			"%prog images.txt -c pos.constraint -b -g\n" +
-			"%prog images.txt -s parameter_name sex.param filter_name sex.conv")
+			"  [sextractor options (no '-' prefix)]\n")
 			
 	# used to parse command line arguments
 	parser = OptionParser(usage)
 	
-	# bulge is a boolean (true or false) specifying if the simulation should
-	# fit an additional component after the initial fit from imexam results
+	# fit an additional component after the initial GALFIT fit
 	parser.add_option("-b","--bulge", 
-				help="include to run a galfit bulge fit after the initial galaxy fit",
+				help="include to run a GALFIT bulge fit after the initial galaxy fit",
 				action="store_true")
 						
-	# gauss is a boolean (true or false) specifying if the simulation should
-	# apply gaussian smoothing before running sextractor and/or iraf.minmax
+	# suppress running galfit after sextractor
 	parser.add_option("-g","--galfitOff", 
-				help="include to suppress running galfit after sextractor",
+				help="include to suppress running galfit after Source-Extractor",
 				action="store_true")
 						
 	# run sextractor
 	parser.add_option("-r","--realSextractor", 
-				help="include to run sextractor for real images, otherwise sim images assumed",
+				help="include to run Source-Extractor for real images, otherwise sim images assumed",
 				action="store_true")
 	
-	# run sextractor
+	# run in parallel
 	parser.add_option("-p","--parallel", 
 				help="include to run images in parallel, otherwise series",
 				action="store_true")
 	
-	# the constraint file. verified after parsing
+	# the GALFIT constraint file. verified after parsing
+	# TODO: this might be deprecated, since the component numbering
+	# 		is less predictable since the introduction of sextractor
+	#		Also constraint files are not recommended in GALFIT generally
 	parser.add_option("-c","--constraint", 
-				help="set the file containing the galfit constraints")
+				help="set the file constraining the GALFIT results")
 			
 	# Magnitude photometric zeropoint	
 	parser.add_option("--mpz", metavar="MagnitudePhotometricZeropoint",
 				type="float", default=26.3, 
 				help="set the magnitude photometric zeropoint for" +
-					" galfit to use [default: %default]")
+					" GALFIT to use [default: %default]")
 						
 	# Plate scale
 	parser.add_option("--plate", metavar="PlateScale",
 				type="float", default=0.06, 
-				help="set the plate scale for galfit to use" +
+				help="set the plate scale for GALFIT to use" +
 						"[default: %default]")
 								
 	# PSF file. verified after parsing
 	parser.add_option("--psf",
-				help="set the file for galfit to use as a PSF")
+				help="set the file for GALFIT to use as a PSF")
 						
 	# parse the command line using above parameter rules
 	# options - list with everthing defined above, 
@@ -1229,11 +1240,11 @@ if __name__ == "__main__":
 					
 	# verify that the calling computer has the necessary commands in PATH
 	if os.system("sex --help"):
-		print("Must have Sextractor's 'sex' command available by PATH " + 
+		print("Must have Source-Extractor's 'sex' command available by PATH " + 
 				"environment variable. Exiting execution")
 		exit()
 	if os.system("galfit -help"):
-		print("Must have Galfit's 'galfit' command available by PATH " + 
+		print("Must have GALFIT's 'galfit' command available by PATH " + 
 				"environment variable. Exiting execution")
 		exit()
 	# done verifying comamnd line #
@@ -1255,8 +1266,10 @@ if __name__ == "__main__":
 		print ("running in parallel, the list of images is being divided among" + 
 				" your available processors in the following chunk sizes")
 		for i in range(0, numImages, chunkSize):
-			print(len(imageFilenames[i:i+chunkSize]))
-			imageArgs.append([parser, options, args[1:], "results" + str(i)] + 
+			parDestDirectory = "results" + str(i)
+			print(str(len(imageFilenames[i:i+chunkSize])) +
+				" images being stored in the directory: " + parDestDirectory)
+			imageArgs.append([parser, options, args[1:], parDestDirectory] + 
 								imageFilenames[i:i+chunkSize])
 								
 		# see documentation on multiprocessing pool and map function
@@ -1288,6 +1301,4 @@ if __name__ == "__main__":
 			
 	elapsed = time.time() - startTime
 	print(" ".join(["time elapsed =",str(int(elapsed)),"seconds",
-			u"\u2245",str(int(elapsed/60.0)),"minutes"])
-		
-		
+			u"\u2245",str(int(elapsed/60.0)),"minutes"]))
