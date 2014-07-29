@@ -927,7 +927,7 @@ class ModelGenerator:
 						" y -5  5	# Soft constraint: Constrains y position\n")
 		
 		
-	def getGalfitNNFIlename(self, multiFitsFilename):#, image, resultFilename):
+	def getGalfitNNFilename(self, multiFitsFilename):#, image, resultFilename):
 		'''
 		use the output of galfit to write a result file, which is of the same
 		format as the parameter file
@@ -1018,7 +1018,7 @@ class ModelGenerator:
 	
 		# run galfit on paramter file
 		os.system('galfit ' + self.galfit_single_parameter_filename)
-		os.system("rm fit.log")
+		#os.system("rm fit.log")
 			
 		# detects atomic galfit error
 		if not os.path.isfile(self.galfit_single_output_filename):
@@ -1028,7 +1028,7 @@ class ModelGenerator:
 			return
 
 		# write the result using the resulting *_multi.fits[2] header
-		[galfitNNFilename, errorFlag] = self.getGalfitNNFIlename(
+		[galfitNNFilename, errorFlag] = self.getGalfitNNFilename(
 											self.galfit_single_output_filename)
 		os.system("mv " + galfitNNFilename + " " + 
 					self.galfit_single_result_filename)
@@ -1051,7 +1051,7 @@ class ModelGenerator:
 
 			# run galfit on paramter file
 			os.system('galfit ' + self.galfit_bulge_parameter_filename)
-			os.system("rm fit.log")
+			#os.system("rm fit.log")
 						
 			# detects atomic galfit error
 			if not os.path.isfile(self.galfit_bulge_output_filename):
@@ -1061,7 +1061,7 @@ class ModelGenerator:
 				return
 			
 			# write the result using the resulting *_multi.fits[2] header
-			[galfitNNFilename, errorFlag] = self.getGalfitNNFIlename(
+			[galfitNNFilename, errorFlag] = self.getGalfitNNFilename(
 												self.galfit_bulge_output_filename)
 			os.system("mv " + galfitNNFilename + " " + 
 						self.galfit_bulge_result_filename)
@@ -1349,7 +1349,7 @@ if __name__ == "__main__":
 				str(multiprocessing.cpu_count()) + " CPUs, logs will be written as completed")
 		pool = multiprocessing.Pool(numCPUs)
 		results = pool.map(runModelGenerator, imageArgs)
-			
+		
 		# compose the log
 		log = "run on " + time.strftime("%m-%d-%Y") + "\n"
 		for result in results:
