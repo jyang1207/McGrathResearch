@@ -1,4 +1,4 @@
-#! /usr/bin/python
+#!/usr/bin/env python
 
 import os
 import sys
@@ -122,22 +122,24 @@ class ModelGenerator:
 			deblendMinContrast = "0.0001"
 			cleanBool = "Y" # If true, a cleaning of the catalog is done before being written to disk.
 			cleanParam = "1.0"	# Efficiency of cleaning.
+			analysisThreshold = "5" #Threshold (in surface brightness) at which CLASS STAR and FWHM operate. 1 argument: relative to Background RMS. 2 arguments: mu (mag/arcsec 2 ), Zero-point (mag)
 		elif fname == self.sextractorConfigFilename:
-			detectMinArea = "1000" # Minimum number of pixels above threshold triggering detection
-			detectThreshold = "20"	#Detection threshold (0-2). 1 argument: (ADUs or relative to Background RMS, see THRESH TYPE). 2 arguments: R (mag.arcsec 2 ), Zero-point (mag).
-			deblendThreshold = "16" # Minimum contrast parameter for deblending.
-			deblendMinContrast = "0.005"	# Minimum contrast parameter for deblending.
-			cleanBool = "Y" # If true, a cleaning of the catalog is done before being written to disk.
-			cleanParam = "0.5"	# Efficiency of cleaning.
-		else:# fname == self.sextractorReduceComponentConfigFilename:
 			detectMinArea = "10000" # Minimum number of pixels above threshold triggering detection
 			detectThreshold = "20"	#Detection threshold (0-2). 1 argument: (ADUs or relative to Background RMS, see THRESH TYPE). 2 arguments: R (mag.arcsec 2 ), Zero-point (mag).
 			deblendThreshold = "16" # Minimum contrast parameter for deblending.
 			deblendMinContrast = "0.005"	# Minimum contrast parameter for deblending.
 			cleanBool = "Y" # If true, a cleaning of the catalog is done before being written to disk.
 			cleanParam = "0.5"	# Efficiency of cleaning.
+			analysisThreshold = "5" #Threshold (in surface brightness) at which CLASS STAR and FWHM operate. 1 argument: relative to Background RMS. 2 arguments: mu (mag/arcsec 2 ), Zero-point (mag).
+		else:# fname == self.sextractorReduceComponentConfigFilename:
+			detectMinArea = "10000" # Minimum number of pixels above threshold triggering detection
+			detectThreshold = "50"	#Detection threshold (0-2). 1 argument: (ADUs or relative to Background RMS, see THRESH TYPE). 2 arguments: R (mag.arcsec 2 ), Zero-point (mag).
+			deblendThreshold = "16" # Minimum contrast parameter for deblending.
+			deblendMinContrast = "0.02"	# Minimum contrast parameter for deblending.
+			cleanBool = "Y" # If true, a cleaning of the catalog is done before being written to disk.
+			cleanParam = "0.5"	# Efficiency of cleaning.
+			analysisThreshold = "20" #Threshold (in surface brightness) at which CLASS STAR and FWHM operate. 1 argument: relative to Background RMS. 2 arguments: mu (mag/arcsec 2 ), Zero-point (mag).
 			
-		analysisThreshold = "5" #Threshold (in surface brightness) at which CLASS STAR and FWHM operate. 1 argument: relative to Background RMS. 2 arguments: mu (mag/arcsec 2 ), Zero-point (mag).
 		filterBool = "Y"	#  If true,filtering is applied to the data before extraction.
 		filterName = requiredFilesDirectory + "sex.conv" # Name and path of the file containing the filter definition
 		#filterThresh = ?	# Lower and higher thresholds (in back-ground standard deviations) for a pix-el
@@ -700,11 +702,11 @@ class ModelGenerator:
 		filename = (self.destDirectory + image["galaxyID"] + "_" + 
 					image["timeStep"] + '_cam' + str(image["camera"]) + 
 					'_' + image["filter"])
-		self.galfit_single_const_filename = 	filename + '_single_const.txt'
+		self.galfit_single_constraint_filename =filename + '_single_constraint.txt'
 		self.galfit_single_parameter_filename = filename + '_single_param.txt'
 		self.galfit_single_output_filename =	filename + "_single_multi.fits"
 		self.galfit_single_result_filename =	filename + "_single_result.txt"
-		self.galfit_bulge_const_filename = 		filename + '_bulge_const.txt'
+		self.galfit_bulge_constraint_filename = filename + '_bulge_constraint.txt'
 		self.galfit_bulge_parameter_filename =	filename + '_bulge_param.txt'
 		self.galfit_bulge_output_filename =		filename + "_bulge_multi.fits"
 		self.galfit_bulge_result_filename =		filename + "_bulge_result.txt"
@@ -732,7 +734,7 @@ class ModelGenerator:
 			"						#PSF fine sampling factor relative to data\n")
 		galfitSingleParamFile.write("F) none" + 					
 			"						#Bad pixel mask (FITS file or ASCIIcoord list)\n")
-		galfitSingleParamFile.write("G)" + self.constraintFilename + 
+		galfitSingleParamFile.write("G) none" + #self.constraintFilename + 
 			"						#File with parameter constraints (ASCII file)\n")
 		galfitSingleParamFile.write("H) " + "1" + " " + str(image["width"]) + " " + 
 											"1" + " " + str(image["height"]) + 
@@ -833,7 +835,6 @@ class ModelGenerator:
 				if dist < closestDist:
 					closestDist = dist
 					closestID = currentID
-				print "ID: " + str(currentID) + ", distance: " + str(dist)
 		
 		# return the ID of the component closest to the center of the image
 		return closestID
@@ -859,17 +860,16 @@ class ModelGenerator:
 							"						#Output data image block\n")
 				
 			elif resultLine.strip()[:2] == "G)":
-				bulgeParamStr = (bulgeParamStr + "G) " + self.constraintFilename + 
+				bulgeParamStr = (bulgeParamStr + "G) " + self.galfit_bulge_constraint_filename + 
 							"						#File with parameter constraints (ASCII file)\n")
 							
 			else:
-				bulgeParamStr = bulgeParamStr + resultLine
 			
-				#TODO: generalize to get the sersic component closest to center
 				if (resultLineList
 					and (resultLine.strip()[0] == "#")
 					and (resultLine.strip()[-1].isdigit())):
 					currentID = int(resultLineList[-1])
+					bulgeParamStr = bulgeParamStr + resultLine
 					
 				if centerID == currentID:
 					if resultLine.strip()[:2] == "1)":
@@ -881,9 +881,20 @@ class ModelGenerator:
 						
 					elif resultLine.strip()[:2] == "4)":
 						resultRad = resultLineList[1]
+						
+					# rewrite the sersic index to be 1 and fixed for disk comp
+					if resultLine.strip()[:2] == "5)":
+						bulgeParamStr = (bulgeParamStr + " 5) " + 
+							"1.0		0			#Sersic index n (de Vaucouleurs n=4)\n")
+					else:
+						bulgeParamStr = bulgeParamStr + resultLine
+				else:
+					bulgeParamStr = bulgeParamStr + resultLine
+						
 		
 		# write the third component to the end of galfit_single_result_filename
-		bulgeParamStr = bulgeParamStr + ("# Componenet number: " + str(currentID+1) + "\n")
+		bulgeComponentID = currentID + 1
+		bulgeParamStr = bulgeParamStr + ("# Componenet number: " + str(bulgeComponentID) + "\n")
 		bulgeParamStr = bulgeParamStr + (" 0) sersic					#Component type\n")
 		bulgeParamStr = bulgeParamStr + (" 1) " + resultX + " " + resultY + " 1 1			#Position x,y\n")
 		bulgeParamStr = bulgeParamStr + (" 3) " + resultMag + " 1			#Integrated Magnitude\n")
@@ -900,6 +911,20 @@ class ModelGenerator:
 		# write the bulge parameter file using the modified contents of the single results
 		with open(self.galfit_bulge_parameter_filename, "w") as galfitBulgeParamFile:
 			galfitBulgeParamFile.write(bulgeParamStr)
+			
+		self.write_galfit_bulge_constraint(centerID, bulgeComponentID)
+		
+		
+	def write_galfit_bulge_constraint(self, centerID, bulgeComponentID):
+		'''
+		simple method to write the constraint for given components position
+		'''
+		# write the bulge constraint file for two given components
+		with open(self.galfit_bulge_constraint_filename, "w") as constraintFile:
+			constraintFile.write(str(centerID) + "," + str(bulgeComponentID) + 
+						" x -5  5	# Soft constraint: Constrains x position\n" +
+						str(centerID) + "," + str(bulgeComponentID) + 
+						" y -5  5	# Soft constraint: Constrains y position\n")
 		
 		
 	def getGalfitNNFIlename(self, multiFitsFilename):#, image, resultFilename):
@@ -993,6 +1018,7 @@ class ModelGenerator:
 	
 		# run galfit on paramter file
 		os.system('galfit ' + self.galfit_single_parameter_filename)
+		os.system("rm fit.log")
 			
 		# detects atomic galfit error
 		if not os.path.isfile(self.galfit_single_output_filename):
@@ -1025,6 +1051,7 @@ class ModelGenerator:
 
 			# run galfit on paramter file
 			os.system('galfit ' + self.galfit_bulge_parameter_filename)
+			os.system("rm fit.log")
 						
 			# detects atomic galfit error
 			if not os.path.isfile(self.galfit_bulge_output_filename):
@@ -1071,7 +1098,6 @@ class ModelGenerator:
 			# run galfit if not suppressed by command line
 			if not self.galfitOff:
 				self.run_galfit(curImage)
-				os.system("rm fit.log")
 		
 		# catch, log, and ignore all runtime errors except explicit exits 
 		# (for debugging). move on to the next image regardless
@@ -1226,17 +1252,12 @@ if __name__ == "__main__":
 	# read list of image filenames from input file
 	with open(args[0], 'r') as inputFile:
 		imageFilenames = inputFile.readlines()
-	
+		
 	# verify there are images to model 
 	numImages = len(imageFilenames)
 	if numImages == 0:
 		parser.error("input file " + args[0] +
 					" has no contents (full path image filenames).")
-	elif not os.path.isfile(imageFilenames[0].strip()):
-		parser.error("first line of input file " + imageFilenames[0].strip() + 
-					" does not exist or is not accessible\n" +
-					"input file " + args[0] + 
-					" must be only full path image filenames, one per line.")
 					
 	# verify that the calling computer has the necessary commands in PATH
 	if os.system("sex --help"):
@@ -1247,26 +1268,77 @@ if __name__ == "__main__":
 		print("Must have GALFIT's 'galfit' command available by PATH " + 
 				"environment variable. Exiting execution")
 		exit()
-	# done verifying comamnd line #
 	
+	# TODO: might solve windows vs unix/mac, not sure though
+	newFilenames = []
+	for imageFilename in imageFilenames:
+		newFilename = os.path.normpath(imageFilename.strip())
+		newFilenames.append(newFilename)
+		if not os.path.isfile(newFilename):
+			parser.error("input file has filename " + newFilename + "\n"
+						"This file does not exist or is not accessible\n" +
+						"input file " + args[0] + 
+						" must be only full path image filenames, one per line.")
+	imageFilenames = newFilenames
+	# done with immediate verifying of comamnd line #
+		
 	# for parallel, only use half the cpus available
 	numCPUs = int(multiprocessing.cpu_count())
 	
+	# create the destination directory for results
+	collectiveDestDirectory = "results_" + time.strftime("%m-%d-%Y") + "/"
+	# allow user to choose to overwrite the 
+	if os.path.isdir(collectiveDestDirectory):
+		
+		# try to get user input for pre python 3.x users
+		try:
+			if raw_input("dest directory " + collectiveDestDirectory +
+					"already exists.\nType Y and press ENTER to overwrite" +
+					" or N to terminate program execution: "
+					).strip().upper() == "Y":
+				os.system(" ".join(["rm","-r",collectiveDestDirectory]))
+			else:
+				print("terminating.")
+				exit()
+		except:
+			
+			# try to get user input from post python 3.x users
+			try:
+				if input("dest directory " + collectiveDestDirectory +
+						"already exists.\nType Y and press ENTER to overwrite" +
+						" or N to terminate program execution: "
+						).strip().upper() == "Y":
+					os.system(" ".join(["rm","-r",collectiveDestDirectory]))
+				else:
+					print("terminating.")
+					exit()
+			
+			# if all failed then just quit and alert the user
+			except:
+				print("dest directory " + collectiveDestDirectory + "already exists.")
+				exit()
+	os.mkdir(collectiveDestDirectory)
+	
+	# time how long it takes to run the program
 	startTime = time.time()
+	
 	# only do parallel if rerquested and if enough images to warrant
-	if not (options.parallel and (numImages >= numCPUs)):
-		runModelGenerator([parser, options, args[1:], "results"] + imageFilenames)
+	if not (options.parallel):# and (numImages >= numCPUs)):
+		runModelGenerator([parser, options, args[1:], collectiveDestDirectory] + 
+							imageFilenames)
 	
 	# run the parallel version
 	else:
 		
 		# construct list, each element is a list of arguments for separate cpu
 		imageArgs = []
+		destDirectories = []
 		chunkSize = int(math.ceil(float(numImages)/float(numCPUs)))
 		print ("running in parallel, the list of images is being divided among" + 
 				" your available processors in the following chunk sizes")
 		for i in range(0, numImages, chunkSize):
 			parDestDirectory = "results" + str(i)
+			destDirectories.append(parDestDirectory)
 			print(str(len(imageFilenames[i:i+chunkSize])) +
 				" images being stored in the directory: " + parDestDirectory)
 			imageArgs.append([parser, options, args[1:], parDestDirectory] + 
@@ -1284,21 +1356,29 @@ if __name__ == "__main__":
 			for line in result:
 				log = log + line + "\n"
 		
-		# create the log file in the same directory as python was called
-		try:
-			logFilename = ("rungalfit_log_" + 
-				imageFilenames[0].split("/")[-1].split("_")[1].split(".")[1] + 
-				"_to_" + 
-				imageFilenames[-1].split("/")[-1].split("_")[1].split(".")[1] +
-				"_" + time.strftime("%m-%d-%Y") + ".txt")
-		except:
-			logFilename = ("rungalfit_log.txt")
+		# create the log file in a collective destination directory
+		logFilename = (collectiveDestDirectory + "combined_rungalfit_log_" + 
+                    imageFilenames[0].split("/")[-1].split("_")[1].split(".")[1] + 
+                    "_to_" + 
+                    imageFilenames[-1].split("/")[-1].split("_")[1].split(".")[1] +
+                    "_" + time.strftime("%m-%d-%Y") + ".txt")
+
 		
 		# write the log file
 		print ("writing log file to " + logFilename)
 		with open(logFilename, 'w') as logFile:
 			logFile.write(log)
 			
+		# move all individual results into the new collective results folder
+		for subDir in destDirectories:
+			os.system(" ".join(["mv", subDir.rstrip("/") + "/*", collectiveDestDirectory]))
+			os.rmdir(subDir)
+	
+	# TODO: this relies on all and only configuration files to start with "config"
+	# move sextractor configuration files into the collective destination
+	os.system(" ".join(["mv","config*",collectiveDestDirectory]))
+	
+	# end program run time, print total
 	elapsed = time.time() - startTime
-	print(" ".join(["time elapsed =",str(int(elapsed)),"seconds",
+	print(" ".join(["time","elapsed","=",str(int(elapsed)),"seconds",
 			u"\u2245",str(int(elapsed/60.0)),"minutes"]))
