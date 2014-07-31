@@ -1,6 +1,9 @@
 
 #######some useful command line terminal input examples:########
 
+ls ../../hydroart/VELA03/VELA03_a0.[^01]*/images/*F160W_s* > images.txt
+ls ../../hydroart/VELA03MRP/VELA03MRP_0.[^01]*/images/*F160W_s* > images.txt
+
 #
 #for dividing timesteps between multiple processors
 #

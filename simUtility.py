@@ -19,12 +19,18 @@ class ModelGenerator:
 		self.outputCatFilename = "generic.cat" # -CATALOG_NAME <filename>
 		self.segmentationMapFilename = "check.fits" # -CHECKIMAGE_NAME <filename>
 		self.sextractorOptionsList = []
-		self.sextractorConfigFilename = "configInit.sex"
-		self.sextractorReduceComponentConfigFilename = "configFewerComp.sex"
 		# "/".join(image.filename.split("/")[:-1]) + "/"
+		
+		# verify and set the destination directory
+		if destDirectory and not destDirectory.endswith("/"):
+			destDirectory = destDirectory + "/"
 		self.destDirectory = destDirectory
 		if self.destDirectory and not os.path.isdir(self.destDirectory):
 			os.mkdir(self.destDirectory)
+			
+		# set the names of the sextractor configuration files
+		self.sextractorConfigFilename = destDirectory + "configInit.sex"
+		self.sextractorReduceComponentConfigFilename = destDirectory + "configFewerComp.sex"
 		
 		
 	def parseGalfitOptions(self, parser, options):
@@ -532,11 +538,11 @@ class ModelGenerator:
 		# run sextractor
 		# sex <image> [<image2>][-c <configuration_file>][-<keyword> <value>]
 		self.outputCatFilename = (self.destDirectory + 
-				".".join(image["filename"].split("/")[-1
-							].split(".")[:-1]) + ".cat")
+									".".join(image["filename"].split("/")[-1
+										].split(".")[:-1]) + ".cat")
 		self.segmentationMapFilename = (self.destDirectory + 
-				".".join(image["filename"].split("/")[-1
-							].split(".")[:-1]) + "_check.fits")
+									".".join(image["filename"].split("/")[-1
+										].split(".")[:-1]) + "_check.fits")
 		os.system(	"sex " + image["filename"] + 
 					" -c " + configFilename + 
 					" -CATALOG_NAME " + self.outputCatFilename + 
@@ -656,6 +662,36 @@ class ModelGenerator:
 		return True
 				
 
+	def write_ds9_reg_file(self, image):
+		'''
+		use the image to write a reg file for ds9, named according to the
+		image filename and with a circle for each model in the image's list
+		of models
+		'''
+		# join method is to handle the relative path names
+		regFileName = (self.destDirectory + 
+						".".join(image["filename"].split("/")[-1
+							].split(".")[:-1]) + ".reg")
+		
+		# write the header
+		regFileString = ("#Region file format: DS9 version 4.1\n" +
+						"global color=green dashlist=8 3 width=1 " + 
+						"font=\"helvetica 10 normal roman\" select=1 " + 
+						"highlite=1 dash=0 fixed=0 edit=1 move=1 delete=1 " +
+						"include=1 source=1\n" + "physical\n")
+		
+		# write a circle for each component of the image
+		for model in image["models"]:
+			regFileString = (regFileString + "circle(" + 
+								str(model["centerCoords"][0]) + "," + 
+								str(model["centerCoords"][1]) + "," + 
+								str(model["radius"]) + ")\n")
+		
+		# write file
+		with open(regFileName, "w") as regFile:
+			regFile.write(regFileString)
+			
+			
 	def run_imhead(self, image):
 		'''
 		invokes the iraf method imhead on the given image's filename
@@ -927,78 +963,30 @@ class ModelGenerator:
 						" y -5  5	# Soft constraint: Constrains y position\n")
 		
 		
-	def getGalfitNNFilename(self, multiFitsFilename):#, image, resultFilename):
+	def getGalfitNNFilename(self, multiFitsFilename):
 		'''
-		use the output of galfit to write a result file, which is of the same
-		format as the parameter file
+		use the output of GALFIT to get the galfit.NN filename
 		
-		parameter image - the image corresponding to the galfit run
-		parameter multiFitsFilename - Galfit's output (*multi.fits)
-		parameter resultFilename - desired filename of the result
-		returns - boolean indicating if the result was written or not
-		
-		
-		# not using, getting info from multi fits instead
-		# because auto naming is a timing problem in parallel
-		os.system("rm galfit.*")
-		
-		# detects atomic galfit error
-		if not os.path.isfile(multiFitsFilename):
-			self.logMsg = (	self.logMsg + 
-							" galfit failed on single component, " + 
-							"probably mushroom (atomic galfit error)")
-			return False
-		
+		parameter multiFitsFilename - GALFIT's output (*multi.fits)
+		returns - [gNN, errorFlag]
+			gNN - galfit.NN filename  
+			errorFlag - a string indicating if a numerical error has occurred
+						empty string if no numerical error detected by GALFIT
+		'''
+		print ("getting galfit.NN filename from " + multiFitsFilename)
 		# use pyfits to gather info from output of galfit
 		imageHeaders = pyfits.open(multiFitsFilename)
-		
-		# get the dictionary mapping header keywords to their values
-		try:
-			modelHeader = imageHeaders[2]
-		except KeyError:
-			self.logMsg = (	self.logMsg + 
-							" getGalfitNNFIlename must be called on" +
-							" a multi-extension cube (which galfit outputs)")
-			return False
-						
-		# update image models to reflect galfit results
-		resultModels = []
-		for mIndex, model in enumerate(image["models"]):
-			modelX = float(modelHeader[str(mIndex+1) + "_XC"].split()[0])
-			modelY = float(modelHeader[str(mIndex+1) + "_YC"].split()[0])
-			modelMag = float(modelHeader[str(mIndex+1) + "_MAG"].split()[0])
-			modelRad = float(modelHeader[str(mIndex+1) + "_RE"].split()[0])
-			modelSers = float(modelHeader[str(mIndex+1) + "_N"].split()[0])
-			modelBA = float(modelHeader[str(mIndex+1) + "_AR"].split()[0])
-			modelAng = float(modelHeader[str(mIndex+1) + "_PA"].split()[0])
-			resultModels.append({	"centerCoords":[modelX,modelY],
-									"magnitude":modelMag,
-									"radius":modelRad,
-									"ba":modelBA,
-									"angle":modelAng,
-									"sers":modelSers})
-		image["models"] = resultModels
-									
-		# write info to the galfit result filename, using existing method
-		singleParamFilename = self.galfit_single_parameter_filename
-		self.galfit_single_parameter_filename = resultFilename
-		self.write_galfit_single_parameter(image)
-		
-		# restore field value
-		self.galfit_single_parameter_filename = singleParamFilename
-		
-		return True
-		'''
-		# use pyfits to gather info from output of galfit
-		imageHeaders = pyfits.open(multiFitsFilename)
-		
+		print ("opened output fits using pyfits")
 		# get the filename from the dictionary mapping header keywords to their values
 		gNN = imageHeaders[2].header["LOGFILE"]
+		print ("got galfit.NN: " + gNN)
 		if "2" in imageHeaders[2].header["FLAGS"].split():
 			errorFlag = "# numerical error detected *"
 		else:
 			errorFlag = ""
+		print ("checked for error in FLAGS")
 		imageHeaders.close()
+		print ("closed output fits file, returning")
 		return [gNN, errorFlag]
 		
 		
@@ -1095,6 +1083,9 @@ class ModelGenerator:
 			if not self.run_sextractor(curImage, self.sextractorConfigFilename):
 				exit()
 		
+			# create a reg file for ds9 using the updated image dictionary
+			self.write_ds9_reg_file(curImage)
+			
 			# run galfit if not suppressed by command line
 			if not self.galfitOff:
 				self.run_galfit(curImage)
@@ -1133,8 +1124,6 @@ def runModelGenerator(parameterList):
 	imageFilenames = parameterList[4:]
 	
 	# holds methods for analyzing simulations
-	if not destDirectory.endswith("/"):
-		destDirectory = destDirectory + "/"
 	modelGen = ModelGenerator(destDirectory=destDirectory)
 	
 	# parse the command line options
@@ -1286,37 +1275,7 @@ if __name__ == "__main__":
 	numCPUs = int(multiprocessing.cpu_count())
 	
 	# create the destination directory for results
-	collectiveDestDirectory = "results_" + time.strftime("%m-%d-%Y") + "/"
-	# allow user to choose to overwrite the 
-	if os.path.isdir(collectiveDestDirectory):
-		
-		# try to get user input for pre python 3.x users
-		try:
-			if raw_input("dest directory " + collectiveDestDirectory +
-					"already exists.\nType Y and press ENTER to overwrite" +
-					" or N to terminate program execution: "
-					).strip().upper() == "Y":
-				os.system(" ".join(["rm","-r",collectiveDestDirectory]))
-			else:
-				print("terminating.")
-				exit()
-		except:
-			
-			# try to get user input from post python 3.x users
-			try:
-				if input("dest directory " + collectiveDestDirectory +
-						"already exists.\nType Y and press ENTER to overwrite" +
-						" or N to terminate program execution: "
-						).strip().upper() == "Y":
-					os.system(" ".join(["rm","-r",collectiveDestDirectory]))
-				else:
-					print("terminating.")
-					exit()
-			
-			# if all failed then just quit and alert the user
-			except:
-				print("dest directory " + collectiveDestDirectory + "already exists.")
-				exit()
+	collectiveDestDirectory = "results_" + time.strftime("%m-%d-%Y-%H-%M-%S") + "/"
 	os.mkdir(collectiveDestDirectory)
 	
 	# time how long it takes to run the program
@@ -1351,7 +1310,8 @@ if __name__ == "__main__":
 		results = pool.map(runModelGenerator, imageArgs)
 		
 		# compose the log
-		log = "run on " + time.strftime("%m-%d-%Y") + "\n"
+		log = ("run on " + time.strftime("%m-%d-%Y") + 
+				" with command line input " + " ".join(sys.argv) + "\n")
 		for result in results:
 			for line in result:
 				log = log + line + "\n"
@@ -1376,9 +1336,99 @@ if __name__ == "__main__":
 	
 	# TODO: this relies on all and only configuration files to start with "config"
 	# move sextractor configuration files into the collective destination
-	os.system(" ".join(["mv","config*",collectiveDestDirectory]))
+	#os.system(" ".join(["mv","config*",collectiveDestDirectory]))
+	if not options.galfitOff:
+		os.system(" ".join(["mv","fit.log",collectiveDestDirectory]))
 	
 	# end program run time, print total
 	elapsed = time.time() - startTime
 	print(" ".join(["time","elapsed","=",str(int(elapsed)),"seconds",
 			u"\u2245",str(int(elapsed/60.0)),"minutes"]))
+			
+	# unused code to enable version-free collective of user input
+	'''
+	# allow user to choose to overwrite the 
+	if os.path.isdir(collectiveDestDirectory):
+		
+		# try to get user input for pre python 3.x users
+		try:
+			if raw_input("dest directory " + collectiveDestDirectory +
+					"already exists.\nType Y and press ENTER to overwrite" +
+					" or N to terminate program execution: "
+					).strip().upper() == "Y":
+				os.system(" ".join(["rm","-r",collectiveDestDirectory]))
+			else:
+				print("terminating.")
+				exit()
+		except:
+			
+			# try to get user input from post python 3.x users
+			try:
+				if input("dest directory " + collectiveDestDirectory +
+						"already exists.\nType Y and press ENTER to overwrite" +
+						" or N to terminate program execution: "
+						).strip().upper() == "Y":
+					os.system(" ".join(["rm","-r",collectiveDestDirectory]))
+				else:
+					print("terminating.")
+					exit()
+			
+			# if all failed then just quit and alert the user
+			except:
+				print("dest directory " + collectiveDestDirectory + "already exists.")
+				exit()
+	'''
+	
+	# code for writing the result without needing the galfit NN file at all
+	'''
+		# not using, getting info from multi fits instead
+		# because auto naming is a timing problem in parallel
+		os.system("rm galfit.*")
+		
+		# detects atomic galfit error
+		if not os.path.isfile(multiFitsFilename):
+			self.logMsg = (	self.logMsg + 
+							" galfit failed on single component, " + 
+							"probably mushroom (atomic galfit error)")
+			return False
+		
+		# use pyfits to gather info from output of galfit
+		imageHeaders = pyfits.open(multiFitsFilename)
+		
+		# get the dictionary mapping header keywords to their values
+		try:
+			modelHeader = imageHeaders[2]
+		except KeyError:
+			self.logMsg = (	self.logMsg + 
+							" getGalfitNNFIlename must be called on" +
+							" a multi-extension cube (which galfit outputs)")
+			return False
+						
+		# update image models to reflect galfit results
+		resultModels = []
+		for mIndex, model in enumerate(image["models"]):
+			modelX = float(modelHeader[str(mIndex+1) + "_XC"].split()[0])
+			modelY = float(modelHeader[str(mIndex+1) + "_YC"].split()[0])
+			modelMag = float(modelHeader[str(mIndex+1) + "_MAG"].split()[0])
+			modelRad = float(modelHeader[str(mIndex+1) + "_RE"].split()[0])
+			modelSers = float(modelHeader[str(mIndex+1) + "_N"].split()[0])
+			modelBA = float(modelHeader[str(mIndex+1) + "_AR"].split()[0])
+			modelAng = float(modelHeader[str(mIndex+1) + "_PA"].split()[0])
+			resultModels.append({	"centerCoords":[modelX,modelY],
+									"magnitude":modelMag,
+									"radius":modelRad,
+									"ba":modelBA,
+									"angle":modelAng,
+									"sers":modelSers})
+		image["models"] = resultModels
+									
+		# write info to the galfit result filename, using existing method
+		singleParamFilename = self.galfit_single_parameter_filename
+		self.galfit_single_parameter_filename = resultFilename
+		self.write_galfit_single_parameter(image)
+		
+		# restore field value
+		self.galfit_single_parameter_filename = singleParamFilename
+		
+		return True
+	'''
