@@ -126,11 +126,6 @@ def sum_galfit(resultFilename, delim):
 	resultLines = resultFile.readlines()
 	
 	resultFile.close()
-	
-	if resultLines[-1][-1] == "*":
-		errorFlag = "*"
-	else:
-		errorFlag = ""
 		
 	skipSky = False
 	componentResults = ""
@@ -138,12 +133,32 @@ def sum_galfit(resultFilename, delim):
 		
 		# use output filename to gather some general info
 		if resultLine.strip()[:2] == "B)":
-		
-			# B) a0.220/VELA01_220_cam0_F160W_multi.fits      # Output data image block
-			galaxyID = resultLine.split("/")[-1].split("_")[0]
-			timeStep = resultLine.split("/")[-1].split("_")[1]
-			camera = resultLine.split("/")[-1].split("_")[2]
-			filt = resultLine.split("/")[-1].split("_")[3]
+			
+			fullPathOutput = resultLine.split()[-1]
+			# results/VELA02.....
+			
+			outputFilename = fullPathOutput.split("/")[-1].strip()
+			# VELA02MRP_0.201015_0002949__skipir_CAMERA0-BROADBAND_F160W_simulation_bulge_multi.fits
+
+			#TODO: this is dependent on the particular structure of the filename
+			#		the below code works for VELA simulations
+			galaxyID = outputFilename.split("_")[0]
+			#"VELA01"
+			
+			filt = outputFilename.split("_")[6]
+			#"F125W"	
+			
+			timeStep = outputFilename.split("_")[1].split(".")[1]
+			# "110"
+			
+			cam_str = outputFilename.split("_")[5].split("-")[0]
+			# "CAMERA0"
+			
+			# these statements accomodate for camera numbers
+			camera = ""
+			for c in cam_str:
+				if c.isdigit():
+					camera = camera + c
 			
 			# a = 1/(1+z)
 			# z = 1/a - 1

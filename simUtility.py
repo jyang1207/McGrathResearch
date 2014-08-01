@@ -25,8 +25,6 @@ class ModelGenerator:
 		if destDirectory and not destDirectory.endswith("/"):
 			destDirectory = destDirectory + "/"
 		self.destDirectory = destDirectory
-		if self.destDirectory and not os.path.isdir(self.destDirectory):
-			os.mkdir(self.destDirectory)
 			
 		# set the names of the sextractor configuration files
 		self.sextractorConfigFilename = destDirectory + "configInit.sex"
@@ -98,7 +96,7 @@ class ModelGenerator:
 		writes the sextractor configuration file
 		'''
 		
-		requiredFilesDirectory = "requiredFiles/"
+		requiredFilesDirectory = "../requiredFiles/"
 		# variables describing the sextractor config file
 		catalogName = "generic.cat" # Name of the output catalogue. If the name "STDOUT" is given and CATALOG TYPE is set to ASCII, ASCII HEAD, ASCII SKYCAT, or ASCII VOTABLE the catalogue will be piped to the standard output (stdout
 		catalogType = "ASCII_HEAD"	# Format of output catalog:
@@ -715,29 +713,14 @@ class ModelGenerator:
 		image["height"] = float(frame_dimensions[1])
 		# "600"
 		
-		image["galaxyID"] = imhead_info.split("_")[0]
-		#"VELA01"
-		
-		image["filter"] = imhead_info.split("_")[6]
-		#"F125W"	
-		
-		image["timeStep"] = imhead_info.split("_")[1].split(".")[1]
-		# "110"
-		
-		cam_str = imhead_info.split("_")[5].split("-")[0]
-		# "CAMERA0"
-		
-		# these statements accomodate for camera numbers
-		image["camera"] = ""
-		for c in cam_str:
-			if c.isdigit():
-				image["camera"] = image["camera"] + c
-		
 		
 	def defineGalfitFilenames(self, image):
-		filename = (self.destDirectory + image["galaxyID"] + "_" + 
+		'''filename = (self.destDirectory + image["galaxyID"] + "_" + 
 					image["timeStep"] + '_cam' + str(image["camera"]) + 
 					'_' + image["filter"])
+		'''
+		filename = (self.destDirectory + 
+					".".join(image["filename"].split("/")[-1].split(".")[:-1]))
 		self.galfit_single_constraint_filename =filename + '_single_constraint.txt'
 		self.galfit_single_parameter_filename = filename + '_single_param.txt'
 		self.galfit_single_output_filename =	filename + "_single_multi.fits"
@@ -748,88 +731,89 @@ class ModelGenerator:
 		self.galfit_bulge_result_filename =		filename + "_bulge_result.txt"
 
 	
-	def write_galfit_single_parameter(self, image):
+	def write_galfit_parameter(self, image, paramFile, ouputFilename):
 		'''
 		writes the galfit parameter file for the single component
 		
 		parameter image - 
 			the image on which galfit is being run
+		parameter paramFile - 
+			the open file object to write parameter file contents to
+		parameter outputFilename - 
+			the filename of the ouput that GALFIT will produce when running
+			the parameter file written by this method call
 		'''
-		os.system('touch ' + self.galfit_single_parameter_filename)
-		galfitSingleParamFile = open(self.galfit_single_parameter_filename,'w')
-		galfitSingleParamFile.write("# IMAGE and GALFIT CONTROL PARAMETERS\n")
-		galfitSingleParamFile.write("A) " + image["filename"] + 
+		paramFile.write("# IMAGE and GALFIT CONTROL PARAMETERS\n")
+		paramFile.write("A) " + image["filename"] + 
 			"						#Input data image block\n")
-		galfitSingleParamFile.write("B) " + self.galfit_single_output_filename +
+		paramFile.write("B) " + ouputFilename +
 			"						#Output data image block\n")
-		galfitSingleParamFile.write("C)" + " none" + 
+		paramFile.write("C)" + " none" + 
 			"						#Sigma image name (made from data if blank or 'none')\n")
-		galfitSingleParamFile.write("D) " + self.psf + 
+		paramFile.write("D) " + self.psf + 
 			"						#Input PSF image and (optional) diffusion kernel\n")
-		galfitSingleParamFile.write("E)" + " 1" + 
+		paramFile.write("E)" + " 1" + 
 			"						#PSF fine sampling factor relative to data\n")
-		galfitSingleParamFile.write("F) none" + 					
+		paramFile.write("F) none" + 					
 			"						#Bad pixel mask (FITS file or ASCIIcoord list)\n")
-		galfitSingleParamFile.write("G) none" + #self.constraintFilename + 
+		paramFile.write("G) none" + #self.constraintFilename + 
 			"						#File with parameter constraints (ASCII file)\n")
-		galfitSingleParamFile.write("H) " + "1" + " " + str(image["width"]) + " " + 
+		paramFile.write("H) " + "1" + " " + str(image["width"]) + " " + 
 											"1" + " " + str(image["height"]) + 
 			"						#Image region to fit (xmin xmax ymin ymax)\n")
-		galfitSingleParamFile.write("I)" + " 200 200" + 
+		paramFile.write("I)" + " 200 200" + 
 			"						#Size of the convolution box (x y)\n")
-		galfitSingleParamFile.write("J) " + str(self.mpZeropoint) + 
+		paramFile.write("J) " + str(self.mpZeropoint) + 
 			"						#Magnitude photometric zeropoint\n")
-		galfitSingleParamFile.write("K) " + str(self.plateScale) + "	 " + str(self.plateScale) + 
+		paramFile.write("K) " + str(self.plateScale) + "	 " + str(self.plateScale) + 
 			"						#Plate scale (dx dy)  [arcsec per pixel]\n")
-		galfitSingleParamFile.write("O)" + " regular" + 
+		paramFile.write("O)" + " regular" + 
 			"						#display type (regular, curses, both\n")
-		galfitSingleParamFile.write("P)" + " 0" + 
+		paramFile.write("P)" + " 0" + 
 			"						#Options: 0=normal run; 1,2=make model/imgblock & quit\n")
-		galfitSingleParamFile.write("S)" + " 0" + 
+		paramFile.write("S)" + " 0" + 
 			"						#Modify/create components interactively?\n")
-		galfitSingleParamFile.write("\n")
-		galfitSingleParamFile.write("# INITIAL FITTING PARAMETERS\n")
-		galfitSingleParamFile.write("#\n")
-		galfitSingleParamFile.write("# For component type, the allowed functions are:\n")
-		galfitSingleParamFile.write("#		nuker, sersic, expdisk, devauc, king, psf, gaussian, moffat,\n")
-		galfitSingleParamFile.write("#		ferrer, coresersic, sky and isophote.\n")
-		galfitSingleParamFile.write("#\n")
-		galfitSingleParamFile.write("# Hidden parameters will only appear when they are specified:\n")
-		galfitSingleParamFile.write("#		C0 (diskyness/boxyness),\n")
-		galfitSingleParamFile.write("#		Fn (n=interger, Azimuthal Fourier Modes).\n")
-		galfitSingleParamFile.write("#		R0-R10 (PA rotation, for creating spiral structures).\n")
-		galfitSingleParamFile.write("#\n")
-		galfitSingleParamFile.write("# ------------------------------------------------------------------------------\n")
-		galfitSingleParamFile.write("#		par)	par value(s)	fit toggle(s)	# parameter description\n")
-		galfitSingleParamFile.write("# ------------------------------------------------------------------------------\n")
-		galfitSingleParamFile.write("\n")
+		paramFile.write("\n")
+		paramFile.write("# INITIAL FITTING PARAMETERS\n")
+		paramFile.write("#\n")
+		paramFile.write("# For component type, the allowed functions are:\n")
+		paramFile.write("#		nuker, sersic, expdisk, devauc, king, psf, gaussian, moffat,\n")
+		paramFile.write("#		ferrer, coresersic, sky and isophote.\n")
+		paramFile.write("#\n")
+		paramFile.write("# Hidden parameters will only appear when they are specified:\n")
+		paramFile.write("#		C0 (diskyness/boxyness),\n")
+		paramFile.write("#		Fn (n=interger, Azimuthal Fourier Modes).\n")
+		paramFile.write("#		R0-R10 (PA rotation, for creating spiral structures).\n")
+		paramFile.write("#\n")
+		paramFile.write("# ------------------------------------------------------------------------------\n")
+		paramFile.write("#		par)	par value(s)	fit toggle(s)	# parameter description\n")
+		paramFile.write("# ------------------------------------------------------------------------------\n")
+		paramFile.write("\n")
 		
 		compNum = 1
 		for model in image["models"]:
-			galfitSingleParamFile.write("# Componenet number: " + str(compNum) + "\n")
-			galfitSingleParamFile.write(" 0) sersic					#Component type\n")
-			galfitSingleParamFile.write(" 1) " + str(model["centerCoords"][0]) + "	" + str(model["centerCoords"][1]) + "	1	1			#Position x,y\n")
-			galfitSingleParamFile.write(" 3) " + str(model["magnitude"]) + " 1			#Integrated Magnitude\n")
-			galfitSingleParamFile.write(" 4) " + str(model["radius"]) + "			1			#R_e (half-light radius)	[pix]\n")
-			galfitSingleParamFile.write(" 5) " + str(model["sers"]) + "		1			#Sersic index n (de Vaucouleurs n=4)\n")
-			galfitSingleParamFile.write(" 6) 0.0000		0			#	-----\n")
-			galfitSingleParamFile.write(" 7) 0.0000		0			#	-----\n")
-			galfitSingleParamFile.write(" 8) 0.0000		0			#	-----\n")
-			galfitSingleParamFile.write(" 9) " + str(model["ba"]) + "			1			#Axis ratio (b/a)\n")
-			galfitSingleParamFile.write(" 10) " + str(model["angle"]) + "		1			#Position angle (PA) [deg: Up=0, left=90]\n")
-			galfitSingleParamFile.write(" Z) 0							#Leave in [1] or subtract [0] this comp from data?\n")
-			galfitSingleParamFile.write("\n")
+			paramFile.write("# Componenet number: " + str(compNum) + "\n")
+			paramFile.write(" 0) sersic					#Component type\n")
+			paramFile.write(" 1) " + str(model["centerCoords"][0]) + "	" + str(model["centerCoords"][1]) + "	1	1			#Position x,y\n")
+			paramFile.write(" 3) " + str(model["magnitude"]) + " 1			#Integrated Magnitude\n")
+			paramFile.write(" 4) " + str(model["radius"]) + "			1			#R_e (half-light radius)	[pix]\n")
+			paramFile.write(" 5) " + str(model["sers"]) + "		1			#Sersic index n (de Vaucouleurs n=4)\n")
+			paramFile.write(" 6) 0.0000		0			#	-----\n")
+			paramFile.write(" 7) 0.0000		0			#	-----\n")
+			paramFile.write(" 8) 0.0000		0			#	-----\n")
+			paramFile.write(" 9) " + str(model["ba"]) + "			1			#Axis ratio (b/a)\n")
+			paramFile.write(" 10) " + str(model["angle"]) + "		1			#Position angle (PA) [deg: Up=0, left=90]\n")
+			paramFile.write(" Z) 0							#Leave in [1] or subtract [0] this comp from data?\n")
+			paramFile.write("\n")
 			compNum = compNum + 1
 	
-		galfitSingleParamFile.write("# Componenet number: " + str(compNum) + "\n")
-		galfitSingleParamFile.write(" 0) sky						#Component type\n")
-		galfitSingleParamFile.write(" 1) 0.0000		0			#	Sky background at center of fitting region [ADUs]\n")
-		galfitSingleParamFile.write(" 2) 0.0000		0			#	dsky/dx (sky gradient in x) [ADUs/pix]\n")
-		galfitSingleParamFile.write(" 3) 0.0000		0			#	dsky/dy (sky gradient in y) [ADUs/pix]\n")
-		galfitSingleParamFile.write(" Z) 0						#Leave in [1] or subtract [0] this comp from data?\n")
-		galfitSingleParamFile.write("\n")
-	
-		galfitSingleParamFile.close()
+		paramFile.write("# Componenet number: " + str(compNum) + "\n")
+		paramFile.write(" 0) sky						#Component type\n")
+		paramFile.write(" 1) 0.0000		0			#	Sky background at center of fitting region [ADUs]\n")
+		paramFile.write(" 2) 0.0000		0			#	dsky/dx (sky gradient in x) [ADUs/pix]\n")
+		paramFile.write(" 3) 0.0000		0			#	dsky/dy (sky gradient in y) [ADUs/pix]\n")
+		paramFile.write(" Z) 0						#Leave in [1] or subtract [0] this comp from data?\n")
+		paramFile.write("\n")
 	
 	
 	def getCentermostID(self, imageHeight, imageWidth, resultFilename):
@@ -963,33 +947,6 @@ class ModelGenerator:
 						" y -5  5	# Soft constraint: Constrains y position\n")
 		
 		
-	def getGalfitNNFilename(self, multiFitsFilename):
-		'''
-		use the output of GALFIT to get the galfit.NN filename
-		
-		parameter multiFitsFilename - GALFIT's output (*multi.fits)
-		returns - [gNN, errorFlag]
-			gNN - galfit.NN filename  
-			errorFlag - a string indicating if a numerical error has occurred
-						empty string if no numerical error detected by GALFIT
-		'''
-		print ("getting galfit.NN filename from " + multiFitsFilename)
-		# use pyfits to gather info from output of galfit
-		imageHeaders = pyfits.open(multiFitsFilename)
-		print ("opened output fits using pyfits")
-		# get the filename from the dictionary mapping header keywords to their values
-		gNN = imageHeaders[2].header["LOGFILE"]
-		print ("got galfit.NN: " + gNN)
-		if "2" in imageHeaders[2].header["FLAGS"].split():
-			errorFlag = "# numerical error detected *"
-		else:
-			errorFlag = ""
-		print ("checked for error in FLAGS")
-		imageHeaders.close()
-		print ("closed output fits file, returning")
-		return [gNN, errorFlag]
-		
-		
 	def run_galfit(self, image):
 		'''
 		runs galfit on the given image, using the image filename
@@ -1002,27 +959,22 @@ class ModelGenerator:
 		self.defineGalfitFilenames(image)
 		
 		# writes the single component parameter file
-		self.write_galfit_single_parameter(image)
+		with open(self.galfit_single_parameter_filename, 'w') as paramFile:
+			self.write_galfit_parameter(image, paramFile, 
+										self.galfit_single_output_filename)
 	
 		# run galfit on paramter file
 		os.system('galfit ' + self.galfit_single_parameter_filename)
-		#os.system("rm fit.log")
-			
+
 		# detects atomic galfit error
 		if not os.path.isfile(self.galfit_single_output_filename):
 			self.logMsg = (	self.logMsg + 
 							" galfit failed on single component, " + 
 							"probably mushroom (atomic galfit error)")
 			return
-
-		# write the result using the resulting *_multi.fits[2] header
-		[galfitNNFilename, errorFlag] = self.getGalfitNNFilename(
-											self.galfit_single_output_filename)
-		os.system("mv " + galfitNNFilename + " " + 
-					self.galfit_single_result_filename)
-		if errorFlag:
-			with open (self.galfit_single_result_filename, 'a') as resultFile:
-				resultFile.write(errorFlag)
+		
+		# rename galfit.NN to result file
+		os.system(" ".join(["mv","galfit.01",self.galfit_single_result_filename]))
 		
 		# done unless command line specified that a second galfit run
 		# should be done by adding a bulge component to the result of the first run
@@ -1039,8 +991,7 @@ class ModelGenerator:
 
 			# run galfit on paramter file
 			os.system('galfit ' + self.galfit_bulge_parameter_filename)
-			#os.system("rm fit.log")
-						
+			
 			# detects atomic galfit error
 			if not os.path.isfile(self.galfit_bulge_output_filename):
 				self.logMsg = (	self.logMsg + 
@@ -1048,14 +999,8 @@ class ModelGenerator:
 								"probably mushroom (atomic galfit error)")
 				return
 			
-			# write the result using the resulting *_multi.fits[2] header
-			[galfitNNFilename, errorFlag] = self.getGalfitNNFilename(
-												self.galfit_bulge_output_filename)
-			os.system("mv " + galfitNNFilename + " " + 
-						self.galfit_bulge_result_filename)
-			if errorFlag:
-				with open (self.galfit_bulge_result_filename, 'a') as resultFile:
-					resultFile.write(errorFlag)
+			# rename galfit.NN to result file
+			os.system(" ".join(["mv","galfit.01",self.galfit_bulge_result_filename]))
 		
 		# if we get here then nothing went wrong!
 		self.logMsg = self.logMsg + " success"
@@ -1105,23 +1050,77 @@ class ModelGenerator:
 		return self.logMsg
 		
 
-def runModelGenerator(parameterList):
+def runModelGeneratorSerial(parser, options, sextractorKeywordOptions, 
+							destDirectory, imageFilenames):
+	'''
+	uses the command line inputs gathered in __main__ to create an
+	instance of the model generator class and invoke its methods
+	
+	parameter parser
+	parameter options
+	parameter sextractorKeywordOptions
+	parameter destDirectory
+	parameter imageFilename
+	
+	returns - the list of lines to be written to the log
+	'''
+	
+	# holds methods for analyzing simulations
+	modelGen = ModelGenerator()
+	
+	# parse the command line options
+	modelGen.parseGalfitOptions(parser, options)
+	modelGen.parseSextractorOptions(parser, options.realSextractor, 
+									sextractorKeywordOptions)
+	
+	# cd into desination directory to prevent processor collisions
+	if not os.path.isdir(destDirectory):
+		os.mkdir(destDirectory)
+	os.chdir(destDirectory)
+	
+	# write the sextractor config file, which will be used for all images
+	modelGen.write_sextractor_config_file(modelGen.sextractorConfigFilename)
+	modelGen.write_sextractor_config_file(modelGen.sextractorReduceComponentConfigFilename)
+
+	# store log result of modeling each image using modelGen instance
+	results = []
+	for imageFilename in imageFilenames:
+		
+		# adjust for image filename if relative, otherwise no prefix
+		if imageFilename[0] == ".":
+			prefix = "../"
+		else:
+			prefix = ""
+			
+		# run modeling method
+		results.append(modelGen.modelImage(prefix + imageFilename.strip()))
+	
+	return results
+
+	
+def runModelGeneratorParallel(parameterList):
 	'''
 	uses the command line inputs gathered in __main__ to create an
 	instance of the model generator class and invoke its methods
 	
 	parameter parameterList -
 		wierd way of receiving parameters needed to facilitate parallel
-		first four elements are parser, options, sexOptions, and destDirectory,
-		respectively, and the rest is the list of image filenames to model
+		the elements are parser, options, sextractorKeywordOptions, 
+		rootDirectory, and the image filename to model, respectively
 	'''
 	
 	# handle parameters this way to enable parallelism
 	parser = parameterList[0]
 	options = parameterList[1]
 	sextractorKeywordOptions = parameterList[2]
-	destDirectory = parameterList[3]
-	imageFilenames = parameterList[4:]
+	rootDirectory = parameterList[3]
+	imageFilename = parameterList[4]
+	
+	# cd into desination directory to prevent processor collisions
+	destDirectory = rootDirectory + str(os.getpid()) + "/"
+	if not os.path.isdir(destDirectory):
+		os.mkdir(destDirectory)
+	os.chdir(destDirectory)
 	
 	# holds methods for analyzing simulations
 	modelGen = ModelGenerator(destDirectory=destDirectory)
@@ -1135,37 +1134,16 @@ def runModelGenerator(parameterList):
 	modelGen.write_sextractor_config_file(modelGen.sextractorConfigFilename)
 	modelGen.write_sextractor_config_file(modelGen.sextractorReduceComponentConfigFilename)
 
-	# store log result of modeling each image using modelGen instance
-	results = []
-	for imageFilename in imageFilenames:
-		if os.path.isfile(imageFilename.strip()):
-			results.append(modelGen.modelImage(imageFilename.strip()))
-		else:
-			results.append(imageFilename.strip() + ": image file does not exist")
-
-	# compose the log
-	log = "run on " + time.strftime("%m-%d-%Y") + "\n"
-	for result in results:
-		log = log + result + "\n"
-	
-	# create the log file in the same directory as python was called
-	try:
-		logFilename = (modelGen.destDirectory + "rungalfit_log_" + 
-			imageFilenames[0].split("/")[-1].split("_")[1].split(".")[1] + 
-			"_to_" + 
-			imageFilenames[-1].split("/")[-1].split("_")[1].split(".")[1] +
-			"_" + time.strftime("%m-%d-%Y") + ".txt")
-	except:
-		logFilename = (modelGen.destDirectory + "rungalfit_log.txt")
-	
-	# write the log file
-	print ("writing log file to " + logFilename)
-	with open(logFilename, 'w') as logFile:
-		logFile.write(log)
-	
-	return results
-
+	# adjust for image filename if relative, otherwise no prefix
+	if imageFilename[0] == ".":
+		prefix = "../"
+	else:
+		prefix = ""
 		
+	# run modeling method and return the resulting line in the log
+	return modelGen.modelImage(prefix + imageFilename.strip())
+
+
 if __name__ == "__main__":
 	'''
 	parses the command line using the optparse package
@@ -1275,20 +1253,63 @@ if __name__ == "__main__":
 	numCPUs = int(multiprocessing.cpu_count())
 	
 	# create the destination directory for results
-	collectiveDestDirectory = "results_" + time.strftime("%m-%d-%Y-%H-%M-%S") + "/"
+	collectiveDestDirectory = os.path.join(os.getcwd(),"results_" + time.strftime("%m-%d-%Y-%T") + "/")
 	os.mkdir(collectiveDestDirectory)
 	
 	# time how long it takes to run the program
 	startTime = time.time()
 	
 	# only do parallel if rerquested and if enough images to warrant
+	results = []
 	if not (options.parallel):# and (numImages >= numCPUs)):
-		runModelGenerator([parser, options, args[1:], collectiveDestDirectory] + 
-							imageFilenames)
+		print("running in serial")
+		results = runModelGeneratorSerial(	parser, options, args[1:], 
+											collectiveDestDirectory, 
+											imageFilenames)
 	
 	# run the parallel version
 	else:
 		
+		# construct list, each element is a list of arguments for separate cpu
+		imageArgs = []
+		print ("running in parallel")
+		for imageFilename in imageFilenames:
+			rootDirectory = os.path.join(os.getcwd(), "_")
+			imageArgs.append([parser, options, args[1:], rootDirectory, imageFilename])
+								
+		# see documentation on multiprocessing pool and map function
+		print ("passing job to " + str(numCPUs) + " out of " + 
+				str(multiprocessing.cpu_count()))
+		pool = multiprocessing.Pool(numCPUs)
+		results = pool.map(runModelGeneratorParallel, imageArgs)
+		
+		# move all individual results into the new collective results folder
+		os.system(" ".join(["mv", "_*/*", collectiveDestDirectory]))
+		os.system(" ".join(["rm","-r","_*/"]))
+		
+	# end program run time, print total
+	elapsed = time.time() - startTime
+	print(" ".join(["total","time","elapsed","=",str(int(elapsed)),"seconds",
+			"about","equal","to",str(int(elapsed/60.0)),"minutes"]))
+
+	# compose the log
+	log = ("run on " + time.strftime("%m-%d-%Y") + 
+			" with command line input " + " ".join(sys.argv + 
+			["total","time","elapsed","=",str(int(elapsed)),"seconds",
+			"about","equal","to",str(int(elapsed/60.0)),"minutes"]) + "\n")
+	for result in results:
+		log = log + result + "\n"
+	
+	# create the log file in a collective destination directory
+	logFilename = (collectiveDestDirectory + "rungalfit_log.txt")
+	
+	# write the log file
+	print ("writing log file to " + logFilename)
+	with open(logFilename, 'w') as logFile:
+		logFile.write(log)
+		
+	# chunking of list, has some disadvantages
+	'''
 		# construct list, each element is a list of arguments for separate cpu
 		imageArgs = []
 		destDirectories = []
@@ -1296,7 +1317,7 @@ if __name__ == "__main__":
 		print ("running in parallel, the list of images is being divided among" + 
 				" your available processors in the following chunk sizes")
 		for i in range(0, numImages, chunkSize):
-			parDestDirectory = "results" + str(i)
+			parDestDirectory = os.path.join(os.getcwd(), "results" + str(i))
 			destDirectories.append(parDestDirectory)
 			print(str(len(imageFilenames[i:i+chunkSize])) +
 				" images being stored in the directory: " + parDestDirectory)
@@ -1309,9 +1330,16 @@ if __name__ == "__main__":
 		pool = multiprocessing.Pool(numCPUs)
 		results = pool.map(runModelGenerator, imageArgs)
 		
+		# end program run time, print total
+		elapsed = time.time() - startTime
+		print(" ".join(["total","time","elapsed","=",str(int(elapsed)),"seconds",
+				"about","equal","to",str(int(elapsed/60.0)),"minutes"]))
+	
 		# compose the log
 		log = ("run on " + time.strftime("%m-%d-%Y") + 
-				" with command line input " + " ".join(sys.argv) + "\n")
+				" with command line input " + " ".join(sys.argv + 
+				["total","time","elapsed","=",str(int(elapsed)),"seconds",
+				"about","equal","to",str(int(elapsed/60.0)),"minutes"]) + "\n")
 		for result in results:
 			for line in result:
 				log = log + line + "\n"
@@ -1333,102 +1361,4 @@ if __name__ == "__main__":
 		for subDir in destDirectories:
 			os.system(" ".join(["mv", subDir.rstrip("/") + "/*", collectiveDestDirectory]))
 			os.rmdir(subDir)
-	
-	# TODO: this relies on all and only configuration files to start with "config"
-	# move sextractor configuration files into the collective destination
-	#os.system(" ".join(["mv","config*",collectiveDestDirectory]))
-	if not options.galfitOff:
-		os.system(" ".join(["mv","fit.log",collectiveDestDirectory]))
-	
-	# end program run time, print total
-	elapsed = time.time() - startTime
-	print(" ".join(["time","elapsed","=",str(int(elapsed)),"seconds",
-			u"\u2245",str(int(elapsed/60.0)),"minutes"]))
-			
-	# unused code to enable version-free collective of user input
-	'''
-	# allow user to choose to overwrite the 
-	if os.path.isdir(collectiveDestDirectory):
-		
-		# try to get user input for pre python 3.x users
-		try:
-			if raw_input("dest directory " + collectiveDestDirectory +
-					"already exists.\nType Y and press ENTER to overwrite" +
-					" or N to terminate program execution: "
-					).strip().upper() == "Y":
-				os.system(" ".join(["rm","-r",collectiveDestDirectory]))
-			else:
-				print("terminating.")
-				exit()
-		except:
-			
-			# try to get user input from post python 3.x users
-			try:
-				if input("dest directory " + collectiveDestDirectory +
-						"already exists.\nType Y and press ENTER to overwrite" +
-						" or N to terminate program execution: "
-						).strip().upper() == "Y":
-					os.system(" ".join(["rm","-r",collectiveDestDirectory]))
-				else:
-					print("terminating.")
-					exit()
-			
-			# if all failed then just quit and alert the user
-			except:
-				print("dest directory " + collectiveDestDirectory + "already exists.")
-				exit()
-	'''
-	
-	# code for writing the result without needing the galfit NN file at all
-	'''
-		# not using, getting info from multi fits instead
-		# because auto naming is a timing problem in parallel
-		os.system("rm galfit.*")
-		
-		# detects atomic galfit error
-		if not os.path.isfile(multiFitsFilename):
-			self.logMsg = (	self.logMsg + 
-							" galfit failed on single component, " + 
-							"probably mushroom (atomic galfit error)")
-			return False
-		
-		# use pyfits to gather info from output of galfit
-		imageHeaders = pyfits.open(multiFitsFilename)
-		
-		# get the dictionary mapping header keywords to their values
-		try:
-			modelHeader = imageHeaders[2]
-		except KeyError:
-			self.logMsg = (	self.logMsg + 
-							" getGalfitNNFIlename must be called on" +
-							" a multi-extension cube (which galfit outputs)")
-			return False
-						
-		# update image models to reflect galfit results
-		resultModels = []
-		for mIndex, model in enumerate(image["models"]):
-			modelX = float(modelHeader[str(mIndex+1) + "_XC"].split()[0])
-			modelY = float(modelHeader[str(mIndex+1) + "_YC"].split()[0])
-			modelMag = float(modelHeader[str(mIndex+1) + "_MAG"].split()[0])
-			modelRad = float(modelHeader[str(mIndex+1) + "_RE"].split()[0])
-			modelSers = float(modelHeader[str(mIndex+1) + "_N"].split()[0])
-			modelBA = float(modelHeader[str(mIndex+1) + "_AR"].split()[0])
-			modelAng = float(modelHeader[str(mIndex+1) + "_PA"].split()[0])
-			resultModels.append({	"centerCoords":[modelX,modelY],
-									"magnitude":modelMag,
-									"radius":modelRad,
-									"ba":modelBA,
-									"angle":modelAng,
-									"sers":modelSers})
-		image["models"] = resultModels
-									
-		# write info to the galfit result filename, using existing method
-		singleParamFilename = self.galfit_single_parameter_filename
-		self.galfit_single_parameter_filename = resultFilename
-		self.write_galfit_single_parameter(image)
-		
-		# restore field value
-		self.galfit_single_parameter_filename = singleParamFilename
-		
-		return True
 	'''
