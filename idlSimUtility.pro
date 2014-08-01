@@ -167,60 +167,50 @@ pro plot_comp_vs_age, infile
 	readcol,infile,id,ts,age,cam,fil,px,py,mag,rad,ser,ba,ang,$
 		SKIPLINE=2,FORMAT="A,A,F,A,A"
 		
-	gridDef = [1,2]
+	cols = 2
+	rows = 4
+	gridDef = [cols,rows]
+  w = WINDOW(WINDOW_TITLE="Simulation Summary Plots", DIMENSIONS=[750*cols,200*rows])
+  w.BACKGROUND_COLOR = "alice blue"
+  distlimit = 3.0
+  dx = (300-px)
+  dy = (300-py)
+  distFromCenter = (dx^2 + dy^2)^(0.5)
+  
+  yValsList = [[ser],[rad],[mag],[ba]]
+  listLength = n_elements(ser)
+  yLabelList = ["Sersic Index", "Radius", "Magnitude", "B/A"]
+  yLowerList = [0,0,30,0]
+  yLimitList = [4,100,0,1.2]
+  for i=0,3 do begin
+    yVals = yValsList[listLength*i:listLength*(i+1)-1]
+    yLabel = yLabelList[i]
+    yLower = yLowerList[i]
+    yLimit = yLimitList[i]
+    
+  conditions = distFromCenter LT distLimit
 	props = {symbol:'triangle', sym_size:1.0,$
-	xtitle:"Age (GYr)", ytitle:"Sersic Index", yrange:[0,5], xrange:[0,8]}
-	
-	distlimit = 10.0
+	         xtitle:"Age (GYr)", ytitle:yLabel, yrange:[yLower,yLimit], xrange:[0,8]}
+	         
 	title = ""
 	id1 = "VELA02MRP"
-	dx = (300-px)
-	dy = (300-py)
-	distFromCenter = (dx^2 + dy^2)^(0.5)
-	
-	conditions = 1;distFromCenter LT distLimit
 	x1 = age[where( (id EQ id1) and conditions )]
-	y1 = ser[where( (id EQ id1) and conditions )]
-	plot1 = SCATTERPLOT(x1, y1, TITLE=(id1+title), LAYOUT=[gridDef,[1]], _EXTRA=props)
+	y1 = yVals[where( (id EQ id1) and conditions )]
+	plot1 = SCATTERPLOT(x1, y1, TITLE=(id1+title), LAYOUT=[gridDef,[(2*i) + 1]], $
+	                     /CURRENT, _EXTRA=props)
 	  
 	param1 = LINFIT(x1, y1, /Double, YFIT=fit1)
 	plotFit1 = PLOT(x1, fit1, /Overplot)
-	print,"slope of fit for ",id1,":",(param1[1]/param1[0])
+	;print,"slope of fit for ",id1,":",(param1[1]/param1[0])
 	
 	id2 = "VELA02"
 	x2 = age[where( (id EQ id2) and conditions )]
-	y2 = ser[where( (id EQ id2) and conditions )]
-	plot2 = SCATTERPLOT(x2, y2, TITLE=(id2+title), LAYOUT=[gridDef,[2]], /CURRENT, _EXTRA=props)
+	y2 = yVals[where( (id EQ id2) and conditions )]
+	plot2 = SCATTERPLOT(x2, y2, TITLE=(id2+title), LAYOUT=[gridDef,[(2*i) + 2]], $
+	                     /CURRENT, _EXTRA=props)
 	  
 	param2 = LINFIT(x2, y2, /Double, YFIT=fit2)
 	plotFit2 = PLOT(x2, fit2, /Overplot)
-	print,"slope of fit for ",id2,":",(param2[1]/param2[0])
+	;print,"slope of fit for ",id2,":",(param2[1]/param2[0])
+	endfor
 end
-
-; tile list of pictures
-;pro tile_images,infile
-  
-	; http://www.exelisvis.com/docs/READ.html
-;	OPENR, lun, infile, /GET_LUN
-	; Read one line at a time, saving the result into array
-;	imageFilenames = ''
-;	line = ''
-;	WHILE NOT EOF(lun) DO BEGIN & $
-;		READF, lun, line & $
-;		imageFilenames = [imageFilenames, line] & $
-;	ENDWHILE
-	; Close the file and free the file unit
-;	FREE_LUN, lun
-	
-;	rows = FIX(n_elements(imageFilenames)^(0.5))+1
-;	cols = rows
-;	gridDef = [rows,cols]
-;	props = {symbol:'triangle', sym_size:1.0,$
-;		xtitle:"Age (GYr)", ytitle:"Sersic Index", yrange:[0,5]}
-		
-;	for i=1,n_elements(imageFilenames) do $
-;		curImage = IMAGE(imageFilenames[i], LAYOUT=[gridDef,[i]],/CURRENT,$
-;						TITLE=strmid(imageFilenames[i],$
-;								strpos(imageFilenames[i],"/",/REVERSE_SEARCH),$
-;								strlen(imageFilenames[i])-1))
-;end

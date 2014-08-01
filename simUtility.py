@@ -713,6 +713,8 @@ class ModelGenerator:
 		image["height"] = float(frame_dimensions[1])
 		# "600"
 		
+		image["models"] = []
+		
 		
 	def defineGalfitFilenames(self, image):
 		'''filename = (self.destDirectory + image["galaxyID"] + "_" + 
@@ -1231,7 +1233,7 @@ if __name__ == "__main__":
 		print("Must have Source-Extractor's 'sex' command available by PATH " + 
 				"environment variable. Exiting execution")
 		exit()
-	if os.system("galfit -help"):
+	if not options.galfitOff and os.system("galfit -help"):
 		print("Must have GALFIT's 'galfit' command available by PATH " + 
 				"environment variable. Exiting execution")
 		exit()

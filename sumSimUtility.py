@@ -4,7 +4,7 @@
 import os
 import time
 import sys
-from math import sqrt, exp, sin, pi
+from math import sqrt, exp, sin, pi, pow
 
 	
 def red_shift_to_gyr(z):
@@ -113,7 +113,51 @@ def red_shift_to_gyr(z):
 	return '%1.3f' % zage_Gyr
 
 
-def sum_galfit(resultFilename, delim):
+def getCentermostID(imageHeight, imageWidth, resultFilename):
+	'''
+	return the integer ID of the galaxy closest to the images center
+	'''
+	with open(resultFilename, "r") as resultFile:
+		resultContents = resultFile.readlines()
+	
+	closestDist = 1000.0
+	closestID = -1
+	currentID = -1
+	skipSky = False
+	for resultLine in resultContents:
+	
+		# toggle flag on the line indicating sky for use by future lines
+		if resultLine.strip()[:6] == "A) sky":
+			skipSky = True
+		elif resultLine.strip()[:6] == "B) ser":
+			skipSky = False
+		
+		# create an array version of the current result line
+		resultLineList = resultLine.split()
+		
+		# get the component number if on the component header comment 
+		if (resultLineList
+			and (resultLine.strip()[0] == "#")
+			and (resultLine.strip()[-1].isdigit())):
+			currentID = int(resultLineList[-1])
+		
+		# if on the position line of a non-sky component, check if it is
+		# the closest yet to the center of the image and, if so, save ID
+		if not skipSky and resultLine.strip()[:2] == "1)":
+			px = resultLineList[1]
+			py = resultLineList[2]
+			dx = imageWidth/2.0 - float(px)
+			dy = imageHeight/2.0 - float(py)
+			dist = sqrt(pow(dx,2) + pow(dy,2))
+			if dist < closestDist:
+				closestDist = dist
+				closestID = currentID
+	
+	# return the ID of the component closest to the center of the image
+	return closestID
+
+
+def sum_galfit(resultFilename, delim, centerID):
 	'''
 	returns a string summary of the result specified by the parameter result filename
 	
@@ -134,7 +178,7 @@ def sum_galfit(resultFilename, delim):
 		# use output filename to gather some general info
 		if resultLine.strip()[:2] == "B)":
 			
-			fullPathOutput = resultLine.split()[-1]
+			fullPathOutput = resultLine.split()[1]
 			# results/VELA02.....
 			
 			outputFilename = fullPathOutput.split("/")[-1].strip()
@@ -166,10 +210,17 @@ def sum_galfit(resultFilename, delim):
 	
 			componentList = [galaxyID, timeStep, age_gyr, camera, filt]
 			
+		# get the component number if on the component header comment 
+		resultLineList = resultLine.split()
+		if (resultLineList
+			and (resultLine.strip()[0] == "#")
+			and (resultLine.strip()[-1].isdigit())):
+			currentID = int(resultLineList[-1])
+			
 		# toggle flag on the line indicating sky for use by future lines
-		if resultLine.strip()[:6] == "A) sky":
+		if resultLine.strip()[:6] == "0) sky":
 			skipSky = True
-		elif resultLine.strip()[:6] == "B) ser":
+		elif resultLine.strip()[:6] == "0) ser":
 			skipSky = False
 			
 		# dont record results for sky component
@@ -202,8 +253,13 @@ def sum_galfit(resultFilename, delim):
 			elif resultLine.strip()[:3] == "10)":
 				componentList.append(resultLine.strip().split()[1])
 				
+				if centerID == currentID:
+					centerFlag = "*"
+				else:
+					centerFlag = ""
+					
 				# add this completed component as a line to the string of results
-				componentResults = componentResults + errorFlag + delim.join(componentList) + "\n"
+				componentResults = componentResults + centerFlag + delim.join(componentList) + "\n"
 				
 				# reset component list for any remaining components in this file
 				componentList = [galaxyID, timeStep, age_gyr, camera, filt]
@@ -249,8 +305,11 @@ if __name__ == "__main__":
 	# this loops through every result, writing summary to output
 	for resultFilename in resultFilenames:
 	
+		# get the id of the centermost galaxy
+		centerID = getCentermostID(600,600,resultFilename.strip())
+	
 		# summarize galfit and write to output
-		outFile.write( sum_galfit(resultFilename.strip(), delim) )
+		outFile.write( sum_galfit(resultFilename.strip(), delim, centerID) )
 		
 	outFile.close()
 	
