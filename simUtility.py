@@ -1,34 +1,65 @@
 #!/usr/bin/env python
 
+'''
+Author: Ian Tibbetts
+Co-authors: Prof. Elizabeth McGrath, Ariunjargal Bat-Erdene '15, Ryan Cole '15
+Last Edited: 8/5/2104
+Colby College Astrophysics Research
+'''
 import os
 import sys
 from pyraf import iraf
-import pyfits
 import multiprocessing
 import time
 import math
 from optparse import OptionParser
+import pprint
 		
 class ModelGenerator:
 	'''
 	The controller class, which holds methods for analyzing simulations
 	'''
 		
-	def __init__(self, destDirectory=""):
+	def __init__(self, callingDirectory=""):
 		'''constructor sets some initial field defaults'''
 		self.outputCatFilename = "generic.cat" # -CATALOG_NAME <filename>
 		self.segmentationMapFilename = "check.fits" # -CHECKIMAGE_NAME <filename>
 		self.sextractorOptionsList = []
 		# "/".join(image.filename.split("/")[:-1]) + "/"
-		
-		# verify and set the destination directory
-		if destDirectory and not destDirectory.endswith("/"):
-			destDirectory = destDirectory + "/"
+	
+		# cd into desination directory to prevent processor collisions
+		destDirectory = os.path.join(callingDirectory,"_" + str(os.getpid()))
+		if not os.path.isdir(destDirectory):
+			os.mkdir(destDirectory)
+		os.chdir(destDirectory)
+		self.callingDirectory = callingDirectory
 		self.destDirectory = destDirectory
 			
 		# set the names of the sextractor configuration files
-		self.sextractorConfigFilename = destDirectory + "configInit.sex"
-		self.sextractorReduceComponentConfigFilename = destDirectory + "configFewerComp.sex"
+		self.sextractorConfigFilename = os.path.join(destDirectory,"configInit.sex")
+		self.sextractorReduceComponentConfigFilename = os.path.join(destDirectory, 
+														"configFewerComp.sex")
+		
+		# some other required sextractor files
+		requiredFilesDirectory = os.path.join(callingDirectory,"requiredFiles")
+		self.sextractorFilterFilename = os.path.join(requiredFilesDirectory,
+													"sex.conv")
+		self.sextractorParamFilename = os.path.join(requiredFilesDirectory,
+												"sex.param")
+		self.sextractorNNWFilename = os.path.join(requiredFilesDirectory,
+												"default.nnw")
+		if not os.path.isfile(self.sextractorFilterFilename):
+			print("Program needs the required file " + 
+				self.sextractorFilterFilename + " to exist.")
+			exit()
+		if not os.path.isfile(self.sextractorParamFilename):
+			print("Program needs the required file " + 
+				self.sextractorParamFilename + " to exist.")
+			exit()
+		if not os.path.isfile(self.sextractorNNWFilename):
+			print("Program needs the required file " + 
+				self.sextractorNNWFilename + " to exist.")
+			exit()
 		
 		
 	def parseGalfitOptions(self, parser, options):
@@ -43,25 +74,39 @@ class ModelGenerator:
 		self.includeBulgeComponent = options.bulge
 		self.galfitOff = options.galfitOff
 
-		# galfit constraint default none unless one is given on command line
-		if not options.constraint:
-			self.constraintFilename = "none"
-		# verify that file exists
-		elif not os.path.isfile(options.constraint):
-			parser.error("constraint file " + options.constraint + 
-						" either does not exist or is not accessible")
+		# galfit sigma image default none unless one is given on command line
+		if not options.sigmaImage:
+			self.sigmaImage = "none"
 		else:
-			self.constraintFilename = options.constraint
+			# adjust relative path or make full path
+			if options.sigmaImage[:2] == "..":
+				sigmaImage = os.path.join("..",options.sigmaImage)
+			else:
+				sigmaImage = os.path.join(self.callingDirectory,options.sigmaImage)
+				
+			# verify that file exists
+			if not os.path.isfile(sigmaImage):
+				parser.error("sigmaImage " + sigmaImage + 
+							" either does not exist or is not accessible")
+			else:
+				self.sigmaImage = sigmaImage
 
 		# galfit psf default none unless one is given on command line
 		if not options.psf:
 			self.psf = "none"
-		# verify that the file exists
-		elif not os.path.isfile(options.psf):
-			parser.error("psf file " + options.psf +
-						" either does not exist or is not accessible")
 		else:
-			self.psf = options.psf
+			# adjust relative path or make full path
+			if options.psf[:2] == "..":
+				psf = os.path.join("..",options.psf)
+			else:
+				psf = os.path.join(self.callingDirectory,options.psf)
+				
+			# verify that file exists
+			if not os.path.isfile(psf):
+				parser.error("psf " + psf + 
+							" either does not exist or is not accessible")
+			else:
+				self.psf = psf
 		
 		
 	def parseSextractorOptions(self, parser, realSextractor, sextractorOptions):
@@ -69,14 +114,14 @@ class ModelGenerator:
 		parses the sextractor options from the command line and uses to
 		initialize fields with options or defaults
 		'''
+				
+		# store running sextractor booleans
+		self.realSextractor = realSextractor
 		
 		# all positional arguments after image list filename must come in pairs
 		if len(sextractorOptions) % 2 != 0:
 			parser.error("Sextractor options parsing error, odd number of options. " + 
 				"Expecting sextractor options to be <keyword> <value> pairs")
-				
-		# store running sextractor booleans
-		self.realSextractor = realSextractor
 		
 		# if running sextractor, gather options in a list and update fields
 		self.sextractorOptionsList = []
@@ -96,7 +141,6 @@ class ModelGenerator:
 		writes the sextractor configuration file
 		'''
 		
-		requiredFilesDirectory = "../requiredFiles/"
 		# variables describing the sextractor config file
 		catalogName = "generic.cat" # Name of the output catalogue. If the name "STDOUT" is given and CATALOG TYPE is set to ASCII, ASCII HEAD, ASCII SKYCAT, or ASCII VOTABLE the catalogue will be piped to the standard output (stdout
 		catalogType = "ASCII_HEAD"	# Format of output catalog:
@@ -106,7 +150,7 @@ class ModelGenerator:
 									# ASCII VOTABLE - XML-VOTable format, together with meta-data,
 									# FITS 1.0 - FITS format as in SExtractor 1
 									# FITS LDAC - FITS "LDAC" format (the original image header is copied).
-		sextractorParamFilename = requiredFilesDirectory + "sex.param"
+		sextractorParamFilename = self.sextractorParamFilename
 		#------------------------------- Extraction ----------------------------------
 		detectType = "CCD" 
 		#fitsUnsigned = Force 16-bit FITS input data to be interpreted as unsigned integers.
@@ -145,7 +189,7 @@ class ModelGenerator:
 			analysisThreshold = "20" #Threshold (in surface brightness) at which CLASS STAR and FWHM operate. 1 argument: relative to Background RMS. 2 arguments: mu (mag/arcsec 2 ), Zero-point (mag).
 			
 		filterBool = "Y"	#  If true,filtering is applied to the data before extraction.
-		filterName = requiredFilesDirectory + "sex.conv" # Name and path of the file containing the filter definition
+		filterName = self.sextractorFilterFilename # Name and path of the file containing the filter definition
 		#filterThresh = ?	# Lower and higher thresholds (in back-ground standard deviations) for a pix-el
 							#to be consideredin filtering (used for retinafiltering only).
 		#threshType = ? # Meaning of the DETECT_THRESH and ANALYSIS_THRESH parameters:
@@ -167,7 +211,7 @@ class ModelGenerator:
 		#------------------------- Star/Galaxy Separation ----------------------------
 		seeingFWHM = "0.18"# ????? Seeing_FWHM FWHM of stellar images in arcsec.This quantity is used only
 							#for the neural network star/galaxy separation as expressed in the CLASS STAR output.
-		starNNWFilename = requiredFilesDirectory + "default.nnw" #Name of the file containing the neural network weights for star/galaxy separation.
+		starNNWFilename = self.sextractorNNWFilename #Name of the file containing the neural network weights for star/galaxy separation.
 		#------------------------------ Background -----------------------------------
 		backSize = "600"	# Size, or Width, Height (inpixels) of a background mesh.
 		backFilterSize = "9"	#Size, or Width, Height (inbackground meshes) of the background-filtering mask.
@@ -175,7 +219,7 @@ class ModelGenerator:
 								# GLOBAL - taken directly from the background map
 								# LOCAL - recomputed in a rectangular annulus around the object
 		backPhotoThickness = "100"	#Thickness (in pixels) of the background LOCAL annulus.
-		backType = ""	# What background is subtracted from the images: 
+		backType = "AUTO"	# What background is subtracted from the images: 
 						# AUTO - The internal interpolated background-map. In the manual it says "INTERNAL" here but the keyword is AUTO. 
 						# MANUAL A user-supplied constant value provided in BACK VALUE.
 		backValue = ""	# in BACK TYPE MANUAL mode, the constant value to be subtracted from the images.
@@ -398,7 +442,7 @@ class ModelGenerator:
 				"			  # What background is subtracted from the images:" +
 '''
 				# AUTO - The internal interpolated background-map. In the manual it says "INTERNAL" here but the keyword is AUTO. 
-				# MANUAL A user-supplied constant value provided in BACK VALUE.")
+				# MANUAL A user-supplied constant value provided in BACK VALUE.
 ''')
 		
 		if backValue:
@@ -535,10 +579,10 @@ class ModelGenerator:
 	
 		# run sextractor
 		# sex <image> [<image2>][-c <configuration_file>][-<keyword> <value>]
-		self.outputCatFilename = (self.destDirectory + 
+		self.outputCatFilename = os.path.join(self.destDirectory,
 									".".join(image["filename"].split("/")[-1
 										].split(".")[:-1]) + ".cat")
-		self.segmentationMapFilename = (self.destDirectory + 
+		self.segmentationMapFilename = os.path.join(self.destDirectory,
 									".".join(image["filename"].split("/")[-1
 										].split(".")[:-1]) + "_check.fits")
 		os.system(	"sex " + image["filename"] + 
@@ -559,9 +603,13 @@ class ModelGenerator:
 			else:
 				numGalaxies = numGalaxies + 1
 		
+		# if sextractor does not find any galaxies, return
+		if not numGalaxies:
+			return False
+		
 		# if there are too many galaxies after the first fit, recursively
 		# run sextractor again, now with a different configuration file
-		if (configFilename == self.sextractorConfigFilename) and (numGalaxies > 3):
+		if not self.realSextractor and (configFilename == self.sextractorConfigFilename) and (numGalaxies > 3):
 			return self.run_sextractor(image, self.sextractorReduceComponentConfigFilename)
 		
 		# loop over every line in catalog to build list of image models				
@@ -591,9 +639,10 @@ class ModelGenerator:
 					errorStr = (errorStr + 
 						"Y_IMAGE is a required field of the parameter file\n")
 				
+				# exit program execution if the parameter file is incomplete
 				if errorStr:
 					print(errorStr)
-					return False
+					exit()
 
 				if "MAG_AUTO" in indexDict:
 					galaxyMag = float(galaxyOutputList[indexDict["MAG_AUTO"]])
@@ -667,7 +716,7 @@ class ModelGenerator:
 		of models
 		'''
 		# join method is to handle the relative path names
-		regFileName = (self.destDirectory + 
+		regFileName = os.path.join(self.destDirectory,
 						".".join(image["filename"].split("/")[-1
 							].split(".")[:-1]) + ".reg")
 		
@@ -700,6 +749,11 @@ class ModelGenerator:
 		'''
 		
 		imhead_return = iraf.imhead(image["filename"], Stdout=1)[0].strip()
+		
+		# detect an iraf error
+		if imhead_return[-1] != ":":
+			return False
+		
 		imhead_info = imhead_return.split("/")[-1]
 		# "VELA01_a0.110_0006317__skipir_CAMERA0-BROADBAND_F125W_simulation.fits[600,600][real]:" 
 		
@@ -715,13 +769,11 @@ class ModelGenerator:
 		
 		image["models"] = []
 		
+		return True
+	
 		
 	def defineGalfitFilenames(self, image):
-		'''filename = (self.destDirectory + image["galaxyID"] + "_" + 
-					image["timeStep"] + '_cam' + str(image["camera"]) + 
-					'_' + image["filter"])
-		'''
-		filename = (self.destDirectory + 
+		filename = os.path.join(self.destDirectory, 
 					".".join(image["filename"].split("/")[-1].split(".")[:-1]))
 		self.galfit_single_constraint_filename =filename + '_single_constraint.txt'
 		self.galfit_single_parameter_filename = filename + '_single_param.txt'
@@ -733,7 +785,7 @@ class ModelGenerator:
 		self.galfit_bulge_result_filename =		filename + "_bulge_result.txt"
 
 	
-	def write_galfit_parameter(self, image, paramFile, ouputFilename):
+	def write_galfit_parameter(self, image, paramFile, ouputFilename, sigmaFilename):
 		'''
 		writes the galfit parameter file for the single component
 		
@@ -750,7 +802,7 @@ class ModelGenerator:
 			"						#Input data image block\n")
 		paramFile.write("B) " + ouputFilename +
 			"						#Output data image block\n")
-		paramFile.write("C)" + " none" + 
+		paramFile.write("C) " + sigmaFilename + 
 			"						#Sigma image name (made from data if blank or 'none')\n")
 		paramFile.write("D) " + self.psf + 
 			"						#Input PSF image and (optional) diffusion kernel\n")
@@ -758,7 +810,7 @@ class ModelGenerator:
 			"						#PSF fine sampling factor relative to data\n")
 		paramFile.write("F) none" + 					
 			"						#Bad pixel mask (FITS file or ASCIIcoord list)\n")
-		paramFile.write("G) none" + #self.constraintFilename + 
+		paramFile.write("G) none" +  
 			"						#File with parameter constraints (ASCII file)\n")
 		paramFile.write("H) " + "1" + " " + str(image["width"]) + " " + 
 											"1" + " " + str(image["height"]) + 
@@ -811,7 +863,10 @@ class ModelGenerator:
 	
 		paramFile.write("# Componenet number: " + str(compNum) + "\n")
 		paramFile.write(" 0) sky						#Component type\n")
-		paramFile.write(" 1) 0.0000		0			#	Sky background at center of fitting region [ADUs]\n")
+		if self.realSextractor:
+			paramFile.write(" 1) 0.0000		1			#	Sky background at center of fitting region [ADUs]\n")
+		else:
+			paramFile.write(" 1) 0.0000		0			#	Sky background at center of fitting region [ADUs]\n")
 		paramFile.write(" 2) 0.0000		0			#	dsky/dx (sky gradient in x) [ADUs/pix]\n")
 		paramFile.write(" 3) 0.0000		0			#	dsky/dy (sky gradient in y) [ADUs/pix]\n")
 		paramFile.write(" Z) 0						#Leave in [1] or subtract [0] this comp from data?\n")
@@ -864,7 +919,7 @@ class ModelGenerator:
 	
 	def write_galfit_bulge_parameter(self, centerID):
 		'''
-		reads the results of the first run and writes it to a new file
+		reads the logResults of the first run and writes it to a new file
 		with the output and constraint modified for bulge run and the
 		new bulge component appended
 		'''
@@ -930,7 +985,7 @@ class ModelGenerator:
 		bulgeParamStr = bulgeParamStr + (" Z) 0							#Leave in [1] or subtract [0] this comp from data?\n")
 		bulgeParamStr = bulgeParamStr + ("\n")
 	
-		# write the bulge parameter file using the modified contents of the single results
+		# write the bulge parameter file using the modified contents of the single logResults
 		with open(self.galfit_bulge_parameter_filename, "w") as galfitBulgeParamFile:
 			galfitBulgeParamFile.write(bulgeParamStr)
 			
@@ -963,11 +1018,14 @@ class ModelGenerator:
 		# writes the single component parameter file
 		with open(self.galfit_single_parameter_filename, 'w') as paramFile:
 			self.write_galfit_parameter(image, paramFile, 
-										self.galfit_single_output_filename)
+										self.galfit_single_output_filename,
+										self.sigmaImage)
 	
+		print(os.getcwd())
 		# run galfit on paramter file
 		os.system('galfit ' + self.galfit_single_parameter_filename)
 
+		print(os.getcwd())
 		# detects atomic galfit error
 		if not os.path.isfile(self.galfit_single_output_filename):
 			self.logMsg = (	self.logMsg + 
@@ -975,7 +1033,11 @@ class ModelGenerator:
 							"probably mushroom (atomic galfit error)")
 			return
 		
-		# rename galfit.NN to result file
+		# rename galfit.01 to result file
+		if not os.path.isfile("galfit.01"):
+			self.logMsg = self.logMsg + " galfit.01 DNE"
+			return
+
 		os.system(" ".join(["mv","galfit.01",self.galfit_single_result_filename]))
 		
 		# done unless command line specified that a second galfit run
@@ -986,7 +1048,7 @@ class ModelGenerator:
 			centerID = self.getCentermostID(image["height"], image["width"],
 											self.galfit_single_result_filename)
 		
-			# reads the results of the first run and writes it 
+			# reads the logResults of the first run and writes it 
 			# with the output and constraint modified for bulge run and the
 			# new bulge component appended with some intitial guess parameters
 			self.write_galfit_bulge_parameter(centerID)
@@ -999,6 +1061,11 @@ class ModelGenerator:
 				self.logMsg = (	self.logMsg + 
 								" galfit failed on bulge component, " + 
 								"probably mushroom (atomic galfit error)")
+				return
+		
+			# rename galfit.01 to result file
+			if not os.path.isfile("galfit.01"):
+				self.logMsg = self.logMsg + " galfit.01 DNE"
 				return
 			
 			# rename galfit.NN to result file
@@ -1024,11 +1091,18 @@ class ModelGenerator:
 		try:
 	
 			# run iraf's imhead method to populate image dimensions
-			self.run_imhead(curImage)
+			if not self.run_imhead(curImage):
+				errorMsg = "IRAf had an error runnign imhead"
+				print(errorMsg)
+				self.logMsg = self.logMsg + errorMsg
+				return self.logMsg
 					
-			# run sextractor, exiting if a necessary parameter is missing
+			# run sextractor, returning if it doesn't find any galaxies
 			if not self.run_sextractor(curImage, self.sextractorConfigFilename):
-				exit()
+				errorMsg = "skipping image because no galaxies found by Source Extractor"
+				print(errorMsg)
+				self.logMsg = self.logMsg + errorMsg
+				return self.logMsg
 		
 			# create a reg file for ds9 using the updated image dictionary
 			self.write_ds9_reg_file(curImage)
@@ -1039,7 +1113,7 @@ class ModelGenerator:
 		
 		# catch, log, and ignore all runtime errors except explicit exits 
 		# (for debugging). move on to the next image regardless
-		except not (KeyboardInterrupt):
+		except not (KeyboardInterrupt or SystemExit):
 			errorMsg = str(sys.exc_info()[0]) + str(sys.exc_info()[1])
 			print (errorMsg)
 			self.logMsg = self.logMsg + errorMsg
@@ -1053,7 +1127,7 @@ class ModelGenerator:
 		
 
 def runModelGeneratorSerial(parser, options, sextractorKeywordOptions, 
-							destDirectory, imageFilenames):
+							callingDirectory, imageFilenames):
 	'''
 	uses the command line inputs gathered in __main__ to create an
 	instance of the model generator class and invoke its methods
@@ -1061,43 +1135,32 @@ def runModelGeneratorSerial(parser, options, sextractorKeywordOptions,
 	parameter parser
 	parameter options
 	parameter sextractorKeywordOptions
-	parameter destDirectory
+	parameter callingDirectory
 	parameter imageFilename
 	
 	returns - the list of lines to be written to the log
 	'''
 	
 	# holds methods for analyzing simulations
-	modelGen = ModelGenerator()
+	modelGen = ModelGenerator(callingDirectory=callingDirectory)
 	
 	# parse the command line options
 	modelGen.parseGalfitOptions(parser, options)
 	modelGen.parseSextractorOptions(parser, options.realSextractor, 
 									sextractorKeywordOptions)
 	
-	# cd into desination directory to prevent processor collisions
-	if not os.path.isdir(destDirectory):
-		os.mkdir(destDirectory)
-	os.chdir(destDirectory)
-	
 	# write the sextractor config file, which will be used for all images
 	modelGen.write_sextractor_config_file(modelGen.sextractorConfigFilename)
 	modelGen.write_sextractor_config_file(modelGen.sextractorReduceComponentConfigFilename)
 
 	# store log result of modeling each image using modelGen instance
-	results = []
+	logResults = []
 	for imageFilename in imageFilenames:
-		
-		# adjust for image filename if relative, otherwise no prefix
-		if imageFilename[0] == ".":
-			prefix = "../"
-		else:
-			prefix = ""
 			
 		# run modeling method
-		results.append(modelGen.modelImage(prefix + imageFilename.strip()))
+		logResults.append(modelGen.modelImage(imageFilename.strip()))
 	
-	return results
+	return [logResults, modelGen.destDirectory]
 
 	
 def runModelGeneratorParallel(parameterList):
@@ -1108,24 +1171,18 @@ def runModelGeneratorParallel(parameterList):
 	parameter parameterList -
 		wierd way of receiving parameters needed to facilitate parallel
 		the elements are parser, options, sextractorKeywordOptions, 
-		rootDirectory, and the image filename to model, respectively
+		callingDirectory, and the image filename to model, respectively
 	'''
 	
 	# handle parameters this way to enable parallelism
 	parser = parameterList[0]
 	options = parameterList[1]
 	sextractorKeywordOptions = parameterList[2]
-	rootDirectory = parameterList[3]
+	callingDirectory = parameterList[3]
 	imageFilename = parameterList[4]
 	
-	# cd into desination directory to prevent processor collisions
-	destDirectory = rootDirectory + str(os.getpid()) + "/"
-	if not os.path.isdir(destDirectory):
-		os.mkdir(destDirectory)
-	os.chdir(destDirectory)
-	
 	# holds methods for analyzing simulations
-	modelGen = ModelGenerator(destDirectory=destDirectory)
+	modelGen = ModelGenerator(callingDirectory=callingDirectory)
 	
 	# parse the command line options
 	modelGen.parseGalfitOptions(parser, options)
@@ -1135,15 +1192,9 @@ def runModelGeneratorParallel(parameterList):
 	# write the sextractor config file, which will be used for all images
 	modelGen.write_sextractor_config_file(modelGen.sextractorConfigFilename)
 	modelGen.write_sextractor_config_file(modelGen.sextractorReduceComponentConfigFilename)
-
-	# adjust for image filename if relative, otherwise no prefix
-	if imageFilename[0] == ".":
-		prefix = "../"
-	else:
-		prefix = ""
 		
 	# run modeling method and return the resulting line in the log
-	return modelGen.modelImage(prefix + imageFilename.strip())
+	return [modelGen.modelImage(imageFilename.strip()), modelGen.destDirectory]
 
 
 if __name__ == "__main__":
@@ -1169,23 +1220,20 @@ if __name__ == "__main__":
 	parser.add_option("-g","--galfitOff", 
 				help="include to suppress running galfit after Source-Extractor",
 				action="store_true")
+	
+	# run in parallel
+	parser.add_option("-p","--parallel", 
+				help="include to run images in parallel, otherwise series",
+				action="store_true")
 						
 	# run sextractor
 	parser.add_option("-r","--realSextractor", 
 				help="include to run Source-Extractor for real images, otherwise sim images assumed",
 				action="store_true")
 	
-	# run in parallel
-	parser.add_option("-p","--parallel", 
-				help="include to run images in parallel, otherwise series",
-				action="store_true")
-	
-	# the GALFIT constraint file. verified after parsing
-	# TODO: this might be deprecated, since the component numbering
-	# 		is less predictable since the introduction of sextractor
-	#		Also constraint files are not recommended in GALFIT generally
-	parser.add_option("-c","--constraint", 
-				help="set the file constraining the GALFIT results")
+	# the GALFIT sigma image
+	parser.add_option("-s","--sigmaImage", 
+				help="set the file defining the GALFIT sigma image")
 			
 	# Magnitude photometric zeropoint	
 	parser.add_option("--mpz", metavar="MagnitudePhotometricZeropoint",
@@ -1207,6 +1255,7 @@ if __name__ == "__main__":
 	# options - list with everthing defined above, 
 	# args - anything left over after parsing options
 	[options, args] = parser.parse_args()
+	pprint.pprint(vars(options))
 	
 	# verify that there is at least one positional argument
 	if len(args) < 1:
@@ -1241,33 +1290,45 @@ if __name__ == "__main__":
 	# TODO: might solve windows vs unix/mac, not sure though
 	newFilenames = []
 	for imageFilename in imageFilenames:
+		if not imageFilename.strip():
+			continue
 		newFilename = os.path.normpath(imageFilename.strip())
-		newFilenames.append(newFilename)
 		if not os.path.isfile(newFilename):
 			parser.error("input file has filename " + newFilename + "\n"
 						"This file does not exist or is not accessible\n" +
 						"input file " + args[0] + 
 						" must be only full path image filenames, one per line.")
+			
+		# adjust for image filename if relative, otherwise make full path
+		if newFilename[:2] == "..":
+			newFilename = os.path.join("..",newFilename)
+		else:
+			newFilename = os.path.join(os.getcwd(),newFilename)
+		newFilenames.append(newFilename)
 	imageFilenames = newFilenames
 	# done with immediate verifying of comamnd line #
 		
 	# for parallel, only use half the cpus available
 	numCPUs = int(multiprocessing.cpu_count())
 	
-	# create the destination directory for results
-	collectiveDestDirectory = os.path.join(os.getcwd(),"results_" + time.strftime("%m-%d-%Y-%T") + "/")
+	# create the destination directory for logResults
+	collectiveDestDirectory = os.path.join(os.getcwd(),
+								"results_" + time.strftime("%m-%d-%Y-%T"))
 	os.mkdir(collectiveDestDirectory)
 	
 	# time how long it takes to run the program
 	startTime = time.time()
 	
 	# only do parallel if rerquested and if enough images to warrant
-	results = []
-	if not (options.parallel):# and (numImages >= numCPUs)):
+	logResults = []
+	if not (options.parallel and (numImages >= numCPUs)):
 		print("running in serial")
-		results = runModelGeneratorSerial(	parser, options, args[1:], 
-											collectiveDestDirectory, 
-											imageFilenames)
+		[logResults,destDirectory] = runModelGeneratorSerial(parser, options, 
+															args[1:], 
+															os.getcwd(), 
+															imageFilenames)
+		os.system(" ".join(["mv", os.path.join(destDirectory,"*"), collectiveDestDirectory]))
+		os.system(" ".join(["rmdir",destDirectory]))
 	
 	# run the parallel version
 	else:
@@ -1276,18 +1337,29 @@ if __name__ == "__main__":
 		imageArgs = []
 		print ("running in parallel")
 		for imageFilename in imageFilenames:
-			rootDirectory = os.path.join(os.getcwd(), "_")
-			imageArgs.append([parser, options, args[1:], rootDirectory, imageFilename])
+			imageArgs.append([	parser, options, args[1:], 
+								os.getcwd(), imageFilename])
 								
 		# see documentation on multiprocessing pool and map function
 		print ("passing job to " + str(numCPUs) + " out of " + 
 				str(multiprocessing.cpu_count()))
 		pool = multiprocessing.Pool(numCPUs)
-		results = pool.map(runModelGeneratorParallel, imageArgs)
+		allResults = pool.imap_unordered(runModelGeneratorParallel, imageArgs)
+		pool.close()
+		pool.join()
 		
-		# move all individual results into the new collective results folder
-		os.system(" ".join(["mv", "_*/*", collectiveDestDirectory]))
-		os.system(" ".join(["rm","-r","_*/"]))
+		# separate out the log file results from the directories returned
+		logResults = []
+		destDirectories = []
+		for result in allResults:
+			logResults.append(result[0])
+			destDirectories.append(result[1])
+		destDirectories = set(destDirectories)
+		
+		# move all individual logResults into the new collective logResults folder
+		for destDirectory in destDirectories:
+			os.system(" ".join(["mv", os.path.join(destDirectory,"*"), collectiveDestDirectory]))
+			os.system(" ".join(["rmdir",destDirectory]))
 		
 	# end program run time, print total
 	elapsed = time.time() - startTime
@@ -1295,72 +1367,19 @@ if __name__ == "__main__":
 			"about","equal","to",str(int(elapsed/60.0)),"minutes"]))
 
 	# compose the log
-	log = ("run on " + time.strftime("%m-%d-%Y") + 
+	log = ("run on " + time.strftime("%m-%d-%Y-%T") + 
 			" with command line input " + " ".join(sys.argv + 
 			["total","time","elapsed","=",str(int(elapsed)),"seconds",
-			"about","equal","to",str(int(elapsed/60.0)),"minutes"]) + "\n")
-	for result in results:
-		log = log + result + "\n"
+			"about","equal","to",str(int(elapsed/60.0)),"minutes",
+			"about","equal","to",str(int((elapsed/60.0)/60.0)),"hours"]) + "\n")
+	for logLine in logResults:
+		log = log + logLine + "\n"
 	
 	# create the log file in a collective destination directory
-	logFilename = (collectiveDestDirectory + "rungalfit_log.txt")
+	logFilename = os.path.join(collectiveDestDirectory, "rungalfit_log.txt")
 	
 	# write the log file
 	print ("writing log file to " + logFilename)
 	with open(logFilename, 'w') as logFile:
 		logFile.write(log)
 		
-	# chunking of list, has some disadvantages
-	'''
-		# construct list, each element is a list of arguments for separate cpu
-		imageArgs = []
-		destDirectories = []
-		chunkSize = int(math.ceil(float(numImages)/float(numCPUs)))
-		print ("running in parallel, the list of images is being divided among" + 
-				" your available processors in the following chunk sizes")
-		for i in range(0, numImages, chunkSize):
-			parDestDirectory = os.path.join(os.getcwd(), "results" + str(i))
-			destDirectories.append(parDestDirectory)
-			print(str(len(imageFilenames[i:i+chunkSize])) +
-				" images being stored in the directory: " + parDestDirectory)
-			imageArgs.append([parser, options, args[1:], parDestDirectory] + 
-								imageFilenames[i:i+chunkSize])
-								
-		# see documentation on multiprocessing pool and map function
-		print ("passing job to " + str(numCPUs) + " out of " + 
-				str(multiprocessing.cpu_count()) + " CPUs, logs will be written as completed")
-		pool = multiprocessing.Pool(numCPUs)
-		results = pool.map(runModelGenerator, imageArgs)
-		
-		# end program run time, print total
-		elapsed = time.time() - startTime
-		print(" ".join(["total","time","elapsed","=",str(int(elapsed)),"seconds",
-				"about","equal","to",str(int(elapsed/60.0)),"minutes"]))
-	
-		# compose the log
-		log = ("run on " + time.strftime("%m-%d-%Y") + 
-				" with command line input " + " ".join(sys.argv + 
-				["total","time","elapsed","=",str(int(elapsed)),"seconds",
-				"about","equal","to",str(int(elapsed/60.0)),"minutes"]) + "\n")
-		for result in results:
-			for line in result:
-				log = log + line + "\n"
-		
-		# create the log file in a collective destination directory
-		logFilename = (collectiveDestDirectory + "combined_rungalfit_log_" + 
-                    imageFilenames[0].split("/")[-1].split("_")[1].split(".")[1] + 
-                    "_to_" + 
-                    imageFilenames[-1].split("/")[-1].split("_")[1].split(".")[1] +
-                    "_" + time.strftime("%m-%d-%Y") + ".txt")
-
-		
-		# write the log file
-		print ("writing log file to " + logFilename)
-		with open(logFilename, 'w') as logFile:
-			logFile.write(log)
-			
-		# move all individual results into the new collective results folder
-		for subDir in destDirectories:
-			os.system(" ".join(["mv", subDir.rstrip("/") + "/*", collectiveDestDirectory]))
-			os.rmdir(subDir)
-	'''
