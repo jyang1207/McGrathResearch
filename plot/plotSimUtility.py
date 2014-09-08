@@ -2,7 +2,7 @@
 
 '''
 Author: Ian Tibbetts
-Co-authors: Prof. Elizabeth McGrath, Ariunjargal Bat-Erdene '15, Ryan Cole '15
+Co-authors: Prof. Elizabeth McGrath
 Last Edited: 8/13/2104
 Colby College Astrophysics Research
 '''
