@@ -41,7 +41,7 @@ def updateHeader(simFilename):
 		return False
 	
 	try:
-		simHeader.set("SCALESIM", candelHeader["SCALESIM"])
+		simHeader.set("SCALESIM", candelHeader["SCALESIM"], "pc per pixel of SUNRISE img")
 	except:
 		print("failed to write to sim header from candel header")
 		return False
@@ -67,5 +67,5 @@ if __name__ == "__main__":
 	
 	# iterate over filenames, updating the header info
 	for simFilename in simFilenames:
-		if not updateHeader(simFilename):
+		if not updateHeader(simFilename.strip()):
 			break
