@@ -497,14 +497,12 @@ if __name__ == "__main__":
     # options - list with everthing defined above, 
     # args - anything left over after parsing options
     [options, args] = parser.parse_args()
-    
-    if not len(args) or not os.path.isfile(args[0]):
-        parser.error(	"summary file must be an existing file with space " +
-        				"delimited summary data")
-      
     pprint.pprint(vars(options))
     print("summary file used: " + args[0])
     
+    if not (len(args) or os.path.isfile(args[0])):
+        parser.error("summary file must be an existing file with space delimited summary data")
+      
     pyl.rc("axes", linewidth=2)
     pyl.rc("axes", labelsize=20)
     pyl.rc("axes", titlesize=30)
