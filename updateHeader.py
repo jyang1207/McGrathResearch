@@ -26,7 +26,8 @@ def updateHeader(simFilename):
 		simHDUList = pyfits.open(simFilename)
 		simHeader = simHDUList[0].header
 	except:
-		print("failed to open sim file " + simFilename + " with pyfits")
+		print(	"failed to open sim file " + simFilename + 
+				" with pyfits")
 		return False
 		
 	# use the sim filename to get the candelized image filename
@@ -37,13 +38,16 @@ def updateHeader(simFilename):
 		candelHDUList = pyfits.open(candelFilename)
 		candelHeader = candelHDUList[0].header
 	except:
-		print("failed to open candelized file " + candelFilename + " with pyfits")
+		print(	"failed to open candelized file " + candelFilename + 
+				" with pyfits")
 		return False
 	
 	try:
 		simHeader.set("SCALESIM", candelHeader["SCALESIM"], "pc per pixel of SUNRISE img")
 	except:
-		print("failed to write to sim header from candel header")
+		print(	"failed to write to sim header " + simFilename + 
+				" from candel header " + candelFilename + 
+				" with pyfits")
 		return False
 		
 	simHDUList.writeto(simFilename, clobber=True)
@@ -68,4 +72,4 @@ if __name__ == "__main__":
 	# iterate over filenames, updating the header info
 	for simFilename in simFilenames:
 		if not updateHeader(simFilename.strip()):
-			break
+			continue
