@@ -58,7 +58,8 @@ def updateHeader(simFilename):
 if __name__ == "__main__":
 
     #define the command line interface with simUtility.py
-	usage = ("USAGE: python updateHeader.py <file containing list of simulation .fits filenames to be updated>")
+	usage = ("USAGE: python updateHeader.py " +
+			"<file containing list of simulation .fits filenames to be updated>")
     
 	# must have exactly one positional command line argument
 	if len(sys.argv) != 2 or not os.path.isfile(sys.argv[1]):

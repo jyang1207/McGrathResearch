@@ -122,6 +122,7 @@ def ned_wright_cosmology_calculator(z):
 
 									
 def run_pyfits(multiFitsFilename):
+
 	# use pyfits to gather info from output of galfit
 	imageHeaders = pyfits.open(multiFitsFilename)
 	
@@ -424,7 +425,7 @@ if __name__ == "__main__":
 	# this loops through every result, writing summary to output
 	for resultFilename in resultFilenames:
 	
-		[models, kpcPerPixel, timeZ] = run_pyfits(resultFilename)	
+		[models, kpcPerPixel, timeZ] = run_pyfits(resultFilename.strip())	
 		
 		# get the id of the centermost galaxy
 		centerID = getCentermostID(600,600,models)
