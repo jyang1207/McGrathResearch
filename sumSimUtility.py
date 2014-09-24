@@ -124,16 +124,17 @@ def ned_wright_cosmology_calculator(z):
 def run_pyfits(multiFitsFilename):
 
 	# use pyfits to gather info from output of galfit
-	imageHeaders = pyfits.open(multiFitsFilename)
+	multiCubeSlices = pyfits.open(multiFitsFilename)
 	
 	# get the dictionary mapping header keywords to their values
 	try:
-		imageHeader = imageHeaders[1].header
-		modelHeader = imageHeaders[2].header
-		imageHeaders.close()
+		imageHeader = multiCubeSlices[1].header
+		modelHeader = multiCubeSlices[2].header
+		multiCubeSlices.close()
 	except KeyError:
-		print(" method must be called on a multi-extension cube (which galfit outputs)")
-		imageHeaders.close()
+		print("No slice found for result file " +  multiFitsFilename +
+				", method must be called on a multi-extension cube")
+		multiCubeSlices.close()
 		exit()
 					
 	# create list of dictionaries representing component models
@@ -399,7 +400,8 @@ if __name__ == "__main__":
 	pprint.pprint(vars(options))
 
 	if not (len(args) or os.path.isfile(args[0])):
-		parser.error("results file must be an existing file with result filenames")
+		parser.error("results file " + args[0] + 
+						" must be an existing file with result filenames")
 	else:
 		inputFilename = args[0]
 		
@@ -425,7 +427,16 @@ if __name__ == "__main__":
 	# this loops through every result, writing summary to output
 	for resultFilename in resultFilenames:
 	
-		[models, kpcPerPixel, timeZ] = run_pyfits(resultFilename.strip())	
+		# remove the new line character and any leading or trailing white space
+		resultFilename = resultFilename.strip()
+		
+		# verify that result file exists
+		if not os.path.isfile(resultFilename):
+			parser.error("result file " + resultFilename + 
+						" must be an existing file with result filenames")
+	
+		# collect info from result file header using pyfits
+		[models, kpcPerPixel, timeZ] = run_pyfits(resultFilename)	
 		
 		# get the id of the centermost galaxy
 		centerID = getCentermostID(600,600,models)
@@ -436,7 +447,7 @@ if __name__ == "__main__":
 			centerIDs = [centerID]
 			
 		# summarize galfit and write to output
-		outFile.write( sum_galfit(	resultFilename.strip(), models, kpcPerPixel, 
+		outFile.write( sum_galfit(	resultFilename, models, kpcPerPixel, 
 									timeZ, delim, centerIDs, options) )
 		
 	outFile.close()
