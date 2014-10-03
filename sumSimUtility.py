@@ -326,18 +326,23 @@ def sum_galfit(resultFilename, models, kpcPerPixel, timeZ, delim, centerIDs, opt
 		currentID = currentID + 1
 		
 		#position
-		componentList.append(model["px"][0])
-		componentList.append(model["py"][0])
+		componentList.append(model["px"][0])#value
+		componentList.append(model["px"][1])#error
+		componentList.append(model["py"][0])#value
+		componentList.append(model["py"][1])#error
 		
 		# magnitude
-		componentList.append(model["mag"][0])
+		componentList.append(model["mag"][0])#value
+		componentList.append(model["mag"][1])#error
 
 		# radius
-		componentList.append(model["rad"][0])
-		componentList.append(str(float(model["rad"][0])*kpcPerPixel))
+		componentList.append(model["rad"][0])#value
+		componentList.append(model["rad"][1])#error
+		componentList.append(str(float(model["rad"][0])*kpcPerPixel))#value
+		componentList.append(str(float(model["rad"][1])*kpcPerPixel))#error
 			
 		# sersic index
-		componentList.append(model["ser"][0])
+		componentList.append(model["ser"][0])#value
 		if currentID in centerIDs:
 			if options.bulge:
 				if componentList[-1] == '1.0000':
@@ -348,12 +353,15 @@ def sum_galfit(resultFilename, models, kpcPerPixel, timeZ, delim, centerIDs, opt
 				galaxyType = "central"
 		else:
 			galaxyType = "other"
+		componentList.append(model["ser"][1])#error
 			
 		# b/a
-		componentList.append(model["ba"][0])
+		componentList.append(model["ba"][0])#value
+		componentList.append(model["ba"][1])#error
 			
 		# position angle
-		componentList.append(model["pa"][0])
+		componentList.append(model["pa"][0])#value
+		componentList.append(model["pa"][1])#error
 				
 		# add this completed component as a line to the string of results
 		componentResults = (componentResults + 
@@ -419,10 +427,16 @@ if __name__ == "__main__":
 	delim = " "
 	
 	outFile.write("galfit result file run on " + time.strftime("%m-%d-%Y") + "\n" + 
-				delim.join(["type","galaxyID","timeStep","age(GYr)","redshift(z)",
-							"camera","filter","px(pixels)","py(pixels)","mag",
-							"rad(pixels)","rad(kpc)", 
-							"sersicIndex(n)","b/a","angle(deg)","sky"]) + "\n")
+				delim.join(["type","galaxyID","timeStep","age(GYr)","redshift(z)", "camera","filter",
+							"px(pixels)","errpx(pixels)",
+							"py(pixels)","errpy(pixels)",
+							"mag","errmag",
+							"rad(pixels)","errrad(pixels)",
+							"rad(kpc)", "errrad(kpc)", 
+							"sersicIndex(n)","errsersicIndex(n)",
+							"b/a","errb/a",
+							"angle(deg)","errangle(deg)",
+							"sky"]) + "\n")
 	
 	# this loops through every result, writing summary to output
 	for resultFilename in resultFilenames:
