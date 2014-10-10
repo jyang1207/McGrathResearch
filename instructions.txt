@@ -16,8 +16,10 @@ plotSimUtility singleSummary.txt -n VELA02 -f
 
 # IDL
 cd,"~/Documents/McGrathResearch"
+
 readcol,"singleSummary.txt",type,id,ts,ageGyr,z,cam,filter,SKIPLINE=2,FORMAT='A,A,A,F,F,A,A',$
 px,epx,py,epy,mag,emag,radPix,eradPix,radKpc,eradKpc,ser,eser,ba,eba,angle,eangle,sky
+
 openw,file,'errors.txt',/GET_LUN &printf,file,"id:timeStep \t px \t errorpx"
 foreach error,where(epx GT 1.0) do printf,file,id[error],":",ts[error],px[error],epx[error]
 free_lun,file
@@ -28,3 +30,8 @@ xtitle="age in gyr",ytitle="x position in pixels",symbol="star",/CURRENT)
 scp plot/plotSimUtility.py imtibbet@nscc:fldrAstro/imtibbet/code/plot/plotSimUtility.py
 scp sumSimUtility.py imtibbet@nscc:fldrAstro/imtibbet/code/sumSimUtility.py
 scp simUtility.py imtibbet@nscc:fldrAstro/imtibbet/code/simUtility.py
+
+#TODO
+simUtility - check candelized sextractor config values
+simUtility - run candelized with psfs depending on filter
+plotSimUtility - include errors

@@ -163,7 +163,7 @@ class ModelGenerator:
 						# MOST most common flag value.
 		
 		# these variable values change for simulation template vs real template
-		if self.realSextractor:
+		if self.realSextractor: #TODO: look at these numbers
 			detectMinArea = "5" # Minimum number of pixels above threshold triggering detection
 			detectThreshold = "0.75"	#Detection threshold (0-2). 1 argument: (ADUs or relative to Background RMS, see THRESH TYPE). 2 arguments: R (mag.arcsec 2 ), Zero-point (mag).
 			deblendThreshold = "16" # Minimum contrast parameter for deblending.
@@ -1237,7 +1237,7 @@ if __name__ == "__main__":
 			
 	# Magnitude photometric zeropoint	
 	parser.add_option("--mpz", metavar="MagnitudePhotometricZeropoint",
-				type="float", default=26.3, 
+				type="float", default=26.23, 
 				help="set the magnitude photometric zeropoint for" +
 					" GALFIT to use [default: %default]")
 						
@@ -1256,6 +1256,12 @@ if __name__ == "__main__":
 	# args - anything left over after parsing options
 	[options, args] = parser.parse_args()
 	pprint.pprint(vars(options))
+	
+	# real images need psfs, warn if no psf specified for real
+	if options.realSextractor and not options.psf:
+		print("Warning: no psf given for candelized images, are you sure you want to continue?")
+		if raw_input("Type 'yes' to continue, otherwise program will end: ").upper() != "YES":
+			exit()
 	
 	# verify that there is at least one positional argument
 	if len(args) < 1:
@@ -1306,6 +1312,7 @@ if __name__ == "__main__":
 			newFilename = os.path.join(os.getcwd(),newFilename)
 		newFilenames.append(newFilename)
 	imageFilenames = newFilenames
+	
 	# done with immediate verifying of comamnd line #
 		
 	# for parallel, only use half the cpus available
