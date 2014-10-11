@@ -8,10 +8,9 @@ Colby College Astrophysics Research
 '''
 import os
 import sys
-from pyraf import iraf
-import multiprocessing
-import time
-import math
+from pyraf import iraf # only used for imhead
+import multiprocessing # to run in parallel using all available cpus
+import time # to print runtime in log
 from optparse import OptionParser
 import pprint
 		
@@ -880,7 +879,7 @@ class ModelGenerator:
 		with open(resultFilename, "r") as resultFile:
 			resultContents = resultFile.readlines()
 		
-		closestDist = 1000.0
+		closestDist = 0.0 # same as false in python
 		closestID = -1
 		currentID = -1
 		skipSky = False
@@ -908,8 +907,8 @@ class ModelGenerator:
 				py = resultLineList[2]
 				dx = imageWidth/2.0 - float(px)
 				dy = imageHeight/2.0 - float(py)
-				dist = math.sqrt(math.pow(dx,2) + math.pow(dy,2))
-				if dist < closestDist:
+				dist = dx*dx + dy*dy
+				if not closestDist or (dist < closestDist):
 					closestDist = dist
 					closestID = currentID
 		
@@ -1260,6 +1259,7 @@ if __name__ == "__main__":
 	# real images need psfs, warn if no psf specified for real
 	if options.realSextractor and not options.psf:
 		print("Warning: no psf given for candelized images, are you sure you want to continue?")
+		# TODO: only works for pre 3 python
 		if raw_input("Type 'yes' to continue, otherwise program will end: ").upper() != "YES":
 			exit()
 	

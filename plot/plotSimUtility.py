@@ -225,7 +225,7 @@ def getData(summaryFilename, fieldDescriptions):
 
 	# read the columns into a 2D array with names and formats as above
 	rawData = pyl.loadtxt(summaryFilename, 
-						  dtype={'names':fieldDescriptions.keys(),
+						  dtype={'names':list(fieldDescriptions.keys()),
 								 'formats':[fieldDescriptions[name][0] for name in fieldDescriptions]},
 						  skiprows=2)
 	
@@ -262,8 +262,8 @@ if __name__ == "__main__":
 	parser.add_option("-m","--includeMRP", 
 					  help="if all galaxy names have corresponding MRP, plot them too",
 					  action="store_true")
-    
-    # indicate that you want all cameras plotted separately
+
+	# indicate that you want all cameras plotted separately
 	parser.add_option("-c","--allCameras", 
                       help="to show all cameras",
                       action="store_true")
@@ -298,7 +298,7 @@ if __name__ == "__main__":
 	if not len(args) or not os.path.isfile(args[0]):
 		parser.error(	"summary file must be an existing file with space " +
 						"delimited summary data")
-	  	
+		
 	# dictionary of lists [format, text, lower, upper], one for each field in summary file
 	# careful changing this list, ordered to match the order of columns in summary file
 	fieldDescriptions = OrderedDict()
@@ -310,21 +310,21 @@ if __name__ == "__main__":
 	fieldDescriptions['cam'] =	 	['i4','Camera Number']
 	fieldDescriptions['fil'] =	 	['a10','Filter']
 	fieldDescriptions['px'] =	 	['f4','X Position (pixels)',285,315]
-	fieldDescriptions['epx'] =	 	['f4','Error in x position (pixels)']
+	# fieldDescriptions['epx'] =	 	['f4','Error in x position (pixels)']
 	fieldDescriptions['py'] =	 	['f4','Y Position (pixels)',285,315]
-	fieldDescriptions['epy'] =	 	['f4','Error in y position (pixels)']
+	# fieldDescriptions['epy'] =	 	['f4','Error in y position (pixels)']
 	fieldDescriptions['mag'] =	 	['f4','Magnitude',30,15]
-	fieldDescriptions['emag'] =	 	['f4','Error in magnitude']
+	# fieldDescriptions['emag'] =	 	['f4','Error in magnitude']
 	fieldDescriptions['rpix'] =	 	['f4',r"$R_{eff}$ (pixels)",0.5,50]
-	fieldDescriptions['erpix'] =	['f4','Error in radius (pixels)']
+	# fieldDescriptions['erpix'] =	['f4','Error in radius (pixels)']
 	fieldDescriptions['rad'] =	 	['f4',r"$R_{eff}$ (kpc)",0.5,15]
-	fieldDescriptions['erad'] =	 	['f4','Error in radius (kpc)']
+	# fieldDescriptions['erad'] =	 	['f4','Error in radius (kpc)']
 	fieldDescriptions['ser'] =	 	['f4','Sersic Index',0.05,8.5]
-	fieldDescriptions['eser'] =	 	['f4','Error in sersic index']
+	# fieldDescriptions['eser'] =	 	['f4','Error in sersic index']
 	fieldDescriptions['ba'] =	 	['f4','Axis Ratio',0.05,1.2]
-	fieldDescriptions['eba'] =	 	['f4','Error in axis ratio']
+	# fieldDescriptions['eba'] =	 	['f4','Error in axis ratio']
 	fieldDescriptions['pa'] =	 	['f4','Position Angle (deg)',-180,180]
-	fieldDescriptions['epa'] =	 	['f4','Error in position angle (deg)']
+	# fieldDescriptions['epa'] =	 	['f4','Error in position angle (deg)']
 	fieldDescriptions['sky'] =	 	['f4','sky value']
 	
 	###
