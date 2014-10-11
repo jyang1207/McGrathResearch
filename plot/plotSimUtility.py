@@ -63,8 +63,7 @@ def getFormats():
 	
 	return
 
-def plotAllCamera(	plotComponents, fieldDescriptions, xFieldName='age', yFieldName='ser', 
-					curSubPlot=plt, includeLegend = True):
+def plotAllCamera(	plotComponents, fieldDescriptions, xFieldName='age', yFieldName='ser', curSubPlot=plt, includeLegend = True):
 	'''
 	method comment
 	'''
@@ -98,8 +97,7 @@ def plotAllCamera(	plotComponents, fieldDescriptions, xFieldName='age', yFieldNa
 		if includeLegend:
 			curSubPlot.legend(loc='upper left', prop={'size':10})
 	
-def plotAvgCamera(plotComponents, fieldDescriptions, xFieldName='age', yFieldName='ser', 
-					curSubPlot=plt):
+def plotAvgCamera(plotComponents, fieldDescriptions, xFieldName='age', yFieldName='ser', curSubPlot=plt):
 	'''
 	method comment
 	'''
@@ -152,54 +150,6 @@ def getBulgeToTotalRatios(allFieldNames, data, galaxyName=""):
 	return diskGalaxies
 	'''
 	return
-
-def plotBulgeTotalRatio(fieldDescriptions, allFieldNames, data, 
-						galaxyName="", figureIndex=1, xFieldIndex=3, MRP=False):
-	'''
-	method comment
-	
-	xFieldName = fieldDescriptions[xFieldIndex][0]
-	xLabel = fieldDescriptions[xFieldIndex][2]
-	yLabel = 'Bulge/Total'
-	axisLimits = [fieldDescriptions[xFieldIndex][3],
-				  fieldDescriptions[xFieldIndex][4],
-				  0.05, 1.2]
-	fig, axes = plt.subplots(2, 1, sharex=True, sharey=True, num=galaxyName+" bt")#figureIndex)
-	axes = [[axes[0]],[axes[1]]]
-	#if not MRP:
-	#	fig, axes = plt.subplots(2, 1, sharex=True, sharey=True, num=figureIndex)
-	#	axes = [[axes[0]],[axes[1]]]
-	#else:
-	#	fig, axes = plt.subplots(2, 2, sharex=True, sharey=True, num=figureIndex)
-	#	axes[1][1].set_xlabel(xLabel)
-		
-	axes[0][0].set_ylabel(yLabel)#+"\n(without MRP)")#(by camera)")
-	axes[0][0].text(0.1,0.8,"No RP",transform=axes[0][0].transAxes,fontsize=30, 
-					bbox=dict(facecolor='cyan', alpha=0.5))
-	axes[1][0].set_ylabel(yLabel)#+"\n(with MRP)")#(average)")
-	axes[1][0].text(0.1,0.8,"With RP",transform=axes[1][0].transAxes,fontsize=30, 
-					bbox=dict(facecolor='cyan', alpha=0.5))
-	axes[1][0].set_xlabel(xLabel)
-	axes[0][0].axis(axisLimits)
-	
-	# without MRP
-	galaxiesBulgeToTotal = getBulgeToTotalRatios(allFieldNames, data, galaxyName)
-	axes[0][0].set_title(galaxyName + " High Resolution", y=1.04)#galaxyName)#High Resolution
-	plotAvgCamera(galaxiesBulgeToTotal, xFieldName, 'mag', axes[0][0])
-	galaxiesBulgeToTotal = getBulgeToTotalRatios(allFieldNames, data, galaxyName + "MRP")
-	plotAvgCamera(galaxiesBulgeToTotal, xFieldName, 'mag', axes[1][0])
-	
-	# with MRP
-	#if MRP:
-	#	galaxiesBulgeToTotal = getBulgeToTotalRatios(allFieldNames, data, galaxyName + "MRP")
-	#	axes[0][1].set_title(galaxyName + "MRP")
-	#	plotAllCamera(galaxiesBulgeToTotal, xFieldName, 'mag', axes[0][1])
-	#	plotAvgCamera(galaxiesBulgeToTotal, xFieldName, 'mag', axes[1][1])
-	
-	fig.subplots_adjust(hspace=0.1, wspace=0.1)
-	'''
-	return
-	
 	
 def getBulgeErrors(data, galaxyName):
 	'''
@@ -352,22 +302,30 @@ if __name__ == "__main__":
 	# dictionary of lists [format, text, lower, upper], one for each field in summary file
 	# careful changing this list, ordered to match the order of columns in summary file
 	fieldDescriptions = OrderedDict()
-	fieldDescriptions['typ'] = ['a10','Galaxy Type']
-	fieldDescriptions['id'] = ['a10','Galaxy ID']
-	fieldDescriptions['ts'] = ['a10','Time Step (a)']
-	fieldDescriptions['age'] = ['f4','Age (Gyr)',0,8]
-	fieldDescriptions['red'] = ['f4','Redshift (z)',5,0]
-	fieldDescriptions['cam'] = ['i4','Camera Number']
-	fieldDescriptions['fil'] = ['a10','Filter']
-	fieldDescriptions['px'] = ['f4','X Position (pixels)',285,315]
-	fieldDescriptions['py'] = ['f4','Y Position (pixels)',285,315]
-	fieldDescriptions['mag'] = ['f4','Magnitude',30,15]
-	fieldDescriptions['rpix'] = ['f4',r"$R_{eff}$ (pixels)",0.5,50]
-	fieldDescriptions['rad'] = ['f4',r"$R_{eff}$ (kpc)",0.5,15]
-	fieldDescriptions['ser'] = ['f4','Sersic Index',0.05,8.5]
-	fieldDescriptions['ba'] = ['f4','Axis Ratio',0.05,1.2]
-	fieldDescriptions['pa'] = ['f4','Position Angle (deg)',-180,180]
-	fieldDescriptions['sky'] = ['f4','sky value']
+	fieldDescriptions['typ'] =	 	['a10','Galaxy Type']
+	fieldDescriptions['id'] =	 	['a10','Galaxy ID']
+	fieldDescriptions['ts'] =	 	['a10','Time Step (a)']
+	fieldDescriptions['age'] =	 	['f4','Age (Gyr)',0,8]
+	fieldDescriptions['red'] =	 	['f4','Redshift (z)',5,0]
+	fieldDescriptions['cam'] =	 	['i4','Camera Number']
+	fieldDescriptions['fil'] =	 	['a10','Filter']
+	fieldDescriptions['px'] =	 	['f4','X Position (pixels)',285,315]
+	fieldDescriptions['epx'] =	 	['f4','Error in x position (pixels)']
+	fieldDescriptions['py'] =	 	['f4','Y Position (pixels)',285,315]
+	fieldDescriptions['epy'] =	 	['f4','Error in y position (pixels)']
+	fieldDescriptions['mag'] =	 	['f4','Magnitude',30,15]
+	fieldDescriptions['emag'] =	 	['f4','Error in magnitude']
+	fieldDescriptions['rpix'] =	 	['f4',r"$R_{eff}$ (pixels)",0.5,50]
+	fieldDescriptions['erpix'] =	['f4','Error in radius (pixels)']
+	fieldDescriptions['rad'] =	 	['f4',r"$R_{eff}$ (kpc)",0.5,15]
+	fieldDescriptions['erad'] =	 	['f4','Error in radius (kpc)']
+	fieldDescriptions['ser'] =	 	['f4','Sersic Index',0.05,8.5]
+	fieldDescriptions['eser'] =	 	['f4','Error in sersic index']
+	fieldDescriptions['ba'] =	 	['f4','Axis Ratio',0.05,1.2]
+	fieldDescriptions['eba'] =	 	['f4','Error in axis ratio']
+	fieldDescriptions['pa'] =	 	['f4','Position Angle (deg)',-180,180]
+	fieldDescriptions['epa'] =	 	['f4','Error in position angle (deg)']
+	fieldDescriptions['sky'] =	 	['f4','sky value']
 	
 	###
 	print("\nCommand line options...")
@@ -479,7 +437,6 @@ if __name__ == "__main__":
 						plt.xlabel(xlabel)
 						plt.ylabel(ylabel + " (with MRP)")
 						
-	
 	# single component fit results, one plot per field, all galaxies
 	elif plotType == "allGalaxies":
 	
@@ -518,7 +475,6 @@ if __name__ == "__main__":
 					plt.xlabel(xlabel)
 					plt.ylabel(ylabel + " (with MRP)")
 				
-
 	elif plotType == "allFields":
 		if options.includeMRP:
 			numRows = 2
