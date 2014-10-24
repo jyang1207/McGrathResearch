@@ -60,12 +60,11 @@ def getFormats():
 		formats.append(color + markers[(index+1)*-1])
 	
 	return formats
-	
-	return
 
 def plotAllCamera(	plotComponents, fieldDescriptions, xFieldName='age', yFieldName='ser', curSubPlot=plt, includeLegend = True):
 	'''
-	method comment
+	plot all cameras in plot components and optionally include legend
+	plots the components given on the plot given, using fieldDescriptions to set axis scales
 	'''
 	formats = [fStr + "-" for fStr in getFormats()]
 	
@@ -99,7 +98,8 @@ def plotAllCamera(	plotComponents, fieldDescriptions, xFieldName='age', yFieldNa
 	
 def plotAvgCamera(plotComponents, fieldDescriptions, xFieldName='age', yFieldName='ser', curSubPlot=plt):
 	'''
-	method comment
+	average cameras in plot components and plot errorbars
+	plots the components given on the plot given, using fieldDescriptions to set axis scales
 	'''
 	# plot sersic index vs age, averaging all camera angles
 	ageSet = np.unique(plotComponents[xFieldName])
@@ -126,6 +126,7 @@ def plotAvgCamera(plotComponents, fieldDescriptions, xFieldName='age', yFieldNam
 	
 	return
 
+# TODO not implemented after revision
 def calcBulgeToTotal(bulgeMag, diskMag):
 	'''
 	method comment
@@ -135,6 +136,7 @@ def calcBulgeToTotal(bulgeMag, diskMag):
 	'''
 	return
 
+# TODO not implemented after revision
 def getBulgeToTotalRatios(allFieldNames, data, galaxyName=""):
 	'''
 	method comment
@@ -153,7 +155,7 @@ def getBulgeToTotalRatios(allFieldNames, data, galaxyName=""):
 	
 def getBulgeErrors(data, galaxyName):
 	'''
-	method comment
+	used by getGalaxies to only include bulge with disks and visa versa, prints excluded
 	'''
 	magByAge = {}
 	for componentNumber, curName in enumerate(data["id"]):
@@ -184,7 +186,7 @@ def getBulgeErrors(data, galaxyName):
 
 def getGalaxies(allFieldNames, data, galaxyType="central", galaxyName=""):
 	'''
-	method comment
+	filters data by type and name of galaxy, returning matching galaxies
 	'''
 	excluded=[]
 	exclusionList = getBulgeErrors(data, galaxyName)
@@ -215,6 +217,8 @@ def getGalaxies(allFieldNames, data, galaxyType="central", galaxyName=""):
 	
 def getData(summaryFilename, fieldDescriptions):
 	'''
+	given a summary file, return a formatted dictionary of field name to values
+	
 	parameter summaryFilenames - 
 		summary filename containing the data in space delimited columns
 	parameter fieldDescriptions - 
@@ -267,6 +271,16 @@ if __name__ == "__main__":
 	parser.add_option("-c","--allCameras", 
                       help="to show all cameras",
                       action="store_true")
+
+	# indicate that you want all cameras plotted separately
+	parser.add_option("-r","--candelized", 
+                      help="to indicate candelized results are being plotted",
+                      action="store_true")
+                      
+	# indicate that you have errors in the summary file
+	parser.add_option("-e","--errors", 
+                      help="to indicate summary file has GALFIT errors for each field",
+                      action="store_true")
 	
 	# pass the list of galaxies
 	parser.add_option("-n","--galaxyNames",
@@ -299,6 +313,13 @@ if __name__ == "__main__":
 		parser.error(	"summary file must be an existing file with space " +
 						"delimited summary data")
 		
+	error = 5
+	if options.candelized:
+		poslow = 0
+		poshigh = 100
+	else:
+		poslow = 285
+		poshigh = 315
 	# dictionary of lists [format, text, lower, upper], one for each field in summary file
 	# careful changing this list, ordered to match the order of columns in summary file
 	fieldDescriptions = OrderedDict()
@@ -309,22 +330,30 @@ if __name__ == "__main__":
 	fieldDescriptions['red'] =	 	['f4','Redshift (z)',5,0]
 	fieldDescriptions['cam'] =	 	['i4','Camera Number']
 	fieldDescriptions['fil'] =	 	['a10','Filter']
-	fieldDescriptions['px'] =	 	['f4','X Position (pixels)',285,315]
-	# fieldDescriptions['epx'] =	 	['f4','Error in x position (pixels)']
-	fieldDescriptions['py'] =	 	['f4','Y Position (pixels)',285,315]
-	# fieldDescriptions['epy'] =	 	['f4','Error in y position (pixels)']
+	fieldDescriptions['px'] =	 	['f4','X Position (pixels)',poslow,poshigh]
+	if options.errors:
+		fieldDescriptions['epx'] =	 	['f4','Error in x position (pixels)', -error, error]
+	fieldDescriptions['py'] =	 	['f4','Y Position (pixels)',poslow,poshigh]
+	if options.errors:
+		fieldDescriptions['epy'] =	 	['f4','Error in y position (pixels)', -error, error]
 	fieldDescriptions['mag'] =	 	['f4','Magnitude',30,15]
-	# fieldDescriptions['emag'] =	 	['f4','Error in magnitude']
+	if options.errors:
+		fieldDescriptions['emag'] =	 	['f4','Error in magnitude', -error, error]
 	fieldDescriptions['rpix'] =	 	['f4',r"$R_{eff}$ (pixels)",0.5,50]
-	# fieldDescriptions['erpix'] =	['f4','Error in radius (pixels)']
+	if options.errors:
+		fieldDescriptions['erpix'] =	['f4','Error in radius (pixels)', -error, error]
 	fieldDescriptions['rad'] =	 	['f4',r"$R_{eff}$ (kpc)",0.5,15]
-	# fieldDescriptions['erad'] =	 	['f4','Error in radius (kpc)']
+	if options.errors:
+		fieldDescriptions['erad'] =	 	['f4','Error in radius (kpc)', -error, error]
 	fieldDescriptions['ser'] =	 	['f4','Sersic Index',0.05,8.5]
-	# fieldDescriptions['eser'] =	 	['f4','Error in sersic index']
+	if options.errors:
+		fieldDescriptions['eser'] =	 	['f4','Error in sersic index', -error, error]
 	fieldDescriptions['ba'] =	 	['f4','Axis Ratio',0.05,1.2]
-	# fieldDescriptions['eba'] =	 	['f4','Error in axis ratio']
+	if options.errors:
+		fieldDescriptions['eba'] =	 	['f4','Error in axis ratio', -error, error]
 	fieldDescriptions['pa'] =	 	['f4','Position Angle (deg)',-180,180]
-	# fieldDescriptions['epa'] =	 	['f4','Error in position angle (deg)']
+	if options.errors:
+		fieldDescriptions['epa'] =	 	['f4','Error in position angle (deg)', -error, error]
 	fieldDescriptions['sky'] =	 	['f4','sky value']
 	
 	###

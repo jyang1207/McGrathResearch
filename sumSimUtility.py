@@ -393,7 +393,7 @@ if __name__ == "__main__":
 				action="store_true")
 
 	# indicate that images are candelized
-	parser.add_option("-c","--candelized", 
+	parser.add_option("-r","--candelized", 
                       help="if running on candelized images",
                       action="store_true")
 	

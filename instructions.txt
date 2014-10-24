@@ -2,23 +2,25 @@
 ls hydroart/VELA03/VELA03_a0.[^01]*/images/*F160W_s* > images.txt # full path, or relative to calling directory
 python simUtility -h
 python simUtility images.txt -p -b
+python simUtility images.txt -p -b -r
 
 # sumSimUtility.py
 ls results/*single_multi* > singleResults.txt
 python sumSimUtility -h
 python sumSimUtility singleResults.txt -o singleSummary.txt
+python sumSimUtility singleResults.txt -o singleSummary.txt -r
 
 # plotSimUtility.py
 plotSimUtility -h
 plotSimUtility singleSummary.txt -n VELA02 VELA03 -y ser
+plotSimUtility singleSummary.txt -n VELA02 VELA03 -y ser -r
 plotSimUtility singleSummary.txt -n VELA02 VELA03 -y ser -g
 plotSimUtility singleSummary.txt -n VELA02 -f
 
 # IDL
 cd,"~/Documents/McGrathResearch"
 
-readcol,"singleSummary.txt",type,id,ts,ageGyr,z,cam,filter,SKIPLINE=2,FORMAT='A,A,A,F,F,A,A',$
-px,epx,py,epy,mag,emag,radPix,eradPix,radKpc,eradKpc,ser,eser,ba,eba,angle,eangle,sky
+readcol,'singleSummary.txt',type,id,ts,ageGyr,z,cam,filter,px,epx,py,epy,mag,emag,radPix,eradPix,radKpc,eradKpc,ser,eser,ba,eba,angle,eangle,sky,SKIPLINE=2,FORMAT='A,A,A,F,F,A,A'
 
 openw,file,'errors.txt',/GET_LUN &printf,file,"id:timeStep \t px \t errorpx"
 foreach error,where(epx GT 1.0) do printf,file,id[error],":",ts[error],px[error],epx[error]
@@ -35,3 +37,6 @@ scp simUtility.py imtibbet@nscc:fldrAstro/imtibbet/code/simUtility.py
 simUtility - check candelized sextractor config values
 simUtility - run candelized with psfs depending on filter
 plotSimUtility - include errors
+rff fraction of total to residual mrdfits to get slice 1 and slice 3
+total(slice 3) / total(slice 1) -> verify this formula
+c fits io
