@@ -13,6 +13,7 @@ from optparse import OptionParser
 from math import sqrt, exp, sin, pi, pow
 import pprint
 import pyfits
+from numpy import ndarray
 
 	
 def ned_wright_cosmology_calculator(z):
@@ -129,11 +130,13 @@ def run_pyfits(multiFitsFilename):
 	# get the dictionary mapping header keywords to their values
 	try:
 		imageHeader = multiCubeSlices[1].header
+		imageData = multiCubeSlices[1].data
 		modelHeader = multiCubeSlices[2].header
+		residualData = multiCubeSlices[3].data
 		multiCubeSlices.close()
 	except KeyError:
-		print("No slice found for result file " +  multiFitsFilename +
-				", method must be called on a multi-extension cube")
+		print("Result file " +  multiFitsFilename +
+				" must be a .fits multi-extension cube with four slices")
 		multiCubeSlices.close()
 		exit()
 					
@@ -209,7 +212,9 @@ def run_pyfits(multiFitsFilename):
 	else:
 		timeZ = 0.0
 		
-	return [resultModels, kpcPerPixel, timeZ]
+	# compute the rff from the residual and image data
+	rff = residualData.sum() / imageData.sum()
+	return [resultModels, kpcPerPixel, timeZ, rff]
 
 
 def getCentermostID(imageHeight, imageWidth, models):
@@ -273,7 +278,7 @@ def removeGalfitChars(resultString):
 									).replace('{','').replace('}','')
 											
 
-def sum_galfit(resultFilename, models, kpcPerPixel, timeZ, delim, centerIDs, options):
+def sum_galfit(resultFilename, models, kpcPerPixel, timeZ, rff, delim, centerIDs, options):
 	'''
 	returns a string summary of the result specified by the parameter result filename
 	
@@ -373,7 +378,7 @@ def sum_galfit(resultFilename, models, kpcPerPixel, timeZ, delim, centerIDs, opt
 	# add in the sky after all components are done
 	results = ""
 	for component in componentResults.split("\n")[:-1]:
-		results = results + component + delim + sky + "\n"
+		results = results + component + delim + sky + delim + str(rff) + "\n"
 		
 	# return resulting string
 	return results
@@ -436,13 +441,14 @@ if __name__ == "__main__":
 							"sersicIndex(n)","errsersicIndex(n)",
 							"b/a","errb/a",
 							"angle(deg)","errangle(deg)",
-							"sky"]) + "\n")
+							"sky", "rff"]) + "\n")
 	
 	# this loops through every result, writing summary to output
 	for resultFilename in resultFilenames:
 	
 		# remove the new line character and any leading or trailing white space
 		resultFilename = resultFilename.strip()
+		print("processing result file: "+resultFilename)
 		
 		# verify that result file exists
 		if not os.path.isfile(resultFilename):
@@ -450,7 +456,7 @@ if __name__ == "__main__":
 						" must be an existing file with result filenames")
 	
 		# collect info from result file header using pyfits
-		[models, kpcPerPixel, timeZ] = run_pyfits(resultFilename)	
+		[models, kpcPerPixel, timeZ, rff] = run_pyfits(resultFilename)	
 		
 		# get the id of the centermost galaxy
 		centerID = getCentermostID(600,600,models)
@@ -462,7 +468,7 @@ if __name__ == "__main__":
 			
 		# summarize galfit and write to output
 		outFile.write( sum_galfit(	resultFilename, models, kpcPerPixel, 
-									timeZ, delim, centerIDs, options) )
+									timeZ, rff, delim, centerIDs, options) )
 		
 	outFile.close()
 	

@@ -37,6 +37,7 @@ scp simUtility.py imtibbet@nscc:fldrAstro/imtibbet/code/simUtility.py
 simUtility - check candelized sextractor config values
 simUtility - run candelized with psfs depending on filter
 plotSimUtility - include errors
+
 rff fraction of total to residual mrdfits to get slice 1 and slice 3
-total(slice 3) / total(slice 1) -> verify this formula
+	total(slice 3) / total(slice 1) -> verify this formula
 c fits io
