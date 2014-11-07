@@ -180,7 +180,7 @@ class ModelGenerator:
 			analysisThreshold = "5" #Threshold (in surface brightness) at which CLASS STAR and FWHM operate. 1 argument: relative to Background RMS. 2 arguments: mu (mag/arcsec 2 ), Zero-point (mag).
 		else:# fname == self.sextractorReduceComponentConfigFilename:
 			detectMinArea = "10000" # Minimum number of pixels above threshold triggering detection
-			detectThreshold = "50"	#Detection threshold (0-2). 1 argument: (ADUs or relative to Background RMS, see THRESH TYPE). 2 arguments: R (mag.arcsec 2 ), Zero-point (mag).
+			detectThreshold = "50"	# Detection threshold (0-2). 1 argument: (ADUs or relative to Background RMS, see THRESH TYPE). 2 arguments: R (mag.arcsec 2 ), Zero-point (mag).
 			deblendThreshold = "16" # Minimum contrast parameter for deblending.
 			deblendMinContrast = "0.02"	# Minimum contrast parameter for deblending.
 			cleanBool = "Y" # If true, a cleaning of the catalog is done before being written to disk.

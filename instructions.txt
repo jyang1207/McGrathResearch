@@ -39,5 +39,32 @@ simUtility - run candelized with psfs depending on filter
 plotSimUtility - include errors
 
 rff fraction of total to residual mrdfits to get slice 1 and slice 3
-	total(slice 3) / total(slice 1) -> verify this formula
-c fits io
+	total(slice 3) / total(slice 1) -> try a central region (middle ninth?)
+
+# presentation
+stop
+
+challenges			- when have we done a good job?
+					- how can we help observers?
+
+light? dust? where are stars being formed.
+open questions?
+	How do galaxies quench? What mechanisms?
+	How do galacies gather mass? Major mergers or slow accretion?
+	Depency on redshift, what epics have what characterstics? Data over time for single galaxy.
+		One galaxy over time checks our beliefs about how galaxies evolve.
+	
+simulation results 	- knobs to tweak (radiation pressure, with and without)
+					- morphological analysis has all information, without imaging
+					- one of the few projects working on this analysis
+					- general for other simulations, start to finish analysis of lots of data
+	
+candelized versions - possible to compare with actual observation
+					- these have to be right before simulation is viable
+					- lots of people working on this
+					
+observers view		- simulations changing according to observational input
+					- Hubble images (clumpy early, no RP motivation,
+									RP introduced to produce bulge dominated)
+						
+start

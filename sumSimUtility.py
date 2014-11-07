@@ -129,6 +129,7 @@ def run_pyfits(multiFitsFilename):
 	
 	# get the dictionary mapping header keywords to their values
 	try:
+		zeroHeader = multiCubeSlices[0].header
 		imageHeader = multiCubeSlices[1].header
 		imageData = multiCubeSlices[1].data
 		modelHeader = multiCubeSlices[2].header
@@ -212,9 +213,13 @@ def run_pyfits(multiFitsFilename):
 	else:
 		timeZ = 0.0
 		
+	# get image dimensions
+	imageWidth = zeroHeader["NAXIS1"]
+	imageHeight = zeroHeader["NAXIS2"]
+	
 	# compute the rff from the residual and image data
-	rff = residualData.sum() / imageData.sum()
-	return [resultModels, kpcPerPixel, timeZ, rff]
+	rff = residualData.sum() / imageData.sum() # total over entire image
+	return [resultModels, imageWidth, imageHeight, kpcPerPixel, timeZ, rff]
 
 
 def getCentermostID(imageHeight, imageWidth, models):
@@ -456,11 +461,12 @@ if __name__ == "__main__":
 						" must be an existing file with result filenames")
 	
 		# collect info from result file header using pyfits
-		[models, kpcPerPixel, timeZ, rff] = run_pyfits(resultFilename)	
+		[models, imageWidth, imageHeight, kpcPerPixel, timeZ, rff] = run_pyfits(resultFilename)	
 		
 		# get the id of the centermost galaxy
-		centerID = getCentermostID(600,600,models)
-		nextCenterID = getNextCentermostID(600,600,models,centerID)
+		# TODO: 
+		centerID = getCentermostID(imageWidth,imageHeight,models)
+		nextCenterID = getNextCentermostID(imageWidth,imageHeight,models,centerID)
 		if options.bulge:
 			centerIDs = [centerID, nextCenterID]
 		else:
