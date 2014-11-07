@@ -9,7 +9,7 @@ Colby College Astrophysics Research
 
 import matplotlib.pyplot as plt
 import matplotlib.pylab as pyl
-import matplotlib.ticker  as ticker
+import matplotlib.ticker as ticker
 import numpy as np
 import os
 # import itertools
@@ -259,7 +259,7 @@ if __name__ == "__main__":
 	
 	# indicate that a bulge component was run to produce results
 	parser.add_option("-p","--plotType",
-					  help="the type of plot, available options are: " + str(plotTypes),
+					  help="the type of plot, available options are: " + str(plotTypes) + ", default: %default",
 					  default=plotTypes[0])
 	
 	# indicate that a there are MRP counterparts to all galaxy names
@@ -290,7 +290,7 @@ if __name__ == "__main__":
 	
 	# pass the list of y field names
 	parser.add_option("-y","--yFields",
-					  help="the list of y field names to be plotted (see field descriptions variable)",
+					  help="the apce separated list of y field names to be plotted (see field descriptions variable)",
 					  dest="yFields",
 					  action="callback", callback=vararg_callback, default=[])
 	
@@ -301,7 +301,7 @@ if __name__ == "__main__":
 	
 	# pass the type of component to plot
 	parser.add_option("-t","--componentType",
-					  help="the type of component to be plotted (central, bulge, disk)",
+					  help="the type of component to be plotted (central, bulge, disk), default: %default",
 					  default="central")
 	
 	# parse the command line using above parameter rules
@@ -355,6 +355,7 @@ if __name__ == "__main__":
 	if options.errors:
 		fieldDescriptions['epa'] =	 	['f4','Error in position angle (deg)', -error, error]
 	fieldDescriptions['sky'] =	 	['f4','sky value']
+	fieldDescriptions['rff'] =	 	['f4','RFF', 0, 1]
 	
 	###
 	print("\nCommand line options...")
