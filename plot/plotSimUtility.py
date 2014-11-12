@@ -276,7 +276,7 @@ if __name__ == "__main__":
 	parser.add_option("-r","--candelized", 
                       help="to indicate candelized results are being plotted",
                       action="store_true")
-                      
+
 	# indicate that you have errors in the summary file
 	parser.add_option("-e","--errors", 
                       help="to indicate summary file has GALFIT errors for each field",
