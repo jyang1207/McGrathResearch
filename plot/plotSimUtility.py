@@ -279,7 +279,7 @@ if __name__ == "__main__":
 
 	# indicate that you have errors in the summary file
 	parser.add_option("-e","--errors", 
-                      help="to indicate summary file has GALFIT errors for each field",
+                      help="to indicate summary file has no GALFIT errors for each field",
                       action="store_true")
 	
 	# pass the list of galaxies
@@ -331,31 +331,32 @@ if __name__ == "__main__":
 	fieldDescriptions['cam'] =	 	['i4','Camera Number']
 	fieldDescriptions['fil'] =	 	['a10','Filter']
 	fieldDescriptions['px'] =	 	['f4','X Position (pixels)',poslow,poshigh]
-	if options.errors:
+	if not options.errors:
 		fieldDescriptions['epx'] =	 	['f4','Error in x position (pixels)', -error, error]
 	fieldDescriptions['py'] =	 	['f4','Y Position (pixels)',poslow,poshigh]
-	if options.errors:
+	if not options.errors:
 		fieldDescriptions['epy'] =	 	['f4','Error in y position (pixels)', -error, error]
 	fieldDescriptions['mag'] =	 	['f4','Magnitude',30,15]
-	if options.errors:
+	if not options.errors:
 		fieldDescriptions['emag'] =	 	['f4','Error in magnitude', -error, error]
 	fieldDescriptions['rpix'] =	 	['f4',r"$R_{eff}$ (pixels)",0.5,50]
-	if options.errors:
+	if not options.errors:
 		fieldDescriptions['erpix'] =	['f4','Error in radius (pixels)', -error, error]
 	fieldDescriptions['rad'] =	 	['f4',r"$R_{eff}$ (kpc)",0.5,15]
-	if options.errors:
+	if not options.errors:
 		fieldDescriptions['erad'] =	 	['f4','Error in radius (kpc)', -error, error]
 	fieldDescriptions['ser'] =	 	['f4','Sersic Index',0.05,8.5]
-	if options.errors:
+	if not options.errors:
 		fieldDescriptions['eser'] =	 	['f4','Error in sersic index', -error, error]
 	fieldDescriptions['ba'] =	 	['f4','Axis Ratio',0.05,1.2]
-	if options.errors:
+	if not options.errors:
 		fieldDescriptions['eba'] =	 	['f4','Error in axis ratio', -error, error]
 	fieldDescriptions['pa'] =	 	['f4','Position Angle (deg)',-180,180]
-	if options.errors:
+	if not options.errors:
 		fieldDescriptions['epa'] =	 	['f4','Error in position angle (deg)', -error, error]
 	fieldDescriptions['sky'] =	 	['f4','sky value']
-	fieldDescriptions['rff'] =	 	['f4','RFF', 0, 1]
+	fieldDescriptions['wrff'] =	 	['f4','Whole RFF', 0, 1]
+	fieldDescriptions['prff'] =	 	['f4','Partial RFF', 0, 1]
 	
 	###
 	print("\nCommand line options...")

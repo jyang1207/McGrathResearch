@@ -13,7 +13,7 @@ from optparse import OptionParser
 from math import sqrt, exp, sin, pi, pow
 import pprint
 import pyfits
-from numpy import ndarray
+import numpy
 
 	
 def ned_wright_cosmology_calculator(z):
@@ -218,8 +218,11 @@ def run_pyfits(multiFitsFilename):
 	imageHeight = zeroHeader["NAXIS2"]
 	
 	# compute the rff from the residual and image data
-	rff = residualData.sum() / imageData.sum() # total over entire image
-	return [resultModels, imageWidth, imageHeight, kpcPerPixel, timeZ, rff]
+	wholeRFF = residualData.sum() / imageData.sum() # total over entire image
+	partialRFF = (	numpy.sum(residualData[	1*imageHeight/3:2*imageHeight/3,1*imageWidth/3:2*imageWidth/3]) /
+				numpy.sum(imageData[	1*imageHeight/3:2*imageHeight/3,1*imageWidth/3:2*imageWidth/3]) )
+			
+	return [resultModels, imageWidth, imageHeight, kpcPerPixel, timeZ, wholeRFF, partialRFF]
 
 
 def getCentermostID(imageHeight, imageWidth, models):
@@ -283,7 +286,7 @@ def removeGalfitChars(resultString):
 									).replace('{','').replace('}','')
 											
 
-def sum_galfit(resultFilename, models, kpcPerPixel, timeZ, rff, delim, centerIDs, options):
+def sum_galfit(resultFilename, models, kpcPerPixel, timeZ, wholeRFF, partialRFF, delim, centerIDs, options):
 	'''
 	returns a string summary of the result specified by the parameter result filename
 	
@@ -383,7 +386,8 @@ def sum_galfit(resultFilename, models, kpcPerPixel, timeZ, rff, delim, centerIDs
 	# add in the sky after all components are done
 	results = ""
 	for component in componentResults.split("\n")[:-1]:
-		results = results + component + delim + sky + delim + str(rff) + "\n"
+		results = (results + component + delim + sky + delim + 
+					str(wholeRFF) + delim + str(partialRFF) + "\n")
 		
 	# return resulting string
 	return results
@@ -404,8 +408,8 @@ if __name__ == "__main__":
 
 	# indicate that images are candelized
 	parser.add_option("-r","--candelized", 
-                      help="if running on candelized images",
-                      action="store_true")
+				help="if running on candelized images",
+				action="store_true")
 	
 	parser.add_option("-o","--output", 
 				help="set the filename to write the output summary file",
@@ -417,9 +421,8 @@ if __name__ == "__main__":
 	[options, args] = parser.parse_args()
 	pprint.pprint(vars(options))
 
-	if not (len(args) or os.path.isfile(args[0])):
-		parser.error("results file " + args[0] + 
-						" must be an existing file with result filenames")
+	if not (len(args) and os.path.isfile(args[0])):
+		parser.error("must give an existing file with result filenames")
 	else:
 		inputFilename = args[0]
 		
@@ -432,10 +435,13 @@ if __name__ == "__main__":
 	# close the file now that it has been read
 	r.close()
 	
+	# open the specified filename for writing
 	outFile = open(options.output, 'w')
 	
+	# the delimiter of the summary file
 	delim = " "
 	
+	# the summary file header
 	outFile.write("galfit result file run on " + time.strftime("%m-%d-%Y") + "\n" + 
 				delim.join(["type","galaxyID","timeStep","age(GYr)","redshift(z)", "camera","filter",
 							"px(pixels)","errpx(pixels)",
@@ -446,7 +452,7 @@ if __name__ == "__main__":
 							"sersicIndex(n)","errsersicIndex(n)",
 							"b/a","errb/a",
 							"angle(deg)","errangle(deg)",
-							"sky", "rff"]) + "\n")
+							"sky", "wholeRFF", "partialRFF"]) + "\n")
 	
 	# this loops through every result, writing summary to output
 	for resultFilename in resultFilenames:
@@ -461,7 +467,7 @@ if __name__ == "__main__":
 						" must be an existing file with result filenames")
 	
 		# collect info from result file header using pyfits
-		[models, imageWidth, imageHeight, kpcPerPixel, timeZ, rff] = run_pyfits(resultFilename)	
+		[models, imageWidth, imageHeight, kpcPerPixel, timeZ, wholeRFF, partialRFF] = run_pyfits(resultFilename)	
 		
 		# get the id of the centermost galaxy
 		# TODO: 
@@ -474,7 +480,7 @@ if __name__ == "__main__":
 			
 		# summarize galfit and write to output
 		outFile.write( sum_galfit(	resultFilename, models, kpcPerPixel, 
-									timeZ, rff, delim, centerIDs, options) )
+									timeZ, wholeRFF, partialRFF, delim, centerIDs, options) )
 		
 	outFile.close()
 	
