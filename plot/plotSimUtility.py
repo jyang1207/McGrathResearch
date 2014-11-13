@@ -250,7 +250,45 @@ if __name__ == "__main__":
 	
 	# master list of all available plot types
 	plotTypes = ["default", "allGalaxies", "allFields", "bulgeToTotal", "special"]
+			
+	# dictionary of lists [format, text, lower, upper], one for each field in summary file
+	# careful changing this list, ordered to match the order of columns in summary file
+	error = 5
+	poslow = 285
+	poshigh = 315
+	fieldDescriptions = OrderedDict()
+	fieldDescriptions['typ'] =		['a10','Galaxy Type']
+	fieldDescriptions['id'] =		['a10','Galaxy ID']
+	fieldDescriptions['ts'] =		['a10','Time Step (a)']
+	fieldDescriptions['age'] =		['f4','Age (Gyr)',0,8]
+	fieldDescriptions['red'] =		['f4','Redshift (z)',5,0]
+	fieldDescriptions['cam'] =		['i4','Camera Number']
+	fieldDescriptions['fil'] =		['a10','Filter']
+	fieldDescriptions['px'] =		['f4','X Position (pixels)',poslow,poshigh]
+	fieldDescriptions['epx'] =		['f4','Error in x position (pixels)', -error, error]
+	fieldDescriptions['py'] =		['f4','Y Position (pixels)',poslow,poshigh]
+	fieldDescriptions['epy'] =		['f4','Error in y position (pixels)', -error, error]
+	fieldDescriptions['mag'] =		['f4','Magnitude',30,15]
+	fieldDescriptions['emag'] =		['f4','Error in magnitude', -error, error]
+	fieldDescriptions['rpix'] =		['f4',r"$R_{eff}$ (pixels)",0.5,50]
+	fieldDescriptions['erpix'] =	['f4','Error in radius (pixels)', -error, error]
+	fieldDescriptions['rad'] =		['f4',r"$R_{eff}$ (kpc)",0.5,15]
+	fieldDescriptions['erad'] =		['f4','Error in radius (kpc)', -error, error]
+	fieldDescriptions['ser'] =		['f4','Sersic Index',0.05,8.5]
+	fieldDescriptions['eser'] =		['f4','Error in sersic index', -error, error]
+	fieldDescriptions['ba'] =		['f4','Axis Ratio',0.05,1.2]
+	fieldDescriptions['eba'] =		['f4','Error in axis ratio', -error, error]
+	fieldDescriptions['pa'] =		['f4','Position Angle (deg)',-180,180]
+	fieldDescriptions['epa'] =		['f4','Error in position angle (deg)', -error, error]
+	fieldDescriptions['sky'] =		['f4','sky value']
+	fieldDescriptions['wrff'] =		['f4','Whole RFF', 0, 1]
+	fieldDescriptions['prff'] =		['f4','Partial RFF', 0, 1]
 	
+	fieldOptions = []
+	for fieldName in fieldDescriptions:
+		if len(fieldDescriptions[fieldName]) > 3:
+			fieldOptions.append(fieldName)
+		
 	#define the command line interface with simUtility.py
 	usage = ("\n%prog summaryFile [-h help] [options (with '-'|'--' prefix)]")
 			
@@ -269,18 +307,13 @@ if __name__ == "__main__":
 
 	# indicate that you want all cameras plotted separately
 	parser.add_option("-c","--allCameras", 
-                      help="to show all cameras",
-                      action="store_true")
+					  help="to show all cameras",
+					  action="store_true")
 
 	# indicate that you want all cameras plotted separately
 	parser.add_option("-r","--candelized", 
-                      help="to indicate candelized results are being plotted",
-                      action="store_true")
-
-	# indicate that you have errors in the summary file
-	parser.add_option("-e","--errors", 
-                      help="to indicate summary file has no GALFIT errors for each field",
-                      action="store_true")
+					  help="to indicate candelized results are being plotted",
+					  action="store_true")
 	
 	# pass the list of galaxies
 	parser.add_option("-n","--galaxyNames",
@@ -290,13 +323,15 @@ if __name__ == "__main__":
 	
 	# pass the list of y field names
 	parser.add_option("-y","--yFields",
-					  help="the apce separated list of y field names to be plotted (see field descriptions variable)",
+					  help=("the space separated list of y field names to be plotted, available options are: " + 
+					  		str(fieldOptions) + ", default: ser"),
 					  dest="yFields",
 					  action="callback", callback=vararg_callback, default=[])
 	
 	# pass the field name to be plotted on the x axis
 	parser.add_option("-x","--xFieldName",
-					  help="the field name of the x values (see field descriptions variable)",
+					  help=("the field name of the x values, available options are: " + 
+					  		str(fieldOptions) + ", default: %default"),
 					  default="red")
 	
 	# pass the type of component to plot
@@ -320,43 +355,10 @@ if __name__ == "__main__":
 	else:
 		poslow = 285
 		poshigh = 315
-	# dictionary of lists [format, text, lower, upper], one for each field in summary file
-	# careful changing this list, ordered to match the order of columns in summary file
-	fieldDescriptions = OrderedDict()
-	fieldDescriptions['typ'] =	 	['a10','Galaxy Type']
-	fieldDescriptions['id'] =	 	['a10','Galaxy ID']
-	fieldDescriptions['ts'] =	 	['a10','Time Step (a)']
-	fieldDescriptions['age'] =	 	['f4','Age (Gyr)',0,8]
-	fieldDescriptions['red'] =	 	['f4','Redshift (z)',5,0]
-	fieldDescriptions['cam'] =	 	['i4','Camera Number']
-	fieldDescriptions['fil'] =	 	['a10','Filter']
-	fieldDescriptions['px'] =	 	['f4','X Position (pixels)',poslow,poshigh]
-	if not options.errors:
-		fieldDescriptions['epx'] =	 	['f4','Error in x position (pixels)', -error, error]
-	fieldDescriptions['py'] =	 	['f4','Y Position (pixels)',poslow,poshigh]
-	if not options.errors:
-		fieldDescriptions['epy'] =	 	['f4','Error in y position (pixels)', -error, error]
-	fieldDescriptions['mag'] =	 	['f4','Magnitude',30,15]
-	if not options.errors:
-		fieldDescriptions['emag'] =	 	['f4','Error in magnitude', -error, error]
-	fieldDescriptions['rpix'] =	 	['f4',r"$R_{eff}$ (pixels)",0.5,50]
-	if not options.errors:
-		fieldDescriptions['erpix'] =	['f4','Error in radius (pixels)', -error, error]
-	fieldDescriptions['rad'] =	 	['f4',r"$R_{eff}$ (kpc)",0.5,15]
-	if not options.errors:
-		fieldDescriptions['erad'] =	 	['f4','Error in radius (kpc)', -error, error]
-	fieldDescriptions['ser'] =	 	['f4','Sersic Index',0.05,8.5]
-	if not options.errors:
-		fieldDescriptions['eser'] =	 	['f4','Error in sersic index', -error, error]
-	fieldDescriptions['ba'] =	 	['f4','Axis Ratio',0.05,1.2]
-	if not options.errors:
-		fieldDescriptions['eba'] =	 	['f4','Error in axis ratio', -error, error]
-	fieldDescriptions['pa'] =	 	['f4','Position Angle (deg)',-180,180]
-	if not options.errors:
-		fieldDescriptions['epa'] =	 	['f4','Error in position angle (deg)', -error, error]
-	fieldDescriptions['sky'] =	 	['f4','sky value']
-	fieldDescriptions['wrff'] =	 	['f4','Whole RFF', 0, 1]
-	fieldDescriptions['prff'] =	 	['f4','Partial RFF', 0, 1]
+	fieldDescriptions['px'][2] = poslow
+	fieldDescriptions['px'][3] = poshigh
+	fieldDescriptions['py'][2] = poslow
+	fieldDescriptions['py'][3] = poshigh
 	
 	###
 	print("\nCommand line options...")
@@ -482,7 +484,7 @@ if __name__ == "__main__":
 			plt.figure().suptitle(ylabel + " vs " + xlabel)
 			
 			numCols = len(options.galaxyNames)
-			for galaxyIndex, galaxyName in enumerate(options.galaxyNames, start=1):	
+			for galaxyIndex, galaxyName in enumerate(options.galaxyNames, start=1): 
 				curData = getGalaxies(	fieldDescriptions.keys(), data, 
 										options.componentType, galaxyName)
 				if not curData[xFieldName]:

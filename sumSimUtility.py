@@ -18,44 +18,47 @@ import numpy
 	
 def ned_wright_cosmology_calculator(z):
 	'''
-	http://www.astro.ucla.edu/~wright/CC.python	
+	http://www.astro.ucla.edu/~wright/CC.python 
+	
+	parameter z - the redshift from which to calculate age in GYR and kpc per arcsec
+	returns ['%1.3f' % zage_Gyr, kpc_DA]
 	'''
-	H0 = 69.6                         # Hubble constant
-	WM = 0.286                        # Omega(matter)
+	H0 = 69.6						  # Hubble constant
+	WM = 0.286						  # Omega(matter)
 	WV = 0.714						  # Omega(vacuum) or lambda
 	
 	# initialize constants
 	
-	WR = 0.        # Omega(radiation)
-	WK = 0.        # Omega curvaturve = 1-Omega(total)
+	WR = 0.		   # Omega(radiation)
+	WK = 0.		   # Omega curvaturve = 1-Omega(total)
 	c = 299792.458 # velocity of light in km/sec
-	Tyr = 977.8    # coefficent for converting 1/H into Gyr
-	DTT = 0.5      # time from z to now in units of 1/H0
+	Tyr = 977.8	   # coefficent for converting 1/H into Gyr
+	DTT = 0.5	   # time from z to now in units of 1/H0
 	DTT_Gyr = 0.0  # value of DTT in Gyr
-	age = 0.5      # age of Universe in units of 1/H0
+	age = 0.5	   # age of Universe in units of 1/H0
 	age_Gyr = 0.0  # value of age in Gyr
-	zage = 0.1     # age of Universe at redshift z in units of 1/H0
+	zage = 0.1	   # age of Universe at redshift z in units of 1/H0
 	zage_Gyr = 0.0 # value of zage in Gyr
-	DCMR = 0.0     # comoving radial distance in units of c/H0
+	DCMR = 0.0	   # comoving radial distance in units of c/H0
 	DCMR_Mpc = 0.0 
 	DCMR_Gyr = 0.0
-	DA = 0.0       # angular size distance
+	DA = 0.0	   # angular size distance
 	DA_Mpc = 0.0
 	DA_Gyr = 0.0
 	kpc_DA = 0.0
-	DL = 0.0       # luminosity distance
+	DL = 0.0	   # luminosity distance
 	DL_Mpc = 0.0
 	DL_Gyr = 0.0   # DL in units of billions of light years
 	V_Gpc = 0.0
-	a = 1.0        # 1/(1+z), the scale factor of the Universe
-	az = 0.5       # 1/(1+z(object))
+	a = 1.0		   # 1/(1+z), the scale factor of the Universe
+	az = 0.5	   # 1/(1+z(object))
 	
 	h = H0/100.
-	WR = 4.165E-5/(h*h)   # includes 3 massless neutrino species, T0 = 2.72528
+	WR = 4.165E-5/(h*h)	  # includes 3 massless neutrino species, T0 = 2.72528
 	WK = 1-WM-WR-WV
 	az = 1.0/(1+1.0*z)
 	age = 0.
-	n=1000         # number of points in integrals
+	n=1000		   # number of points in integrals
 	for i in range(n):
 		a = az*(i+0.5)/n
 		adot = sqrt(WK+(WM/a)+(WR/(a*a))+(WV*a*a))
@@ -87,7 +90,7 @@ def ned_wright_cosmology_calculator(z):
 	x = sqrt(abs(WK))*DCMR
 	if x > 0.1:
 		if WK > 0:
-			ratio =  0.5*(exp(x)-exp(-x))/x 
+			ratio =	 0.5*(exp(x)-exp(-x))/x 
 		else:
 			ratio = sin(x)/x
 	else:
@@ -123,7 +126,12 @@ def ned_wright_cosmology_calculator(z):
 
 									
 def run_pyfits(multiFitsFilename):
-
+	'''
+	Read given fits file using pyfits and return data read from header and computed from image data
+	
+	parameter multiFitsFilename - filename of multiple extension cube fits file to extract data from
+	returns [resultModels, imageWidth, imageHeight, kpcPerPixel, timeZ, wholeRFF, partialRFF]
+	'''
 	# use pyfits to gather info from output of galfit
 	multiCubeSlices = pyfits.open(multiFitsFilename)
 	
@@ -136,7 +144,7 @@ def run_pyfits(multiFitsFilename):
 		residualData = multiCubeSlices[3].data
 		multiCubeSlices.close()
 	except KeyError:
-		print("Result file " +  multiFitsFilename +
+		print("Result file " +	multiFitsFilename +
 				" must be a .fits multi-extension cube with four slices")
 		multiCubeSlices.close()
 		exit()
@@ -219,15 +227,22 @@ def run_pyfits(multiFitsFilename):
 	
 	# compute the rff from the residual and image data
 	wholeRFF = residualData.sum() / imageData.sum() # total over entire image
-	partialRFF = (	numpy.sum(residualData[	1*imageHeight/3:2*imageHeight/3,1*imageWidth/3:2*imageWidth/3]) /
-				numpy.sum(imageData[	1*imageHeight/3:2*imageHeight/3,1*imageWidth/3:2*imageWidth/3]) )
-			
+	thirdImageWidth = imageWidth/3
+	thirdImageHeight = imageHeight/3
+	partialRFF = (	numpy.sum(residualData[ 1*thirdImageHeight:2*thirdImageHeight,1*thirdImageWidth:2*thirdImageWidth]) /
+					numpy.sum(imageData[	1*thirdImageHeight:2*thirdImageHeight,1*thirdImageWidth:2*thirdImageWidth]) )
+	
+	# return all extracted pyfits data 
 	return [resultModels, imageWidth, imageHeight, kpcPerPixel, timeZ, wholeRFF, partialRFF]
 
 
 def getCentermostID(imageHeight, imageWidth, models):
 	'''
-	return the integer ID of the galaxy closest to the images center
+	return the integer ID of the galaxy closest to the images center from the given models
+	
+	parameter imageHeight imageWidth - the dimensions of the image to compute center from
+	parameter models - a dictionary of components from galfit for a single image
+	returns the integer ID of the closest galaxy to the images center
 	'''
 	
 	closestDist = 1000.0
@@ -255,7 +270,11 @@ def getCentermostID(imageHeight, imageWidth, models):
 
 def getNextCentermostID(imageHeight, imageWidth, models, centerID):
 	'''
-	return the integer ID of the galaxy closest to the images center
+	return the integer ID of the second closest galaxy to the images center from given models
+	
+	parameter imageHeight imageWidth - the dimensions of the image to compute center from
+	parameter models - a dictionary of components from galfit for a single image
+	returns the integer ID of the second closest galaxy to the images center
 	'''
 	closestDist = 1000.0
 	closestID = -1
@@ -282,16 +301,31 @@ def getNextCentermostID(imageHeight, imageWidth, models, centerID):
 
 
 def removeGalfitChars(resultString):
+	'''
+	For a given galfit value as a string, strips galfit's annotations, leaving just the string number
+	
+	parameter resultString - the galfit string to strip annotations from
+	returns given string without galfit annotation characters, jsut the number as a string
+	'''
 	return resultString.replace('*','').replace('[','').replace(']',''
 									).replace('{','').replace('}','')
 											
 
 def sum_galfit(resultFilename, models, kpcPerPixel, timeZ, wholeRFF, partialRFF, delim, centerIDs, options):
 	'''
-	returns a string summary of the result specified by the parameter result filename
+	returns a string summary of the results in the given result filename, using remaining parameters
+	to decorate the values given by GALFIT and as additional fields in each record
 	
 	parameter resultFilename - the result filename from running galfit to be summarized
-	return - a string of the results delimited by new lines
+	parameter models - 		a dictionary of components from galfit for a single image
+	parameter kpcPerPixel - the kpc per pixel for simulation images, read from image header
+	parameter timeZ - 		the redshift of the result, read from image header
+	parameter wholeRFF - 	the rff computed using the whole residual/whole input images
+	parameter partialRFF - 	the rff computed using the partial residual/partial input images
+	parameter delim - 		the character(s) that delimit the fields in a single record (e.g. " ")
+	parameter centerIDs - 	the list of ids of centermost and optionally next centermost galaxies
+	parameter options - 	the dictionary of command line options specified at runtime
+	returns a string of the results delimited by new lines, one line per component
 	'''
 		
 	outputFilename = resultFilename.split("/")[-1].strip()
@@ -324,23 +358,28 @@ def sum_galfit(resultFilename, models, kpcPerPixel, timeZ, wholeRFF, partialRFF,
 	if options.candelized:
 		kpcPerPixel = kpcPerArcsec * 0.06
 		
+	# initialize record with invariant fields
 	componentList = [galaxyID, timeStep, age_gyr, str(timeZ), camera, filt]
 	
+	# initialize the string that will be populated with records and returned
 	componentResults = ""
+	
+	# default sky value
 	sky = "0.0"
-	for currentID, model in enumerate(models):
+	
+	# for every model, make a record with GALFIT results and append to the string to be returned
+	for currentID, model in enumerate(models, start=1):
 		
-		# skip sky
+		# sky component only yields one value, will be appended to all records after loop
 		if "sky" in model:
 			sky = str(model["sky"])
 			continue
 		
-		# to correct for indexing starting at zero
-		currentID = currentID + 1
-		
-		#position
+		#x position
 		componentList.append(model["px"][0])#value
 		componentList.append(model["px"][1])#error
+		
+		#y position
 		componentList.append(model["py"][0])#value
 		componentList.append(model["py"][1])#error
 		
@@ -348,24 +387,16 @@ def sum_galfit(resultFilename, models, kpcPerPixel, timeZ, wholeRFF, partialRFF,
 		componentList.append(model["mag"][0])#value
 		componentList.append(model["mag"][1])#error
 
-		# radius
+		# radius (pixels)
 		componentList.append(model["rad"][0])#value
 		componentList.append(model["rad"][1])#error
+		
+		# radius (kpc)
 		componentList.append(str(float(model["rad"][0])*kpcPerPixel))#value
 		componentList.append(str(float(model["rad"][1])*kpcPerPixel))#error
 			
 		# sersic index
 		componentList.append(model["ser"][0])#value
-		if currentID in centerIDs:
-			if options.bulge:
-				if componentList[-1] == '1.0000':
-					galaxyType = "disk"
-				else:
-					galaxyType = "bulge"
-			else:
-				galaxyType = "central"
-		else:
-			galaxyType = "other"
 		componentList.append(model["ser"][1])#error
 			
 		# b/a
@@ -375,15 +406,33 @@ def sum_galfit(resultFilename, models, kpcPerPixel, timeZ, wholeRFF, partialRFF,
 		# position angle
 		componentList.append(model["pa"][0])#value
 		componentList.append(model["pa"][1])#error
+		
+		# type
+		if currentID in centerIDs:
+		
+			# for single component fit the type is simply central or other
+			if not options.bulge:
+				galaxyType = "central"
+				
+			# when running bulge fit we fix disk component sersic index to 1
+			elif model["ser"][0] == '1.0000':
+				galaxyType = "disk"
+				
+			# for bulge fit non disk central component, conclude it is the bulge component
+			else:
+				galaxyType = "bulge"
+				
+		# non central components are of type other
+		else:
+			galaxyType = "other"
 				
 		# add this completed component as a line to the string of results
-		componentResults = (componentResults + 
-						delim.join([galaxyType]+componentList) + "\n")
+		componentResults += delim.join([galaxyType] + componentList) + "\n"
 		
 		# reset component list for any remaining components in this file
 		componentList = [galaxyID, timeStep, age_gyr, str(timeZ), camera, filt]
 		
-	# add in the sky after all components are done
+	# add in the invariant fields after all components are done
 	results = ""
 	for component in componentResults.split("\n")[:-1]:
 		results = (results + component + delim + sky + delim + 
