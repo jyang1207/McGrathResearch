@@ -284,6 +284,7 @@ if __name__ == "__main__":
 	fieldDescriptions['wrff'] =		['f4','Whole RFF', 0, 1]
 	fieldDescriptions['prff'] =		['f4','Partial RFF', 0, 1]
 	
+	# all of the fields for which there are lower and upper bounds for plotting
 	fieldOptions = []
 	for fieldName in fieldDescriptions:
 		if len(fieldDescriptions[fieldName]) > 3:
@@ -372,14 +373,14 @@ if __name__ == "__main__":
 	# verify given y fields
 	yFields = []
 	for yFieldName in options.yFields:
-		if (yFieldName in fieldDescriptions) and (len(fieldDescriptions[yFieldName]) > 3):
+		if yFieldName in fieldOptions:
 			yFields.append(yFieldName)
 	if not yFields:
 		print("\tno valid y fields specified, using sersic index as the default")
 		yFields = ['ser']
 		
 	# verify given x field
-	if options.xFieldName in fieldDescriptions:
+	if options.xFieldName in fieldOptions:
 		xFieldName = options.xFieldName
 	else:
 		print("\tno valid x field specified, using redshift as the default")
