@@ -10,7 +10,7 @@ Colby College Astrophysics Research
 import os
 import time
 from optparse import OptionParser
-from math import sqrt, exp, sin, pi, pow
+from math import sqrt, exp, sin, cos, pi, pow
 import pprint
 import pyfits
 import numpy
@@ -206,6 +206,43 @@ def run_pyfits(multiFitsFilename):
 		except:
 			errPA = "0.0"
 		model["pa"] = [compPA, errPA]
+
+		# use ellipe equation r=((x/r*ba)^2+(Y/r*ba)^2)^1/2
+		# rotated by position angle PA and translated to xc, yc
+		# http://www.maa.org/external_archive/joma/Volume8/Kalman/General.html
+		cosPA = cos(float(compPA)*180.0/pi)
+		sinPA = sin(float(compPA)*180.0/pi)
+		cossqPA = cosPA*cosPA
+		sinsqPA = sinPA*sinPA
+		a = float(compRad)
+		b = a*float(compBA)
+		invasq = 1/(a*a)
+		invbsq = 1/(b*b)
+		A = cossqPA*invasq + sinsqPA*invbsq # rotation of ellipse by PA
+		B = 2*cosPA*sinPA*(invasq - invbsq)
+		C = sinsqPA*invasq + cossqPA*invbsq
+		h = float(compX) # translating of ellipse center
+		k = float(compY)
+
+		# inside ellipse if:
+		# A*x*x + B*x*y + C*y*y - (2*A*h + k*B)*x - (2*C*k + B*h)*y + (A*h*h + B*h*k + C*k*k - 1) < 0
+		imageSum = 0
+		residualSum = 0
+		for (y, x),imageVal in numpy.ndenumerate(imageData):
+			# could compute bounding box for speed up http://stackoverflow.com/questions/87734/how-do-you-calculate-the-axis-aligned-bounding-box-of-an-ellipse
+			inEllipse = (	(A*x*x + B*x*y + C*y*y - (2*A*h + k*B)*x - 
+							(2*C*k + B*h)*y + (A*h*h + B*h*k + C*k*k - 1)) < 0)
+			if inEllipse:
+				residualSum = residualSum + abs(residualData[y,x])
+				imageSum = imageSum + imageVal;#Data[y,x]
+
+		# compute rff and sotre in model dictionary
+		if imageSum:
+			model["rff"] = str(residualSum/imageSum)
+		else:
+			model["rff"] = "0"
+			
+		# append completed model to list of model dictionaries and advance loop
 		resultModels.append(model)
 		compNum = compNum + 1
 			
@@ -226,12 +263,15 @@ def run_pyfits(multiFitsFilename):
 	imageHeight = zeroHeader["NAXIS2"]
 	
 	# compute the rff from the residual and image data
-	wholeRFF = residualData.sum() / imageData.sum() # total over entire image
+	wholeRFF = 0
+	'''residualData.sum() / imageData.sum() # total over entire image
 	thirdImageWidth = imageWidth/3
 	thirdImageHeight = imageHeight/3
-	partialRFF = (	numpy.sum(residualData[ 1*thirdImageHeight:2*thirdImageHeight,1*thirdImageWidth:2*thirdImageWidth]) /
+	'''
+	partialRFF = 0
+	'''(	numpy.sum(residualData[ 1*thirdImageHeight:2*thirdImageHeight,1*thirdImageWidth:2*thirdImageWidth]) /
 					numpy.sum(imageData[	1*thirdImageHeight:2*thirdImageHeight,1*thirdImageWidth:2*thirdImageWidth]) )
-	
+	'''
 	# return all extracted pyfits data 
 	return [resultModels, imageWidth, imageHeight, kpcPerPixel, timeZ, wholeRFF, partialRFF]
 
@@ -406,6 +446,9 @@ def sum_galfit(resultFilename, models, kpcPerPixel, timeZ, wholeRFF, partialRFF,
 		# position angle
 		componentList.append(model["pa"][0])#value
 		componentList.append(model["pa"][1])#error
+
+		# rff
+		componentList.append(model["rff"])
 		
 		# type
 		if currentID in centerIDs:
@@ -435,8 +478,9 @@ def sum_galfit(resultFilename, models, kpcPerPixel, timeZ, wholeRFF, partialRFF,
 	# add in the invariant fields after all components are done
 	results = ""
 	for component in componentResults.split("\n")[:-1]:
-		results = (results + component + delim + sky + delim + 
-					str(wholeRFF) + delim + str(partialRFF) + "\n")
+		results = (results + component + delim + sky + 
+					#delim + str(wholeRFF) + delim + str(partialRFF) + 
+					"\n")
 		
 	# return resulting string
 	return results
@@ -501,7 +545,8 @@ if __name__ == "__main__":
 							"sersicIndex(n)","errsersicIndex(n)",
 							"b/a","errb/a",
 							"angle(deg)","errangle(deg)",
-							"sky", "wholeRFF", "partialRFF"]) + "\n")
+							"rff","sky"#, "wholeRFF", "partialRFF"
+							]) + "\n")
 	
 	# this loops through every result, writing summary to output
 	for resultFilename in resultFilenames:

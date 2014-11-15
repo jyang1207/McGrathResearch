@@ -61,9 +61,10 @@ def getFormats():
 	
 	return formats
 
-def plotAllCamera(	plotComponents, fieldDescriptions, xFieldName='age', yFieldName='ser', curSubPlot=plt, includeLegend = True):
+def plotAllCamera(	plotComponents, fieldDescriptions, xFieldName='age', 
+	yFieldName='ser', curSubPlot=plt, includeLegend = True, cameras="all"):
 	'''
-	plot all cameras in plot components and optionally include legend
+	plot specified cameras in plot components and optionally include legend
 	plots the components given on the plot given, using fieldDescriptions to set axis scales
 	'''
 	formats = [fStr + "-" for fStr in getFormats()]
@@ -72,6 +73,15 @@ def plotAllCamera(	plotComponents, fieldDescriptions, xFieldName='age', yFieldNa
 	ageSet = np.unique(plotComponents[xFieldName])
 	
 	camSet = np.unique(plotComponents['cam'])
+	if cameras.isdigit():
+		newcamset = []
+		for cam in camSet:
+			if str(cam).endswith(cameras):
+				newcamset.append(cam)
+		camSet = newcamset
+		if not camSet:
+			print("camera "+cameras+" has no data")
+	
 	fieldValByAge = dict([[age, []] for age in ageSet])
 	for componentNumber, fieldVal in enumerate(plotComponents[yFieldName]):
 		fieldValByAge[plotComponents[xFieldName][componentNumber]].append(
@@ -280,9 +290,10 @@ if __name__ == "__main__":
 	fieldDescriptions['eba'] =		['f4','Error in axis ratio', -error, error]
 	fieldDescriptions['pa'] =		['f4','Position Angle (deg)',-180,180]
 	fieldDescriptions['epa'] =		['f4','Error in position angle (deg)', -error, error]
+	fieldDescriptions['rff'] =		['f4','RFF', 0, 1]
 	fieldDescriptions['sky'] =		['f4','sky value']
-	fieldDescriptions['wrff'] =		['f4','Whole RFF', 0, 1]
-	fieldDescriptions['prff'] =		['f4','Partial RFF', 0, 1]
+	#fieldDescriptions['wrff'] =		['f4','Whole RFF', 0, 1]
+	#fieldDescriptions['prff'] =		['f4','RFF', 0, 1]
 	
 	# all of the fields for which there are lower and upper bounds for plotting
 	fieldOptions = []
@@ -296,19 +307,9 @@ if __name__ == "__main__":
 	# used to parse command line arguments
 	parser = OptionParser(usage)
 	
-	# indicate that a bulge component was run to produce results
-	parser.add_option("-p","--plotType",
-					  help="the type of plot, available options are: " + str(plotTypes) + ", default: %default",
-					  default=plotTypes[0])
-	
 	# indicate that a there are MRP counterparts to all galaxy names
 	parser.add_option("-m","--includeMRP", 
-					  help="if all galaxy names have corresponding MRP, plot them too",
-					  action="store_true")
-
-	# indicate that you want all cameras plotted separately
-	parser.add_option("-c","--allCameras", 
-					  help="to show all cameras",
+					  help="to plot MRP counterparts adjacent",
 					  action="store_true")
 
 	# indicate that you want all cameras plotted separately
@@ -318,9 +319,10 @@ if __name__ == "__main__":
 	
 	# pass the list of galaxies
 	parser.add_option("-n","--galaxyNames",
-					  help="the space separated list of galaxy names to be plotted (must exist in summary file)",
+					  help="the space separated list of galaxy names to be plotted (must exist in summary file)."
+					  		+ " The default is all unique galaxy ids plotted separately",
 					  dest="galaxyNames",
-					  action="callback", callback=vararg_callback, default=[""])
+					  action="callback", callback=vararg_callback, default=[])
 	
 	# pass the list of y field names
 	parser.add_option("-y","--yFields",
@@ -339,6 +341,16 @@ if __name__ == "__main__":
 	parser.add_option("-t","--componentType",
 					  help="the type of component to be plotted (central, bulge, disk), default: %default",
 					  default="central")
+	
+	# indicate that a bulge component was run to produce results
+	parser.add_option("-p","--plotType",
+					  help="the type of plot, available options are: " + str(plotTypes) + ", default: %default",
+					  default=plotTypes[0])
+
+	# indicate that you want all cameras plotted separately
+	parser.add_option("-c","--allCameras", 
+					  help="specify specific cameras (e.g. 0 or 1 or... or all)",
+					  default="")
 	
 	# parse the command line using above parameter rules
 	# options - list with everthing defined above, 
@@ -407,10 +419,21 @@ if __name__ == "__main__":
 	print("\tagainst x field:")
 	print("\t\t" + fieldDescriptions[xFieldName][1] + 
 			": num elements = " + str(len(data[xFieldName])))
+	print("\tgalaxy names:")
+	if not options.galaxyNames:
+		for galaxyName in np.unique(data["id"]):
+			if not (options.includeMRP and galaxyName.endswith("MRP")):
+				options.galaxyNames.append(galaxyName)
+	print("\t\t"+str(options.galaxyNames))
 				
 	###
 	print("\nPlotting...")
 	###
+	if options.candelized:
+		titleSuffix = " type " + options.componentType + " candelized"
+	else:
+		titleSuffix = " type " + options.componentType + " simulation"
+		
 	# plot each galaxy name and y field in its own figure
 	if plotType == "default":
 		for galaxyName in options.galaxyNames:
@@ -432,19 +455,19 @@ if __name__ == "__main__":
 			for yFieldName in yFields:
 				xlabel = fieldDescriptions[xFieldName][1]
 				ylabel = fieldDescriptions[yFieldName][1]
-				plt.figure().suptitle(galaxyName + " " + ylabel + " vs " + xlabel)
+				plt.figure().suptitle(galaxyName + " " + ylabel + " vs " + xlabel + titleSuffix)
 						
 				if options.allCameras:
 					numRows = 2
 					plt.subplot(numRows,numCols,1)
 					plt.title("all cameras")
-					plotAllCamera(curData, fieldDescriptions, xFieldName, yFieldName)
+					plotAllCamera(curData, fieldDescriptions, xFieldName, yFieldName, cameras=options.allCameras)
 					plt.xlabel(xlabel)
 					plt.ylabel(ylabel)
 					if numCols == 2:
 						plt.subplot(numRows,numCols,2)
 						plt.title("all cameras")
-						plotAllCamera(mrpData, fieldDescriptions, xFieldName, yFieldName)
+						plotAllCamera(mrpData, fieldDescriptions, xFieldName, yFieldName, cameras=options.allCameras)
 						plt.xlabel(xlabel)
 						plt.ylabel(ylabel + " (with MRP)")
 						plt.subplot(numRows,numCols,4)
@@ -474,7 +497,7 @@ if __name__ == "__main__":
 	# single component fit results, one plot per field, all galaxies
 	elif plotType == "allGalaxies":
 	
-		if options.includeMRP:
+		if options.includeMRP or options.allCameras:
 			numRows = 2
 		else:
 			numRows = 1
@@ -482,7 +505,7 @@ if __name__ == "__main__":
 		for yFieldName in yFields:		
 			xlabel = fieldDescriptions[xFieldName][1]
 			ylabel = fieldDescriptions[yFieldName][1]
-			plt.figure().suptitle(ylabel + " vs " + xlabel)
+			plt.figure().suptitle(ylabel + " vs " + xlabel + titleSuffix)
 			
 			numCols = len(options.galaxyNames)
 			for galaxyIndex, galaxyName in enumerate(options.galaxyNames, start=1): 
@@ -508,9 +531,15 @@ if __name__ == "__main__":
 					plotAvgCamera(mrpData, fieldDescriptions, xFieldName, yFieldName)
 					plt.xlabel(xlabel)
 					plt.ylabel(ylabel + " (with MRP)")
+				elif options.allCameras:
+					plt.subplot(numRows,numCols,galaxyIndex+numCols)
+					plotAllCamera(curData, fieldDescriptions, xFieldName, yFieldName, cameras=options.allCameras)
+					plt.xlabel(xlabel)
+					plt.ylabel(ylabel + " (all cameras)")
+					
 				
 	elif plotType == "allFields":
-		if options.includeMRP:
+		if options.includeMRP or options.allCameras:
 			numRows = 2
 		else:
 			numRows = 1
@@ -528,7 +557,7 @@ if __name__ == "__main__":
 				if not mrpData[xFieldName]:
 					print("no data for galaxy " + galaxyName + "MRP")
 					
-			plt.figure().suptitle(galaxyName)
+			plt.figure().suptitle(galaxyName + titleSuffix)
 			numCols = len(yFields)
 			
 			for yFieldIndex, yFieldName in enumerate(yFields, start=1):		
@@ -545,6 +574,11 @@ if __name__ == "__main__":
 					plotAvgCamera(mrpData, fieldDescriptions, xFieldName, yFieldName)
 					plt.xlabel(xlabel)
 					plt.ylabel(ylabel + " (with MRP)")
+				elif options.allCameras:
+					plt.subplot(numRows,numCols,galaxyIndex+numCols)
+					plotAllCamera(curData, fieldDescriptions, xFieldName, yFieldName, cameras=options.allCameras)
+					plt.xlabel(xlabel)
+					plt.ylabel(ylabel + " (all cameras)")
 					
 	elif plotType == "bulgeToTotal":
 		print("plot type '" + plotType + "' not yet implemented")
