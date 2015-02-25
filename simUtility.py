@@ -1320,7 +1320,7 @@ if __name__ == "__main__":
 	
 	# create the destination directory for logResults
 	collectiveDestDirectory = os.path.join(os.getcwd(),
-								"results_" + time.strftime("%m-%d-%Y-%T"))
+								"results_" + time.strftime("%m-%d-%Y"))
 	os.mkdir(collectiveDestDirectory)
 	
 	# time how long it takes to run the program
