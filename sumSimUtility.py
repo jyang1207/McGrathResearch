@@ -10,9 +10,10 @@ Colby College Astrophysics Research
 import os
 import time
 from optparse import OptionParser
-from math import sqrt, exp, sin, cos, pi, pow
+from math import sqrt, exp, sin, cos, pi, pow, tan, atan2
 import pprint
 import pyfits
+from PIL import Image
 import numpy
 
 	
@@ -142,12 +143,19 @@ def run_pyfits(multiFitsFilename):
 		imageData = multiCubeSlices[1].data
 		modelHeader = multiCubeSlices[2].header
 		residualData = multiCubeSlices[3].data
+		# open a file for writing the pixels included in elliptical sum
+		ellipImageName = multiFitsFilename[:-5]+"_ellip.png"
+		ellipImage = Image.new("RGB", imageData.shape)
 		multiCubeSlices.close()
 	except KeyError:
 		print("Result file " +	multiFitsFilename +
-				" must be a .fits multi-extension cube with four slices")
+			" must be a .fits multi-extension cube with four slices")
 		multiCubeSlices.close()
 		exit()
+		
+	# get image dimensions
+	imageWidth = zeroHeader["NAXIS1"]
+	imageHeight = zeroHeader["NAXIS2"]
 					
 	# create list of dictionaries representing component models
 	resultModels = []
@@ -207,14 +215,15 @@ def run_pyfits(multiFitsFilename):
 			errPA = "0.0"
 		model["pa"] = [compPA, errPA]
 
-		# use ellipe equation r=((x/r*ba)^2+(Y/r*ba)^2)^1/2
-		# rotated by position angle PA and translated to xc, yc
+		# use ellipe equation r^2 = (x/r)^2 + (Y/(r*ba))^2
+		# rotated counterclockwise by position angle PA and translated to xc, yc
 		# http://www.maa.org/external_archive/joma/Volume8/Kalman/General.html
-		cosPA = cos(float(compPA)*180.0/pi)
-		sinPA = sin(float(compPA)*180.0/pi)
+		PA = float(compPA)
+		cosPA = cos(PA*180.0/pi) # start at positive y not x
+		sinPA = sin(PA*180.0/pi) # start at positive y not x
 		cossqPA = cosPA*cosPA
 		sinsqPA = sinPA*sinPA
-		a = float(compRad)
+		a = 2.0*float(compRad)
 		b = a*float(compBA)
 		invasq = 1/(a*a)
 		invbsq = 1/(b*b)
@@ -224,19 +233,44 @@ def run_pyfits(multiFitsFilename):
 		h = float(compX) # translating of ellipse center
 		k = float(compY)
 
+		# could compute bounding box for speed up http://stackoverflow.com/questions/87734/how-do-you-calculate-the-axis-aligned-bounding-box-of-an-ellipse
+		t1 = atan2(-tan(PA),2)
+		t2 = t1 + pi
+		x1 = h + a*cos(t1)*cos(PA) - b*sin(t1)*sin(PA)
+		x2 = h + a*cos(t2)*cos(PA) - b*sin(t2)*sin(PA)	
+		if x1 < x2:
+			xlow = x1
+			xhigh = x2
+		else:
+			xlow = x2
+			xhigh = x1
+		t1 = atan2(1/tan(PA),2)
+		t2 = t1 + pi
+		y1 = k + b*sin(t1)*cos(PA) + a*cos(t1)*sin(PA)
+		y2 = k + b*sin(t2)*cos(PA) + a*cos(t2)*sin(PA)
+		if y1 < y2:
+			ylow = y1
+			yhigh = y2
+		else:
+			ylow = y2
+			yhigh = y1
+			
 		# inside ellipse if:
 		# A*x*x + B*x*y + C*y*y - (2*A*h + k*B)*x - (2*C*k + B*h)*y + (A*h*h + B*h*k + C*k*k - 1) < 0
+		AhkB = 2*A*h + k*B
+		CkBh = 2*C*k + B*h
+		AhhBhkCkk = A*h*h + B*h*k + C*k*k - 1
 		imageSum = 0
 		residualSum = 0
-		for (y, x),imageVal in numpy.ndenumerate(imageData):
-			# could compute bounding box for speed up http://stackoverflow.com/questions/87734/how-do-you-calculate-the-axis-aligned-bounding-box-of-an-ellipse
-			inEllipse = (	(A*x*x + B*x*y + C*y*y - (2*A*h + k*B)*x - 
-							(2*C*k + B*h)*y + (A*h*h + B*h*k + C*k*k - 1)) < 0)
-			if inEllipse:
+		pix = ellipImage.load()
+		for [y, x],imageVal in numpy.ndenumerate(imageData):
+			if ( # ((x>=xlow and x<=xhigh) and (y>=ylow and y<=yhigh)) and
+				((A*x*x + B*x*y + C*y*y - AhkB*x - CkBh*y + AhhBhkCkk) < 0)):
 				residualSum = residualSum + abs(residualData[y,x])
 				imageSum = imageSum + imageVal;#Data[y,x]
+				pix[x,imageHeight - y - 1] = 255 # flip so origin in bottom left
 
-		# compute rff and sotre in model dictionary
+		# compute rff and store in model dictionary
 		if imageSum:
 			model["rff"] = str(residualSum/imageSum)
 		else:
@@ -257,12 +291,9 @@ def run_pyfits(multiFitsFilename):
 		timeZ = imageHeader["REDSHIFT"]
 	else:
 		timeZ = 0.0
-		
-	# get image dimensions
-	imageWidth = zeroHeader["NAXIS1"]
-	imageHeight = zeroHeader["NAXIS2"]
 	
 	# compute the rff from the residual and image data
+	ellipImage.save(ellipImageName)
 	wholeRFF = 0
 	'''residualData.sum() / imageData.sum() # total over entire image
 	thirdImageWidth = imageWidth/3
@@ -564,7 +595,6 @@ if __name__ == "__main__":
 		[models, imageWidth, imageHeight, kpcPerPixel, timeZ, wholeRFF, partialRFF] = run_pyfits(resultFilename)	
 		
 		# get the id of the centermost galaxy
-		# TODO: 
 		centerID = getCentermostID(imageWidth,imageHeight,models)
 		nextCenterID = getNextCentermostID(imageWidth,imageHeight,models,centerID)
 		if options.bulge:

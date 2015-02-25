@@ -292,8 +292,6 @@ if __name__ == "__main__":
 	fieldDescriptions['epa'] =		['f4','Error in position angle (deg)', -error, error]
 	fieldDescriptions['rff'] =		['f4','RFF', 0, 1]
 	fieldDescriptions['sky'] =		['f4','sky value']
-	#fieldDescriptions['wrff'] =		['f4','Whole RFF', 0, 1]
-	#fieldDescriptions['prff'] =		['f4','RFF', 0, 1]
 	
 	# all of the fields for which there are lower and upper bounds for plotting
 	fieldOptions = []

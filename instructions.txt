@@ -20,7 +20,7 @@ plotSimUtility singleSummary.txt -n VELA02 -f
 # IDL
 cd,"~/Documents/McGrathResearch"
 
-readcol,'singleSummary.txt',type,id,ts,ageGyr,z,cam,filter,px,epx,py,epy,mag,emag,radPix,eradPix,radKpc,eradKpc,ser,eser,ba,eba,angle,eangle,sky,SKIPLINE=2,FORMAT='A,A,A,F,F,A,A'
+readcol,'singleSummary.txt',type,id,ts,ageGyr,z,cam,filter,px,epx,py,epy,mag,emag,radPix,eradPix,radKpc,eradKpc,ser,eser,ba,eba,angle,eangle,rff,sky,SKIPLINE=2,FORMAT='A,A,A,F,F,A,A'
 
 openw,file,'errors.txt',/GET_LUN &printf,file,"id:timeStep \t px \t errorpx"
 foreach error,where(epx GT 1.0) do printf,file,id[error],":",ts[error],px[error],epx[error]
@@ -34,37 +34,13 @@ scp sumSimUtility.py imtibbet@nscc:fldrAstro/imtibbet/code/sumSimUtility.py
 scp simUtility.py imtibbet@nscc:fldrAstro/imtibbet/code/simUtility.py
 
 #TODO
-simUtility - check candelized sextractor config values
-simUtility - run candelized with psfs depending on filter
-plotSimUtility - include errors
-
-rff fraction of total to residual mrdfits to get slice 1 and slice 3
-	total(slice 3) / total(slice 1) -> try a central region (middle ninth?)
-
-# presentation
-stop
-
-challenges			- when have we done a good job?
-					- how can we help observers?
-
-light? dust? where are stars being formed.
-open questions?
-	How do galaxies quench? What mechanisms?
-	How do galacies gather mass? Major mergers or slow accretion?
-	Depency on redshift, what epics have what characterstics? Data over time for single galaxy.
-		One galaxy over time checks our beliefs about how galaxies evolve.
-	
-simulation results 	- knobs to tweak (radiation pressure, with and without)
-					- morphological analysis has all information, without imaging
-					- one of the few projects working on this analysis
-					- general for other simulations, start to finish analysis of lots of data
-	
-candelized versions - possible to compare with actual observation
-					- these have to be right before simulation is viable
-					- lots of people working on this
-					
-observers view		- simulations changing according to observational input
-					- Hubble images (clumpy early, no RP motivation,
-									RP introduced to produce bulge dominated)
-						
-start
+simUtility 
+	check candelized sextractor config values
+	run candelized with psfs depending on filter
+plotSimUtility 
+	fold errors with camera dispersion
+rff depends on sigma image
+	have galfit write out sigma too?
+rff sum over ellipse
+	visual sanity check
+	PA counterclock from top
