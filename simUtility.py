@@ -161,6 +161,11 @@ class ModelGenerator:
 						# MAX maximum of all flag values,
 						# MOST most common flag value.
 		
+		
+		# TODO: needs work
+		# IDEAS:
+		#	use luminosity to guess how many galaxies are in the image, adjust sextractor to match
+		
 		# these variable values change for simulation template vs real template
 		if self.realSextractor: #TODO: look at these numbers
 			detectMinArea = "5" # Minimum number of pixels above threshold triggering detection
@@ -608,7 +613,8 @@ class ModelGenerator:
 		
 		# if there are too many galaxies after the first fit, recursively
 		# run sextractor again, now with a different configuration file
-		if not self.realSextractor and (configFilename == self.sextractorConfigFilename) and (numGalaxies > 3):
+		if (not self.realSextractor and (configFilename == self.sextractorConfigFilename) and 
+			(numGalaxies > 3)): # TODO: this could be a function of image brightness
 			return self.run_sextractor(image, self.sextractorReduceComponentConfigFilename)
 		
 		# loop over every line in catalog to build list of image models				
