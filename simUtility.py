@@ -8,7 +8,7 @@ Colby College Astrophysics Research
 '''
 import os
 import sys
-from pyraf import iraf # only used for imhead
+from PIL import Image
 import multiprocessing # to run in parallel using all available cpus
 import time # to print runtime in log
 from optparse import OptionParser
@@ -747,24 +747,11 @@ class ModelGenerator:
 			the image on which to invoke imexam
 		'''
 		
-		imhead_return = iraf.imhead(image["filename"], Stdout=1)[0].strip()
-		
-		# detect an iraf error
-		if imhead_return[-1] != ":":
+		try:
+			with Image.open(image["filename"], 'r') as imfile:
+				image["width"], image["height"] = imfile.size
+		except:
 			return False
-		
-		imhead_info = imhead_return.split("/")[-1]
-		# "VELA01_a0.110_0006317__skipir_CAMERA0-BROADBAND_F125W_simulation.fits[600,600][real]:" 
-		
-		
-		frame_dimensions = imhead_info.split("[")[1].replace("]", "").split(",")
-		# ["600","600"]
-	
-		image["width"] = float(frame_dimensions[0])
-		# "600"
-		
-		image["height"] = float(frame_dimensions[1])
-		# "600"
 		
 		image["models"] = []
 		

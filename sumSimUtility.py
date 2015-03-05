@@ -12,7 +12,10 @@ import time
 from optparse import OptionParser
 from math import sqrt, exp, sin, cos, pi, pow, tan, atan2
 import pprint
-import pyfits
+try:
+	import pyfits as fits
+except:
+	from astropy.io import fits
 from PIL import Image
 import numpy
 
@@ -134,7 +137,7 @@ def run_pyfits(multiFitsFilename):
 	returns [resultModels, imageWidth, imageHeight, kpcPerPixel, timeZ, wholeRFF, partialRFF]
 	'''
 	# use pyfits to gather info from output of galfit
-	multiCubeSlices = pyfits.open(multiFitsFilename)
+	multiCubeSlices = fits.open(multiFitsFilename)
 	
 	# get the dictionary mapping header keywords to their values
 	try:
