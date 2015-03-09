@@ -3,13 +3,18 @@
 '''
 Author: Ian Tibbetts
 Co-authors: Prof. Elizabeth McGrath
-Last Edited: 8/13/2104
+Last Edited: 3/9/2015
 Colby College Astrophysics Research
 '''
 
 import sys
 import os
-import pyfits
+try:
+	import pyfits as fits
+	print("using pyfits")
+except:
+	from astropy.io import fits
+	print("using astropy")
 import pprint
 
 def updateHeader(simFilename):
@@ -21,25 +26,26 @@ def updateHeader(simFilename):
 	returns - boolean indicating if an error occurs while trying to update
 	'''
 	
-	# attempt to open the sim file using pyfits and get the header dictionary
+	# attempt to open the sim file using fits and get the header dictionary
 	try:
-		simHDUList = pyfits.open(simFilename)
+		simHDUList = fits.open(simFilename)
 		simHeader = simHDUList[0].header
 	except:
 		print(	"failed to open sim file " + simFilename + 
-				" with pyfits")
+				" with fits")
 		return False
 		
 	# use the sim filename to get the candelized image filename
 	candelFilename = "_".join(simFilename.split("_")[:-1]) + "_candelized_nonoise.fits"
 	
-	# attempt to open the candelized file using pyfits and get the header dictionary
+	# attempt to open the candelized file using fits and get the header dictionary
 	try:
-		candelHDUList = pyfits.open(candelFilename)
+		candelHDUList = fits.open(candelFilename)
 		candelHeader = candelHDUList[0].header
 	except:
 		print(	"failed to open candelized file " + candelFilename + 
-				" with pyfits")
+				" with fits")
+		simHDUList.close()
 		return False
 	
 	try:
@@ -47,7 +53,9 @@ def updateHeader(simFilename):
 	except:
 		print(	"failed to write to sim header " + simFilename + 
 				" from candel header " + candelFilename + 
-				" with pyfits")
+				" with fits")
+		simHDUList.close()
+		candelHDUList.close()
 		return False
 		
 	simHDUList.writeto(simFilename, clobber=True)

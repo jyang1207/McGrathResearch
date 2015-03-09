@@ -3,7 +3,7 @@
 '''
 Author: Ian Tibbetts
 Co-authors: Prof. Elizabeth McGrath, Ariunjargal Bat-Erdene '15, Ryan Cole '15
-Last Edited: 8/5/2104
+Last Edited: 3/9/2015
 Colby College Astrophysics Research
 '''
 import os
@@ -778,15 +778,18 @@ class ModelGenerator:
 	def defineGalfitFilenames(self, image):
 		filename = os.path.join(self.destDirectory, 
 					".".join(image["filename"].split("/")[-1].split(".")[:-1]))
-		self.galfit_single_constraint_filename =filename + '_single_constraint.txt'
-		self.galfit_single_parameter_filename = filename + '_single_param.txt'
-		self.galfit_single_output_filename =	filename + "_single_multi.fits"
-		self.galfit_single_result_filename =	filename + "_single_result.txt"
-		self.galfit_bulge_constraint_filename = filename + '_bulge_constraint.txt'
-		self.galfit_bulge_parameter_filename =	filename + '_bulge_param.txt'
-		self.galfit_bulge_output_filename =		filename + "_bulge_multi.fits"
-		self.galfit_bulge_result_filename =		filename + "_bulge_result.txt"
-
+		self.galfit_single_constraint_filename =	filename + "_single_constraint.txt"
+		self.galfit_single_parameter_filename = 	filename + "_single_param.txt"
+		self.galfit_single_output_filename =		filename + "_single_multi.fits"
+		self.galfit_single_result_filename =		filename + "_single_result.txt"
+		self.galfit_bulge_constraint_filename = 	filename + "_bulge_constraint.txt"
+		self.galfit_bulge_parameter_filename =		filename + "_bulge_param.txt"
+		self.galfit_bulge_output_filename =			filename + "_bulge_multi.fits"
+		self.galfit_bulge_result_filename =			filename + "_bulge_result.txt"
+		if not self.sigmaImage:
+			sigmaImage = ".".join(image["filename"].split(".")[:-1]) + "_sigma.fits"
+			if os.path.isfile(sigmaImage):
+				self.sigmaImage = sigmaImage
 	
 	def write_galfit_parameter(self, image, paramFile, ouputFilename, sigmaFilename):
 		'''
