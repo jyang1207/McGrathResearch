@@ -512,7 +512,7 @@ def sum_galfit(resultFilename, models, kpcPerPixel, timeZ, wholeRFF, partialRFF,
 	# add in the invariant fields after all components are done
 	results = ""
 	for component in componentResults.split("\n")[:-1]:
-		results = (results + component + delim + sky + 
+		results = (results + outputFilename + delim + component + delim + sky + 
 					#delim + str(wholeRFF) + delim + str(partialRFF) + 
 					"\n")
 		
@@ -532,6 +532,11 @@ if __name__ == "__main__":
 	parser.add_option("-b","--bulge", 
 				help="if running on results of GALFIT bulge (two component) fit",
 				action="store_true")
+	
+	parser.add_option("-d","--delim", 
+				help=("set the delimiter to separate the fields of the summary file "+
+					"[default: %default]"),
+				default=" ")
 
 	# indicate that images are candelized
 	parser.add_option("-r","--candelized", 
@@ -539,7 +544,8 @@ if __name__ == "__main__":
 				action="store_true")
 	
 	parser.add_option("-o","--output", 
-				help="set the filename to write the output summary file",
+				help=("set the filename to write the output summary file "+
+					"[default: %default]"),
 				default="summary_" + time.strftime("%m-%d-%Y") + ".txt")
 	
 	# parse the command line using above parameter rules
@@ -566,11 +572,11 @@ if __name__ == "__main__":
 	outFile = open(options.output, 'w')
 	
 	# the delimiter of the summary file
-	delim = " "
+	delim = options.delim
 	
 	# the summary file header
-	outFile.write("galfit result file run on " + time.strftime("%m-%d-%Y") + "\n" + 
-				delim.join(["type","galaxyID","timeStep","age(GYr)","redshift(z)", "camera","filter",
+	outFile.write(delim.join(["filename","type","galaxyID","timeStep","age(GYr)",
+							"redshift(z)", "camera","filter",
 							"px(pixels)","errpx(pixels)",
 							"py(pixels)","errpy(pixels)",
 							"mag","errmag",
@@ -580,7 +586,9 @@ if __name__ == "__main__":
 							"b/a","errb/a",
 							"angle(deg)","errangle(deg)",
 							"rff","sky"#, "wholeRFF", "partialRFF"
-							]) + "\n")
+							]) + "\n" +
+				delim.join(["string","enum","enum","numeric","numeric",
+						"numeric","enum","enum"]) + "\n")
 	
 	# this loops through every result, writing summary to output
 	for resultFilename in resultFilenames:
