@@ -3,7 +3,7 @@
 '''
 Author: Ian Tibbetts
 Co-authors: Prof. Elizabeth McGrath
-Last Edited: 8/5/2104
+Last Edited: 3/9/2105
 Colby College Astrophysics Research
 '''
 

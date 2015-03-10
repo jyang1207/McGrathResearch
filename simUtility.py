@@ -3,16 +3,27 @@
 '''
 Author: Ian Tibbetts
 Co-authors: Prof. Elizabeth McGrath, Ariunjargal Bat-Erdene '15, Ryan Cole '15
-Last Edited: 8/5/2104
+Last Edited: 3/9/2015
 Colby College Astrophysics Research
 '''
 import os
 import sys
-from PIL import Image
 import multiprocessing # to run in parallel using all available cpus
 import time # to print runtime in log
 from optparse import OptionParser
 import pprint
+try:
+	from pyraf import iraf
+	allowParallel = True
+	print("using iraf")
+except:
+	allowParallel = False
+	try:
+		import pyfits as fits
+		print("using pyfits")
+	except:
+		from astropy.io import fits
+		print("using astropy")
 		
 class ModelGenerator:
 	'''
@@ -754,11 +765,11 @@ class ModelGenerator:
 		'''
 		
 		try:
-			with Image.open(image["filename"], 'r') as imfile:
-				image["width"], image["height"] = imfile.size
+			dims = iraf.imhead(image["filename"]).split("[")[-2][:-1].split(",")
+			image["width"], image["height"] = dims
 		except:
-			return False
-		
+			with fits.open(image["filename"]) as imfile:
+				image["width"], image["height"] = imfile[0].data.shape
 		image["models"] = []
 		
 		return True
@@ -767,15 +778,18 @@ class ModelGenerator:
 	def defineGalfitFilenames(self, image):
 		filename = os.path.join(self.destDirectory, 
 					".".join(image["filename"].split("/")[-1].split(".")[:-1]))
-		self.galfit_single_constraint_filename =filename + '_single_constraint.txt'
-		self.galfit_single_parameter_filename = filename + '_single_param.txt'
-		self.galfit_single_output_filename =	filename + "_single_multi.fits"
-		self.galfit_single_result_filename =	filename + "_single_result.txt"
-		self.galfit_bulge_constraint_filename = filename + '_bulge_constraint.txt'
-		self.galfit_bulge_parameter_filename =	filename + '_bulge_param.txt'
-		self.galfit_bulge_output_filename =		filename + "_bulge_multi.fits"
-		self.galfit_bulge_result_filename =		filename + "_bulge_result.txt"
-
+		self.galfit_single_constraint_filename =	filename + "_single_constraint.txt"
+		self.galfit_single_parameter_filename = 	filename + "_single_param.txt"
+		self.galfit_single_output_filename =		filename + "_single_multi.fits"
+		self.galfit_single_result_filename =		filename + "_single_result.txt"
+		self.galfit_bulge_constraint_filename = 	filename + "_bulge_constraint.txt"
+		self.galfit_bulge_parameter_filename =		filename + "_bulge_param.txt"
+		self.galfit_bulge_output_filename =			filename + "_bulge_multi.fits"
+		self.galfit_bulge_result_filename =			filename + "_bulge_result.txt"
+		if not self.sigmaImage:
+			sigmaImage = ".".join(image["filename"].split(".")[:-1]) + "_sigma.fits"
+			if os.path.isfile(sigmaImage):
+				self.sigmaImage = sigmaImage
 	
 	def write_galfit_parameter(self, image, paramFile, ouputFilename, sigmaFilename):
 		'''
@@ -1084,7 +1098,7 @@ class ModelGenerator:
 	
 			# run iraf's imhead method to populate image dimensions
 			if not self.run_imhead(curImage):
-				errorMsg = "IRAf had an error runnign imhead"
+				errorMsg = "could not get image dimensions using PIL"
 				print(errorMsg)
 				self.logMsg = self.logMsg + errorMsg
 				return self.logMsg
@@ -1175,6 +1189,7 @@ def runModelGeneratorParallel(parameterList):
 	
 	# holds methods for analyzing simulations
 	modelGen = ModelGenerator(callingDirectory=callingDirectory)
+	modelGen.parallel = True
 	
 	# parse the command line options
 	modelGen.parseGalfitOptions(parser, options)
@@ -1292,6 +1307,8 @@ if __name__ == "__main__":
 		if not imageFilename.strip():
 			continue
 		newFilename = os.path.normpath(imageFilename.strip())
+		
+		# check for image existence
 		if not os.path.isfile(newFilename):
 			parser.error("input file has filename " + newFilename + "\n"
 						"This file does not exist or is not accessible\n" +
@@ -1305,6 +1322,9 @@ if __name__ == "__main__":
 			newFilename = os.path.join(os.getcwd(),newFilename)
 		newFilenames.append(newFilename)
 	imageFilenames = newFilenames
+	
+	if options.parallel and not allowParallel:
+		parser.error("cannot use pyfits or astropy in parallel")
 	
 	# done with immediate verifying of comamnd line #
 		
@@ -1328,7 +1348,7 @@ if __name__ == "__main__":
 															os.getcwd(), 
 															imageFilenames)
 		os.system(" ".join(["mv", os.path.join(destDirectory,"*"), collectiveDestDirectory]))
-		os.system(" ".join(["rmdir",destDirectory]))
+		os.system(" ".join(["rm -r",destDirectory]))
 	
 	# run the parallel version
 	else:
