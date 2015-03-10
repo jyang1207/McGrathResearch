@@ -10,7 +10,7 @@ Colby College Astrophysics Research
 import os
 import time
 from optparse import OptionParser
-from math import sqrt, exp, sin, cos, pi, pow, tan, atan2
+from math import sqrt, exp, sin, cos, pi, pow#, tan, atan2
 import pprint
 try:
 	import pyfits as fits

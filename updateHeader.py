@@ -12,10 +12,9 @@ import os
 try:
 	import pyfits as fits
 	print("using pyfits")
-except:
+except ImportError:
 	from astropy.io import fits
 	print("using astropy")
-import pprint
 
 def updateHeader(simFilename):
 	'''
@@ -65,10 +64,10 @@ def updateHeader(simFilename):
 
 if __name__ == "__main__":
 
-    #define the command line interface with simUtility.py
+	#define the command line interface with simUtility.py
 	usage = ("USAGE: python updateHeader.py " +
 			"<file containing list of simulation .fits filenames to be updated>")
-    
+
 	# must have exactly one positional command line argument
 	if len(sys.argv) != 2 or not os.path.isfile(sys.argv[1]):
 		print(usage)

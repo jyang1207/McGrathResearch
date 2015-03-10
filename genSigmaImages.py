@@ -13,10 +13,9 @@ import numpy as np
 try:
 	import pyfits as fits
 	print("using pyfits")
-except:
+except ImportError:
 	from astropy.io import fits
 	print("using astropy")
-import pprint
 
 def genSigmaImages(simFilename):
 	'''
@@ -55,7 +54,10 @@ def genSigmaImages(simFilename):
 		# for candelized, sigma is sqrt(rms^2 + (sqrt(pixelVal*expTime)/expTime)^2)
 		rms = candelNoiseData - candelNoNoiseData
 		expTime = 5000.0
-		data = np.power(np.power(rms, 2) + np.power(np.power(candelNoiseData*expTime, 0.5)/expTime, 2), 0.5)
+		data = np.power(np.power(rms, 2) + 
+						np.power(np.power(np.abs(candelNoiseData*expTime), 
+										0.5)/expTime, 2), 
+						0.5)
 		fits.writeto(sigmaNoiseFilename, data, clobber=True)
 		data = np.power(candelNoNoiseData, 0.5)/expTime # np.power(, 2), 0.5)
 		fits.writeto(sigmaNoNoiseFilename, data, clobber=True)
@@ -70,10 +72,10 @@ def genSigmaImages(simFilename):
 
 if __name__ == "__main__":
 
-    #define the command line interface with simUtility.py
+	#define the command line interface with simUtility.py
 	usage = ("USAGE: python genSigmaImages.py " +
 			"<file containing list of simulation .fits filenames to be updated>")
-    
+
 	# must have exactly one positional command line argument
 	if len(sys.argv) != 2 or not os.path.isfile(sys.argv[1]):
 		print(usage)

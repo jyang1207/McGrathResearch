@@ -16,12 +16,12 @@ try:
 	from pyraf import iraf
 	allowParallel = True
 	print("using iraf")
-except:
+except ImportError:
 	allowParallel = False
 	try:
 		import pyfits as fits
 		print("using pyfits")
-	except:
+	except ImportError:
 		from astropy.io import fits
 		print("using astropy")
 		
