@@ -9,7 +9,7 @@ Colby College Astrophysics Research
 
 import matplotlib.pyplot as plt
 import matplotlib.pylab as pyl
-import matplotlib.ticker as ticker
+#import matplotlib.ticker as ticker
 import numpy as np
 import os
 # import itertools

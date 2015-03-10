@@ -14,7 +14,7 @@ from math import sqrt, exp, sin, cos, pi, pow, tan, atan2
 import pprint
 try:
 	import pyfits as fits
-except:
+except ImportError:
 	from astropy.io import fits
 from PIL import Image
 import numpy
@@ -237,6 +237,7 @@ def run_pyfits(multiFitsFilename):
 		k = float(compY)
 
 		# could compute bounding box for speed up http://stackoverflow.com/questions/87734/how-do-you-calculate-the-axis-aligned-bounding-box-of-an-ellipse
+		'''
 		t1 = atan2(-tan(PA),2)
 		t2 = t1 + pi
 		x1 = h + a*cos(t1)*cos(PA) - b*sin(t1)*sin(PA)
@@ -257,6 +258,7 @@ def run_pyfits(multiFitsFilename):
 		else:
 			ylow = y2
 			yhigh = y1
+		'''
 			
 		# inside ellipse if:
 		# A*x*x + B*x*y + C*y*y - (2*A*h + k*B)*x - (2*C*k + B*h)*y + (A*h*h + B*h*k + C*k*k - 1) < 0
@@ -297,17 +299,9 @@ def run_pyfits(multiFitsFilename):
 	
 	# compute the rff from the residual and image data
 	ellipImage.save(ellipImageName)
-	wholeRFF = 0
-	'''residualData.sum() / imageData.sum() # total over entire image
-	thirdImageWidth = imageWidth/3
-	thirdImageHeight = imageHeight/3
-	'''
-	partialRFF = 0
-	'''(	numpy.sum(residualData[ 1*thirdImageHeight:2*thirdImageHeight,1*thirdImageWidth:2*thirdImageWidth]) /
-					numpy.sum(imageData[	1*thirdImageHeight:2*thirdImageHeight,1*thirdImageWidth:2*thirdImageWidth]) )
-	'''
+	
 	# return all extracted pyfits data 
-	return [resultModels, imageWidth, imageHeight, kpcPerPixel, timeZ, wholeRFF, partialRFF]
+	return [resultModels, imageWidth, imageHeight, kpcPerPixel, timeZ]
 
 
 def getCentermostID(imageHeight, imageWidth, models):
@@ -385,7 +379,7 @@ def removeGalfitChars(resultString):
 									).replace('{','').replace('}','')
 											
 
-def sum_galfit(resultFilename, models, kpcPerPixel, timeZ, wholeRFF, partialRFF, delim, centerIDs, options):
+def sum_galfit(resultFilename, models, kpcPerPixel, timeZ, delim, centerIDs, options):
 	'''
 	returns a string summary of the results in the given result filename, using remaining parameters
 	to decorate the values given by GALFIT and as additional fields in each record
@@ -603,7 +597,7 @@ if __name__ == "__main__":
 						" must be an existing file with result filenames")
 	
 		# collect info from result file header using pyfits
-		[models, imageWidth, imageHeight, kpcPerPixel, timeZ, wholeRFF, partialRFF] = run_pyfits(resultFilename)	
+		[models, imageWidth, imageHeight, kpcPerPixel, timeZ] = run_pyfits(resultFilename)	
 		
 		# get the id of the centermost galaxy
 		centerID = getCentermostID(imageWidth,imageHeight,models)
@@ -615,7 +609,7 @@ if __name__ == "__main__":
 			
 		# summarize galfit and write to output
 		outFile.write( sum_galfit(	resultFilename, models, kpcPerPixel, 
-									timeZ, wholeRFF, partialRFF, delim, centerIDs, options) )
+									timeZ, delim, centerIDs, options) )
 		
 	outFile.close()
 	
