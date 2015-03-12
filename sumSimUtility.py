@@ -540,7 +540,7 @@ if __name__ == "__main__":
 	parser.add_option("-o","--output", 
 				help=("set the filename to write the output summary file "+
 					"[default: %default]"),
-				default="summary_" + time.strftime("%m-%d-%Y") + ".txt")
+				default="summary_" + time.strftime("%m-%d-%Y") + ".csv")
 	
 	# parse the command line using above parameter rules
 	# options - list with everthing defined above, 
