@@ -365,9 +365,14 @@ class ModelerDashboard:
         select the fits images to be modeled
         '''
         if self.verbose: print("selecting images")
+        if self.images.get():
+            imageDir = self.images.get().split("\n")[0]
+            imageDir = os.path.dirname(imageDir)
+        else:
+            imageDir = "."
         filenames = tkf.askopenfilenames(parent=self.root, 
                                          title='Choose image files', 
-                                         initialdir='.')
+                                         initialdir=imageDir)
         if filenames:
             if self.verbose: print(filenames)
             self.images.set("\n".join(filenames))
@@ -377,9 +382,14 @@ class ModelerDashboard:
         select the fits cube galfit results to be summarized
         '''
         if self.verbose: print("selecting results")
+        if self.resurts.get():
+            resultDir = self.result.get().split("\n")[0]
+            resultDir = os.path.dirname(resultDir)
+        else:
+            resultDir = "."
         filenames = tkf.askopenfilenames(parent=self.root, 
                                          title='Choose result files', 
-                                         initialdir='.')
+                                         initialdir=resultDir)
         if filenames:
             if self.verbose: print(filenames)
             self.results.set("\n".join(filenames))
@@ -388,10 +398,14 @@ class ModelerDashboard:
         '''
         select the directory in which to run the modeling program
         '''
+        if self.runDirectory.get():
+            curDir = self.runDirectory.get()
+        else:
+            curDir = "."
         if self.verbose: print("selecting run directory for modeling")
         directory = tkf.askdirectory(parent=self.root, 
                                      title='Choose Directory', 
-                                     initialdir='.')
+                                     initialdir=curDir)
         if directory:
             if self.verbose: print(directory)
             self.runDirectory.set(directory)
@@ -401,9 +415,13 @@ class ModelerDashboard:
         select the csv summary file to display
         '''
         if self.verbose: print("selecting summary")
+        if self.summary.get():
+            sumDir = os.path.dirname(self.summary.get())
+        else:
+            sumDir = "."
         filename = tkf.askopenfilename(parent=self.root, 
                                        title='Choose summary file', 
-                                       initialdir='.')
+                                       initialdir=sumDir)
         if filename:
             if self.verbose: print(filename)
             self.summary.set(filename)
