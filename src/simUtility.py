@@ -1203,14 +1203,13 @@ def runModelGeneratorParallel(parameterList):
 	# run modeling method and return the resulting line in the log
 	return [modelGen.modelImage(imageFilename.strip()), modelGen.destDirectory]
 
-
-if __name__ == "__main__":
+def main(args):
 	'''
+	args - equivalent of sys.argv[1:]
 	parses the command line using the optparse package
 	NOTE: argparse is the current version as of python 2.7, 
 			but optparse is used to maintain better backwards compatibility
 	'''
-	
 	#define the command line interface with simUtility.py
 	usage = ("\n%prog inputFile [-h help] [options (with '-'|'--' prefix)]" +
 			"  [sextractor options (no '-' prefix)]\n")
@@ -1261,7 +1260,7 @@ if __name__ == "__main__":
 	# parse the command line using above parameter rules
 	# options - list with everthing defined above, 
 	# args - anything left over after parsing options
-	[options, args] = parser.parse_args()
+	[options, args] = parser.parse_args(args)
 	pprint.pprint(vars(options))
 	
 	# real images need psfs, warn if no psf specified for real
@@ -1403,3 +1402,5 @@ if __name__ == "__main__":
 	with open(logFilename, 'w') as logFile:
 		logFile.write(log)
 		
+if __name__ == "__main__":
+	main(sys.argv[1:])

@@ -274,7 +274,7 @@ class ModelerDashboard:
         imFilename = os.path.join(self.runDirectory.get(), "images.txt")
         with open(imFilename, "w") as imFile:
             imFile.write(self.images.get())
-        commandList = ["python", modelPy, imFilename]
+        commandList = [imFilename]
         if self.modelBulgeOpt.get(): commandList.append("-b")
         if self.modelGalfitOffOpt.get(): commandList.append("-g")
         if self.modelParallelOpt.get(): commandList.append("-p")
@@ -294,7 +294,8 @@ class ModelerDashboard:
         except ValueError:
             pass
         
-        os.system(" ".join(commandList))
+        simUtility.main(commandList)
+        #os.system(" ".join(["python", modelPy] + commandList))
         if self.verbose: print("done modeling")
         os.chdir(curWD)
         
@@ -314,7 +315,7 @@ class ModelerDashboard:
         resFilename = os.path.join(self.runDirectory.get(), "resultFilenames.txt")
         with open(resFilename, "w") as imFile:
             imFile.write(self.images.get())
-        commandList = ["python", sumPy, resFilename]
+        commandList = [resFilename]
         if self.verbose: commandList.append("-v")
         if self.sumBulgeOpt.get(): commandList.append("-b")
         if self.sumRealOpt.get(): commandList.append("-r")
@@ -327,7 +328,8 @@ class ModelerDashboard:
             commandList.append("-o")
             commandList.append(output)
         
-        os.system(" ".join(commandList))
+        sumSimUtility.main(commandList)
+        #os.system(" ".join(["python", sumPy]+commandList))
         if self.verbose: print("done summarizing")
         
     def runDisplay(self):

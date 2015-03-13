@@ -8,6 +8,7 @@ Colby College Astrophysics Research
 '''
 
 import os
+import sys
 import time
 from optparse import OptionParser
 from math import sqrt, exp, sin, cos, pi, pow#, tan, atan2
@@ -514,7 +515,10 @@ def sum_galfit(resultFilename, models, kpcPerPixel, timeZ, delim, centerIDs, opt
 	return results
 
 
-if __name__ == "__main__":
+def main(args):
+	'''
+	args - equivalent of sys.argv[1:]
+	'''
 	
 	#define the command line interface with simUtility.py
 	usage = ("\n%prog resultsFile [-h help] [options (with '-'|'--' prefix)]")
@@ -614,4 +618,6 @@ if __name__ == "__main__":
 	outFile.close()
 	
 	print ("Output written to " + options.output)
-######################### done ################################################
+
+if __name__ == "__main__":
+	main(sys.argv[1:])
