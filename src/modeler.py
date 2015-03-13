@@ -11,10 +11,12 @@ try:
     import tkinter as tk # python 3
     tkf = tk.filedialog
     tkm = tk.messagebox
+    ttk = tk.ttk
 except ImportError:
     import Tkinter as tk # python 2
     import tkFileDialog as tkf
     import tkMessageBox as tkm
+    import ttk
     
 class ModelerDashboard:
     '''
@@ -281,7 +283,6 @@ class ModelerDashboard:
             tkm.showerror("Modeling program DNE", "Could not find %s" % modelPy)
             return
         if self.verbose: print("running the modeling program")
-        os.chdir(self.runDirectory.get())
         imFilename = os.path.join(self.runDirectory.get(), "images.txt")
         with open(imFilename, "w") as imFile:
             imFile.write(self.images.get())
@@ -305,10 +306,14 @@ class ModelerDashboard:
         except ValueError:
             pass
         
-        simUtility.main(commandList)
+        pb = ttk.Progressbar(master = self.root, 
+                             orient="horizontal", mode="determinate", 
+                             maximum=len(self.images.split("\n")))
+        os.chdir(self.runDirectory.get())
+        simUtility.main(commandList, pb)
         #os.system(" ".join(["python", modelPy] + commandList))
-        if self.verbose: print("done modeling")
         os.chdir(curWD)
+        if self.verbose: print("done modeling")
         
     def runSummary(self):
         '''
@@ -429,4 +434,6 @@ if __name__ == "__main__":
     [options, args] = parser.parse_args()
     
     # run the application
-    ModelerDashboard(1200, 800, options.verbose).main()
+    md = ModelerDashboard(1200, 800, options.verbose)
+    md.main()
+    print("done")

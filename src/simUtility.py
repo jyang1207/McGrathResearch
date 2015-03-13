@@ -1133,7 +1133,7 @@ class ModelGenerator:
 		
 
 def runModelGeneratorSerial(parser, options, sextractorKeywordOptions, 
-							callingDirectory, imageFilenames):
+							callingDirectory, imageFilenames, pb=None):
 	'''
 	uses the command line inputs gathered in __main__ to create an
 	instance of the model generator class and invoke its methods
@@ -1165,7 +1165,9 @@ def runModelGeneratorSerial(parser, options, sextractorKeywordOptions,
 			
 		# run modeling method
 		logResults.append(modelGen.modelImage(imageFilename.strip()))
-	
+		if pb:
+			pb.step(1)
+
 	return [logResults, modelGen.destDirectory]
 
 	
@@ -1186,6 +1188,10 @@ def runModelGeneratorParallel(parameterList):
 	sextractorKeywordOptions = parameterList[2]
 	callingDirectory = parameterList[3]
 	imageFilename = parameterList[4]
+	if len(parameterList > 5):
+		pb = parameterList[5]
+	else:
+		pb = None
 	
 	# holds methods for analyzing simulations
 	modelGen = ModelGenerator(callingDirectory=callingDirectory)
@@ -1201,11 +1207,15 @@ def runModelGeneratorParallel(parameterList):
 	modelGen.write_sextractor_config_file(modelGen.sextractorReduceComponentConfigFilename)
 		
 	# run modeling method and return the resulting line in the log
-	return [modelGen.modelImage(imageFilename.strip()), modelGen.destDirectory]
+	logResult = modelGen.modelImage(imageFilename.strip())
+	if pb:
+		pb.step(1)
+	return [logResult, modelGen.destDirectory]
 
-def main(args):
+def main(args, pb=None):
 	'''
 	args - equivalent of sys.argv[1:]
+	pb - optional progress bar with maximum=num files
 	parses the command line using the optparse package
 	NOTE: argparse is the current version as of python 2.7, 
 			but optparse is used to maintain better backwards compatibility
@@ -1345,7 +1355,7 @@ def main(args):
 		[logResults,destDirectory] = runModelGeneratorSerial(parser, options, 
 															args[1:], 
 															os.getcwd(), 
-															imageFilenames)
+															imageFilenames, pb)
 		os.system(" ".join(["mv", os.path.join(destDirectory,"*"), collectiveDestDirectory]))
 		os.system(" ".join(["rm -r",destDirectory]))
 	
@@ -1357,7 +1367,7 @@ def main(args):
 		print ("running in parallel")
 		for imageFilename in imageFilenames:
 			imageArgs.append([	parser, options, args[1:], 
-								os.getcwd(), imageFilename])
+								os.getcwd(), imageFilename, pb])
 								
 		# see documentation on multiprocessing pool and map function
 		print ("passing job to " + str(numCPUs) + " out of " + 
