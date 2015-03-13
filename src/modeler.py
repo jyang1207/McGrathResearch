@@ -3,6 +3,10 @@
 import types
 from optparse import OptionParser
 import os
+import simUtility
+import sumSimUtility
+import plotSimUtility
+
 try:
     import tkinter as tk # python 3
     tkf = tk.filedialog
@@ -66,8 +70,7 @@ class ModelerDashboard:
         headers = ["model", "summarize", "display", "plot"]
         headers = [header.capitalize()+"\n" for header in headers]
         frames = [tk.Frame(self.root) for _ in range(len(headers))]
-        [self.modelFrame, self.sumFrame, 
-         self.displayFrame, self.plotFrame] = frames
+        self.modelFrame, self.sumFrame, self.displayFrame, self.plotFrame = frames
         
         # pack all frames with separators and headers
         for header, frame in zip(headers, frames):
@@ -85,6 +88,28 @@ class ModelerDashboard:
         tk.Button( self.modelFrame, text="Select Run Directory", 
                    command=self.selectRunModelDir, width=bwidth
                    ).pack(side=tk.TOP)
+        self.modelBulgeOpt = tk.IntVar()
+        tk.Checkbutton( self.modelFrame, text="include bulge component",
+                        variable=self.modelBulgeOpt
+                        ).pack(side=tk.TOP)
+        self.modelGalfitOffOpt = tk.IntVar()
+        tk.Checkbutton( self.modelFrame, text="dont run GALFIT",
+                        variable=self.modelGalfitOffOpt
+                        ).pack(side=tk.TOP)
+        self.modelParallelOpt = tk.IntVar()
+        tk.Checkbutton( self.modelFrame, text="run in parallel",
+                        variable=self.modelParallelOpt
+                        ).pack(side=tk.TOP)
+        self.modelRealOpt = tk.IntVar()
+        tk.Checkbutton( self.modelFrame, text="images degraded",
+                        variable=self.modelRealOpt
+                        ).pack(side=tk.TOP)
+        tk.Label( self.modelFrame, text="MPZ" ).pack(side=tk.TOP)
+        self.modelMPZEntry = tk.Entry( self.modelFrame, width=bwidth )
+        self.modelMPZEntry.pack(side=tk.TOP)
+        tk.Label( self.modelFrame, text="Plate Scale" ).pack(side=tk.TOP)
+        self.modelPlateEntry = tk.Entry( self.modelFrame, width=bwidth )
+        self.modelPlateEntry.pack(side=tk.TOP)
         tk.Button( self.modelFrame, text="Run Modeling", 
                    command=self.runModel, width=bwidth
                    ).pack(side=tk.TOP) 
@@ -93,6 +118,20 @@ class ModelerDashboard:
         tk.Button( self.sumFrame, text="Select Results", 
                    command=self.selectResults, width=bwidth
                    ).pack(side=tk.TOP)
+        self.sumBulgeOpt = tk.IntVar()
+        tk.Checkbutton( self.sumFrame, text="bulge components included",
+                        variable=self.sumBulgeOpt
+                        ).pack(side=tk.TOP)
+        self.sumRealOpt = tk.IntVar()
+        tk.Checkbutton( self.sumFrame, text="images degraded",
+                        variable=self.sumRealOpt
+                        ).pack(side=tk.TOP)
+        tk.Label( self.sumFrame, text="Delimiter" ).pack(side=tk.TOP)
+        self.sumDelimEntry = tk.Entry( self.sumFrame, width=bwidth
+                                       ).pack(side=tk.TOP)
+        tk.Label( self.sumFrame, text="Output Filename" ).pack(side=tk.TOP)
+        self.sumOutputEntry = tk.Entry( self.sumFrame, width=bwidth
+                                       ).pack(side=tk.TOP)
         tk.Button( self.sumFrame, text="Run Summarizing", 
                    command=self.runSummary, width=bwidth
                    ).pack(side=tk.TOP)
@@ -131,7 +170,7 @@ class ModelerDashboard:
         filemenu = tk.Menu( self.menu )
         self.menu.add_cascade( label = "File", menu = filemenu )
         menulist.append([filemenu,
-                        [['Open, Ctrl-O', self.selectImages], 
+                        [['Quit, Ctrl-Q OR Esc', self.selectImages], 
                          ['', None],
                          ['', None]
                          ]])
@@ -229,12 +268,33 @@ class ModelerDashboard:
         modelPy = os.path.join(curWD, "simUtility.py")
         if not os.path.isfile(modelPy):
             tkm.showerror("Modeling program DNE", "Could not find %s" % modelPy)
+            return
         if self.verbose: print("running the modeling program")
         os.chdir(self.runDirectory.get())
         imFilename = os.path.join(self.runDirectory.get(), "images.txt")
         with open(imFilename, "w") as imFile:
             imFile.write(self.images.get())
-        os.system(" ".join(["python", modelPy, imFilename]))
+        commandList = ["python", modelPy, imFilename]
+        if self.modelBulgeOpt.get(): commandList.append("-b")
+        if self.modelGalfitOffOpt.get(): commandList.append("-g")
+        if self.modelParallelOpt.get(): commandList.append("-p")
+        if self.modelRealOpt.get(): commandList.append("-r")
+        mpz = self.modelMPZEntry.get()
+        try:
+            float(mpz)
+            commandList.append("--mpz")
+            commandList.append(mpz)
+        except ValueError:
+            pass
+        plate = self.modelPlateEntry.get()
+        try:
+            float(plate)
+            commandList.append("--plate")
+            commandList.append(plate)
+        except ValueError:
+            pass
+        
+        os.system(" ".join(commandList))
         if self.verbose: print("done modeling")
         os.chdir(curWD)
         
@@ -243,6 +303,32 @@ class ModelerDashboard:
         run the summarizing program
         '''
         if self.verbose: print("running the summarizing program")
+        if not self.results.get():
+            tkm.showerror("No Filenames", "No results to model")
+            return
+        curWD = os.getcwd()
+        sumPy = os.path.join(curWD, "sumSimUtility.py")
+        if not os.path.isfile(sumPy):
+            tkm.showerror("Summarizing program DNE", "Could not find %s" % sumPy)
+            return
+        resFilename = os.path.join(self.runDirectory.get(), "resultFilenames.txt")
+        with open(resFilename, "w") as imFile:
+            imFile.write(self.images.get())
+        commandList = ["python", sumPy, resFilename]
+        if self.verbose: commandList.append("-v")
+        if self.sumBulgeOpt.get(): commandList.append("-b")
+        if self.sumRealOpt.get(): commandList.append("-r")
+        delim = self.sumDelimEntry.get()
+        if delim: 
+            commandList.append("-d")
+            commandList.append(delim)
+        output = self.sumOutputEntry.get()
+        if delim: 
+            commandList.append("-o")
+            commandList.append(output)
+        
+        os.system(" ".join(commandList))
+        if self.verbose: print("done summarizing")
         
     def runDisplay(self):
         '''
@@ -291,18 +377,18 @@ class ModelerDashboard:
         if directory:
             if self.verbose: print(directory)
             self.runDirectory.set(directory)
-
+        
     def selectSummary(self):
         '''
         select the csv summary file to display
         '''
         if self.verbose: print("selecting summary")
-        summary = tkf.askopenfilename(parent=self.root, 
-                                      title='Choose summary file', 
-                                      initialdir='.')
-        if summary:
-            if self.verbose: print(summary)
-            self.summary.set(summary)
+        filename = tkf.askopenfilename(parent=self.root, 
+                                       title='Choose summary file', 
+                                       initialdir='.')
+        if filename:
+            if self.verbose: print(filename)
+            self.summary.set(filename)
 
     def setBindings(self):
         '''
@@ -311,7 +397,6 @@ class ModelerDashboard:
         if self.verbose: print("setting the key bindings")
         
         # bind command sequences to the root window
-        self.root.bind( '<Control-o>', self.selectImages)
         self.root.bind( '<Control-q>', self.handleQuit)
         self.root.bind( '<Escape>', self.handleQuit)
 
