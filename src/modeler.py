@@ -308,7 +308,7 @@ class ModelerDashboard:
         
         pb = ttk.Progressbar(master = self.root, 
                              orient="horizontal", mode="determinate", 
-                             maximum=len(self.images.split("\n")))
+                             maximum=len(self.images.get().split("\n")))
         os.chdir(self.runDirectory.get())
         simUtility.main(commandList, pb)
         #os.system(" ".join(["python", modelPy] + commandList))
