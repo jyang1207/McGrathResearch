@@ -1343,8 +1343,16 @@ def main(args, pb=None):
 	# create the destination directory for logResults
 	collectiveDestDirectory = os.path.join(os.getcwd(),
 								"results_" + time.strftime("%m-%d-%Y"))
-	os.mkdir(collectiveDestDirectory)
-	
+	strCounter = ""
+	counter = 0
+	while True:
+		try:
+			os.mkdir(collectiveDestDirectory+strCounter)
+			break
+		except:
+			counter += 1
+			strCounter = "_" + str(counter)
+			
 	# time how long it takes to run the program
 	startTime = time.time()
 	
