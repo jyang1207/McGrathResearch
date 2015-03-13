@@ -5,7 +5,7 @@ from optparse import OptionParser
 import os
 import simUtility
 import sumSimUtility
-import plotSimUtility
+#import plotSimUtility
 
 try:
     import tkinter as tk # python 3
@@ -309,10 +309,12 @@ class ModelerDashboard:
         pb = ttk.Progressbar(master = self.root, 
                              orient="horizontal", mode="determinate", 
                              maximum=len(self.images.get().split("\n")))
+        pb.pack(side=tk.TOP)
         os.chdir(self.runDirectory.get())
         simUtility.main(commandList, pb)
         #os.system(" ".join(["python", modelPy] + commandList))
         os.chdir(curWD)
+        pb.destroy()
         if self.verbose: print("done modeling")
         
     def runSummary(self):
