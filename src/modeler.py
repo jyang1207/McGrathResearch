@@ -127,11 +127,11 @@ class ModelerDashboard:
                         variable=self.sumRealOpt
                         ).pack(side=tk.TOP)
         tk.Label( self.sumFrame, text="Delimiter" ).pack(side=tk.TOP)
-        self.sumDelimEntry = tk.Entry( self.sumFrame, width=bwidth
-                                       ).pack(side=tk.TOP)
+        self.sumDelimEntry = tk.Entry( self.sumFrame, width=bwidth )
+        self.sumDelimEntry.pack(side=tk.TOP)
         tk.Label( self.sumFrame, text="Output Filename" ).pack(side=tk.TOP)
-        self.sumOutputEntry = tk.Entry( self.sumFrame, width=bwidth
-                                       ).pack(side=tk.TOP)
+        self.sumOutputEntry = tk.Entry( self.sumFrame, width=bwidth )
+        self.sumOutputEntry.pack(side=tk.TOP)
         tk.Button( self.sumFrame, text="Run Summarizing", 
                    command=self.runSummary, width=bwidth
                    ).pack(side=tk.TOP)
@@ -171,7 +171,7 @@ class ModelerDashboard:
         self.menu.add_cascade( label = "File", menu = filemenu )
         menulist.append([filemenu,
                         [['Quit, Ctrl-Q OR Esc', self.selectImages], 
-                         ['', None],
+                         ['Reset', self.reset],
                          ['', None]
                          ]])
 
@@ -230,15 +230,6 @@ class ModelerDashboard:
         self.summary.set("")
         tk.Label(self.statusFrame, textvariable=self.summary
                  ).pack(side=tk.TOP)
-                 
-    def clearStatus(self):
-        '''
-        clear the current status
-        '''
-        self.images.set("")
-        self.runDirectory.set("")
-        self.results.set("")
-        self.summary.set("")
             
     def handleQuit(self, event=None):
         '''
@@ -253,6 +244,26 @@ class ModelerDashboard:
         '''
         if self.verbose: print('Entering main loop')
         self.root.mainloop()
+        
+    def reset(self):
+        '''
+        reset the application
+        '''
+        if self.verbose: print("resetting dashboard")
+        self.images.set("")
+        self.runDirectory.set("")
+        self.results.set("")
+        self.summary.set("")
+        self.modelBulgeOpt.set(0)
+        self.modelGalfitOffOpt.set(0)
+        self.modelParallelOpt.set(0)
+        self.modelRealOpt.set(0)
+        self.modelMPZEntry.delete(0, tk.END)
+        self.modelPlateEntry.delete(0, tk.END)
+        self.sumBulgeOpt.set(0)
+        self.sumRealOpt.set(0)
+        self.sumDelimEntry.delete(0, tk.END)
+        self.sumOutputEntry.delete(0, tk.END)
         
     def runModel(self):
         '''
