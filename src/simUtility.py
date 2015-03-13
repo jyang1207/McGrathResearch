@@ -1348,6 +1348,7 @@ def main(args, pb=None):
 	while True:
 		try:
 			os.mkdir(collectiveDestDirectory+strCounter)
+			collectiveDestDirectory += strCounter
 			break
 		except:
 			counter += 1
