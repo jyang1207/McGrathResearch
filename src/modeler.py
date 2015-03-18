@@ -125,13 +125,13 @@ class ModelerDashboard:
                    command=self.runModel, width=bwidth
                    ).pack(side=tk.TOP) 
         self.modelPBProgress = tk.IntVar()
-        self.modelPBProgress.trace("w", self.updateRemaining)
         self.modelPB = ttk.Progressbar(master=self.modelFrame,
                                        orient="horizontal", 
                                        mode="determinate",
                                        maximum=0,
                                        variable=self.modelPBProgress)
         self.modelPB.pack(side=tk.TOP)
+        #self.modelPBProgress.trace("w", self.updateRemaining)
         self.modelPBRemaining = tk.StringVar()
         tk.Label(self.modelFrame, textvariable=self.modelPBRemaining
                  ).pack(side=tk.TOP)
@@ -334,8 +334,8 @@ class ModelerDashboard:
             pass
            
         print(commandList)
-        self.modelPBProgress.set(0)
         self.modelPB["maximum"] = len(self.images.get().split("\n"))
+        self.modelPBProgress.set(0)
         t1 = threading.Thread(target=simUtility.mainExternal, 
                               args=(commandList, self.runDirectory.get(), os.getcwd(), 
                                     self.modelPBProgress))
@@ -470,7 +470,7 @@ class ModelerDashboard:
         '''
         update the estimated remaining time for the modeling
         '''
-        m = self.modelPB["maximum"]
+        m = self.modelPB["maximum"]-self.modelPBProgress.get()
         h, m = divmod(m, 60)
         self.modelPBRemaining.set("Remaining hr:min = "+str(h)+":"+str(m))
 
