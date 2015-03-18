@@ -11,7 +11,7 @@ import os
 import sys
 import time
 from optparse import OptionParser
-from math import sqrt, exp, sin, cos, pi, pow#, tan, atan2
+from math import sqrt, exp, sin, cos, pi, pow  # , tan, atan2
 import pprint
 try:
 	import pyfits as fits
@@ -28,104 +28,104 @@ def ned_wright_cosmology_calculator(z):
 	parameter z - the redshift from which to calculate age in GYR and kpc per arcsec
 	returns ['%1.3f' % zage_Gyr, kpc_DA]
 	'''
-	H0 = 69.6						  # Hubble constant
-	WM = 0.286						  # Omega(matter)
-	WV = 0.714						  # Omega(vacuum) or lambda
+	H0 = 69.6  # Hubble constant
+	WM = 0.286  # Omega(matter)
+	WV = 0.714  # Omega(vacuum) or lambda
 	
 	# initialize constants
 	
-	WR = 0.		   # Omega(radiation)
-	WK = 0.		   # Omega curvaturve = 1-Omega(total)
-	c = 299792.458 # velocity of light in km/sec
-	Tyr = 977.8	   # coefficent for converting 1/H into Gyr
-	DTT = 0.5	   # time from z to now in units of 1/H0
+	WR = 0.  # Omega(radiation)
+	WK = 0.  # Omega curvaturve = 1-Omega(total)
+	c = 299792.458  # velocity of light in km/sec
+	Tyr = 977.8  # coefficent for converting 1/H into Gyr
+	DTT = 0.5  # time from z to now in units of 1/H0
 	DTT_Gyr = 0.0  # value of DTT in Gyr
-	age = 0.5	   # age of Universe in units of 1/H0
+	age = 0.5  # age of Universe in units of 1/H0
 	age_Gyr = 0.0  # value of age in Gyr
-	zage = 0.1	   # age of Universe at redshift z in units of 1/H0
-	zage_Gyr = 0.0 # value of zage in Gyr
-	DCMR = 0.0	   # comoving radial distance in units of c/H0
+	zage = 0.1  # age of Universe at redshift z in units of 1/H0
+	zage_Gyr = 0.0  # value of zage in Gyr
+	DCMR = 0.0  # comoving radial distance in units of c/H0
 	DCMR_Mpc = 0.0 
 	DCMR_Gyr = 0.0
-	DA = 0.0	   # angular size distance
+	DA = 0.0  # angular size distance
 	DA_Mpc = 0.0
 	DA_Gyr = 0.0
 	kpc_DA = 0.0
-	DL = 0.0	   # luminosity distance
+	DL = 0.0  # luminosity distance
 	DL_Mpc = 0.0
-	DL_Gyr = 0.0   # DL in units of billions of light years
+	DL_Gyr = 0.0  # DL in units of billions of light years
 	V_Gpc = 0.0
-	a = 1.0		   # 1/(1+z), the scale factor of the Universe
-	az = 0.5	   # 1/(1+z(object))
+	a = 1.0  # 1/(1+z), the scale factor of the Universe
+	az = 0.5  # 1/(1+z(object))
 	
-	h = H0/100.
-	WR = 4.165E-5/(h*h)	  # includes 3 massless neutrino species, T0 = 2.72528
-	WK = 1-WM-WR-WV
-	az = 1.0/(1+1.0*z)
+	h = H0 / 100.
+	WR = 4.165E-5 / (h * h)  # includes 3 massless neutrino species, T0 = 2.72528
+	WK = 1 - WM - WR - WV
+	az = 1.0 / (1 + 1.0 * z)
 	age = 0.
-	n=1000		   # number of points in integrals
+	n = 1000  # number of points in integrals
 	for i in range(n):
-		a = az*(i+0.5)/n
-		adot = sqrt(WK+(WM/a)+(WR/(a*a))+(WV*a*a))
-		age = age + 1./adot
+		a = az * (i + 0.5) / n
+		adot = sqrt(WK + (WM / a) + (WR / (a * a)) + (WV * a * a))
+		age = age + 1. / adot
 	
-	zage = az*age/n
-	zage_Gyr = (Tyr/H0)*zage
+	zage = az * age / n
+	zage_Gyr = (Tyr / H0) * zage
 	DTT = 0.0
 	DCMR = 0.0
 	
 	# do integral over a=1/(1+z) from az to 1 in n steps, midpoint rule
 	for i in range(n):
-		a = az+(1-az)*(i+0.5)/n
-		adot = sqrt(WK+(WM/a)+(WR/(a*a))+(WV*a*a))
-		DTT = DTT + 1./adot
-		DCMR = DCMR + 1./(a*adot)
+		a = az + (1 - az) * (i + 0.5) / n
+		adot = sqrt(WK + (WM / a) + (WR / (a * a)) + (WV * a * a))
+		DTT = DTT + 1. / adot
+		DCMR = DCMR + 1. / (a * adot)
 	
-	DTT = (1.-az)*DTT/n
-	DCMR = (1.-az)*DCMR/n
-	age = DTT+zage
-	age_Gyr = age*(Tyr/H0)
-	DTT_Gyr = (Tyr/H0)*DTT
-	DCMR_Gyr = (Tyr/H0)*DCMR
-	DCMR_Mpc = (c/H0)*DCMR
+	DTT = (1. - az) * DTT / n
+	DCMR = (1. - az) * DCMR / n
+	age = DTT + zage
+	age_Gyr = age * (Tyr / H0)
+	DTT_Gyr = (Tyr / H0) * DTT
+	DCMR_Gyr = (Tyr / H0) * DCMR
+	DCMR_Mpc = (c / H0) * DCMR
 	
 	# tangential comoving distance
 	
 	ratio = 1.00
-	x = sqrt(abs(WK))*DCMR
+	x = sqrt(abs(WK)) * DCMR
 	if x > 0.1:
 		if WK > 0:
-			ratio =	 0.5*(exp(x)-exp(-x))/x 
+			ratio = 	 0.5 * (exp(x) - exp(-x)) / x 
 		else:
-			ratio = sin(x)/x
+			ratio = sin(x) / x
 	else:
-		y = x*x
+		y = x * x
 		if WK < 0: y = -y
-		ratio = 1. + y/6. + y*y/120.
-	DCMT = ratio*DCMR
-	DA = az*DCMT
-	DA_Mpc = (c/H0)*DA
-	kpc_DA = DA_Mpc/206.264806
-	DA_Gyr = (Tyr/H0)*DA
-	DL = DA/(az*az)
-	DL_Mpc = (c/H0)*DL
-	DL_Gyr = (Tyr/H0)*DL
+		ratio = 1. + y / 6. + y * y / 120.
+	DCMT = ratio * DCMR
+	DA = az * DCMT
+	DA_Mpc = (c / H0) * DA
+	kpc_DA = DA_Mpc / 206.264806
+	DA_Gyr = (Tyr / H0) * DA
+	DL = DA / (az * az)
+	DL_Mpc = (c / H0) * DL
+	DL_Gyr = (Tyr / H0) * DL
 	
 	# comoving volume computation
 	
 	ratio = 1.00
-	x = sqrt(abs(WK))*DCMR
+	x = sqrt(abs(WK)) * DCMR
 	if x > 0.1:
 		if WK > 0:
-			ratio = (0.125*(exp(2.*x)-exp(-2.*x))-x/2.)/(x*x*x/3.)
+			ratio = (0.125 * (exp(2.*x) - exp(-2.*x)) - x / 2.) / (x * x * x / 3.)
 		else:
-			ratio = (x/2. - sin(2.*x)/4.)/(x*x*x/3.)
+			ratio = (x / 2. - sin(2.*x) / 4.) / (x * x * x / 3.)
 	else:
-		y = x*x
+		y = x * x
 		if WK < 0: y = -y
-		ratio = 1. + y/5. + (2./105.)*y*y
-	VCM = ratio*DCMR*DCMR*DCMR/3.
-	V_Gpc = 4.*pi*((0.001*c/H0)**3)*VCM
+		ratio = 1. + y / 5. + (2. / 105.) * y * y
+	VCM = ratio * DCMR * DCMR * DCMR / 3.
+	V_Gpc = 4.*pi * ((0.001 * c / H0) ** 3) * VCM
 	
 	return ['%1.3f' % zage_Gyr, kpc_DA]
 
@@ -148,11 +148,11 @@ def run_pyfits(multiFitsFilename):
 		modelHeader = multiCubeSlices[2].header
 		residualData = multiCubeSlices[3].data
 		# open a file for writing the pixels included in elliptical sum
-		ellipImageName = multiFitsFilename[:-5]+"_ellip.png"
+		ellipImageName = multiFitsFilename[:-5] + "_ellip.png"
 		ellipImage = Image.new("RGB", imageData.shape)
 		multiCubeSlices.close()
 	except KeyError:
-		print("Result file " +	multiFitsFilename +
+		print("Result file " + 	multiFitsFilename + 
 			" must be a .fits multi-extension cube with four slices")
 		multiCubeSlices.close()
 		exit()
@@ -164,16 +164,16 @@ def run_pyfits(multiFitsFilename):
 	# create list of dictionaries representing component models
 	resultModels = []
 	compNum = 1
-	while ("COMP_"+str(compNum)) in modelHeader:
+	while ("COMP_" + str(compNum)) in modelHeader:
 	
 		# for the sky component grab its value and continue to next component
-		if modelHeader["COMP_"+str(compNum)].strip() == "sky":
-			resultModels.append({"sky": removeGalfitChars(str(modelHeader[str(compNum)+"_SKY"]).split()[0])})
+		if modelHeader["COMP_" + str(compNum)].strip() == "sky":
+			resultModels.append({"sky": removeGalfitChars(str(modelHeader[str(compNum) + "_SKY"]).split()[0])})
 			compNum = compNum + 1
 			continue
 		
 		# initialize model to empty dictionary
-		model={}
+		model = {}
 			
 		# get all model information for the current model
 		compX = removeGalfitChars(str(modelHeader[str(compNum) + "_XC"].split()[0]))
@@ -223,18 +223,18 @@ def run_pyfits(multiFitsFilename):
 		# rotated counterclockwise by position angle PA and translated to xc, yc
 		# http://www.maa.org/external_archive/joma/Volume8/Kalman/General.html
 		PA = float(compPA)
-		cosPA = cos(PA*180.0/pi) # start at positive y not x
-		sinPA = sin(PA*180.0/pi) # start at positive y not x
-		cossqPA = cosPA*cosPA
-		sinsqPA = sinPA*sinPA
-		a = 2.0*float(compRad)
-		b = a*float(compBA)
-		invasq = 1/(a*a)
-		invbsq = 1/(b*b)
-		A = cossqPA*invasq + sinsqPA*invbsq # rotation of ellipse by PA
-		B = 2*cosPA*sinPA*(invasq - invbsq)
-		C = sinsqPA*invasq + cossqPA*invbsq
-		h = float(compX) # translating of ellipse center
+		cosPA = cos(PA * 180.0 / pi)  # start at positive y not x
+		sinPA = sin(PA * 180.0 / pi)  # start at positive y not x
+		cossqPA = cosPA * cosPA
+		sinsqPA = sinPA * sinPA
+		a = 2.0 * float(compRad)
+		b = a * float(compBA)
+		invasq = 1 / (a * a)
+		invbsq = 1 / (b * b)
+		A = cossqPA * invasq + sinsqPA * invbsq  # rotation of ellipse by PA
+		B = 2 * cosPA * sinPA * (invasq - invbsq)
+		C = sinsqPA * invasq + cossqPA * invbsq
+		h = float(compX)  # translating of ellipse center
 		k = float(compY)
 
 		# could compute bounding box for speed up http://stackoverflow.com/questions/87734/how-do-you-calculate-the-axis-aligned-bounding-box-of-an-ellipse
@@ -263,22 +263,22 @@ def run_pyfits(multiFitsFilename):
 			
 		# inside ellipse if:
 		# A*x*x + B*x*y + C*y*y - (2*A*h + k*B)*x - (2*C*k + B*h)*y + (A*h*h + B*h*k + C*k*k - 1) < 0
-		AhkB = 2*A*h + k*B
-		CkBh = 2*C*k + B*h
-		AhhBhkCkk = A*h*h + B*h*k + C*k*k - 1
+		AhkB = 2 * A * h + k * B
+		CkBh = 2 * C * k + B * h
+		AhhBhkCkk = A * h * h + B * h * k + C * k * k - 1
 		imageSum = 0
 		residualSum = 0
 		pix = ellipImage.load()
-		for [y, x],imageVal in numpy.ndenumerate(imageData):
-			if ( # ((x>=xlow and x<=xhigh) and (y>=ylow and y<=yhigh)) and
-				((A*x*x + B*x*y + C*y*y - AhkB*x - CkBh*y + AhhBhkCkk) < 0)):
-				residualSum = residualSum + abs(residualData[y,x])
-				imageSum = imageSum + imageVal;#Data[y,x]
-				pix[x,imageHeight - y - 1] = 255 # flip so origin in bottom left
+		for [y, x], imageVal in numpy.ndenumerate(imageData):
+			if (# ((x>=xlow and x<=xhigh) and (y>=ylow and y<=yhigh)) and
+				((A * x * x + B * x * y + C * y * y - AhkB * x - CkBh * y + AhhBhkCkk) < 0)):
+				residualSum = residualSum + abs(residualData[y, x])
+				imageSum = imageSum + imageVal;  # Data[y,x]
+				pix[x, imageHeight - y - 1] = 255  # flip so origin in bottom left
 
 		# compute rff and store in model dictionary
 		if imageSum:
-			model["rff"] = str(residualSum/imageSum)
+			model["rff"] = str(residualSum / imageSum)
 		else:
 			model["rff"] = "0"
 			
@@ -325,9 +325,9 @@ def getCentermostID(imageHeight, imageWidth, models):
 		# check if this model is the closest yet to the center of the image 
 		px = model["px"][0]
 		py = model["py"][0]
-		dx = imageWidth/2.0 - float(px)
-		dy = imageHeight/2.0 - float(py)
-		dist = sqrt(pow(dx,2) + pow(dy,2))
+		dx = imageWidth / 2.0 - float(px)
+		dy = imageHeight / 2.0 - float(py)
+		dist = sqrt(pow(dx, 2) + pow(dy, 2))
 		# if so, save ID
 		if dist < closestDist:
 			closestDist = dist
@@ -357,9 +357,9 @@ def getNextCentermostID(imageHeight, imageWidth, models, centerID):
 		# check if this model is the closest yet to the center of the image 
 		px = model["px"][0]
 		py = model["py"][0]
-		dx = imageWidth/2.0 - float(px)
-		dy = imageHeight/2.0 - float(py)
-		dist = sqrt(pow(dx,2) + pow(dy,2))
+		dx = imageWidth / 2.0 - float(px)
+		dy = imageHeight / 2.0 - float(py)
+		dist = sqrt(pow(dx, 2) + pow(dy, 2))
 		# if so, save ID
 		if dist < closestDist:
 			closestDist = dist
@@ -376,8 +376,8 @@ def removeGalfitChars(resultString):
 	parameter resultString - the galfit string to strip annotations from
 	returns given string without galfit annotation characters, jsut the number as a string
 	'''
-	return resultString.replace('*','').replace('[','').replace(']',''
-									).replace('{','').replace('}','')
+	return resultString.replace('*', '').replace('[', '').replace(']', ''
+									).replace('{', '').replace('}', '')
 											
 
 def sum_galfit(resultFilename, models, kpcPerPixel, timeZ, delim, centerIDs, options):
@@ -400,25 +400,25 @@ def sum_galfit(resultFilename, models, kpcPerPixel, timeZ, delim, centerIDs, opt
 	outputFilename = resultFilename.split("/")[-1].strip()
 	# VELA02MRP_0.201015_0002949__skipir_CAMERA0-BROADBAND_F160W_simulation_bulge_multi.fits
 
-	#TODO: this is dependent on the particular structure of the filename
-	#		the below code works for VELA simulations
+	# TODO: this is dependent on the particular structure of the filename
+	# 		the below code works for VELA simulations
 	galaxyID = outputFilename.split("_")[0]
-	#"VELA01"
+	# "VELA01"
 	
 	filt = outputFilename.split("_")[6]
-	#"F125W"	
+	# "F125W"	
 	
 	timeStep = outputFilename.split("_")[1].split(".")[1]
 	# "110"
 	
-	camera = outputFilename.split("_")[5].split("-")[0].replace("CAMERA","")
+	camera = outputFilename.split("_")[5].split("-")[0].replace("CAMERA", "")
 	# "CAMERA0"
 	
 	if not timeZ:
 		# a = 1/(1+z)
-		timeA = float("0."+timeStep)
+		timeA = float("0." + timeStep)
 		# z = 1/a - 1
-		timeZ = 1.0/timeA - 1.0
+		timeZ = 1.0 / timeA - 1.0
 		
 	[age_gyr, kpcPerArcsec] = ned_wright_cosmology_calculator(timeZ)
 	age_gyr = str(age_gyr)
@@ -444,37 +444,37 @@ def sum_galfit(resultFilename, models, kpcPerPixel, timeZ, delim, centerIDs, opt
 			sky = str(model["sky"])
 			continue
 		
-		#x position
-		componentList.append(model["px"][0])#value
-		componentList.append(model["px"][1])#error
+		# x position
+		componentList.append(model["px"][0])  # value
+		componentList.append(model["px"][1])  # error
 		
-		#y position
-		componentList.append(model["py"][0])#value
-		componentList.append(model["py"][1])#error
+		# y position
+		componentList.append(model["py"][0])  # value
+		componentList.append(model["py"][1])  # error
 		
 		# magnitude
-		componentList.append(model["mag"][0])#value
-		componentList.append(model["mag"][1])#error
+		componentList.append(model["mag"][0])  # value
+		componentList.append(model["mag"][1])  # error
 
 		# radius (pixels)
-		componentList.append(model["rad"][0])#value
-		componentList.append(model["rad"][1])#error
+		componentList.append(model["rad"][0])  # value
+		componentList.append(model["rad"][1])  # error
 		
 		# radius (kpc)
-		componentList.append(str(float(model["rad"][0])*kpcPerPixel))#value
-		componentList.append(str(float(model["rad"][1])*kpcPerPixel))#error
+		componentList.append(str(float(model["rad"][0]) * kpcPerPixel))  # value
+		componentList.append(str(float(model["rad"][1]) * kpcPerPixel))  # error
 			
 		# sersic index
-		componentList.append(model["ser"][0])#value
-		componentList.append(model["ser"][1])#error
+		componentList.append(model["ser"][0])  # value
+		componentList.append(model["ser"][1])  # error
 			
 		# b/a
-		componentList.append(model["ba"][0])#value
-		componentList.append(model["ba"][1])#error
+		componentList.append(model["ba"][0])  # value
+		componentList.append(model["ba"][1])  # error
 			
 		# position angle
-		componentList.append(model["pa"][0])#value
-		componentList.append(model["pa"][1])#error
+		componentList.append(model["pa"][0])  # value
+		componentList.append(model["pa"][1])  # error
 
 		# rff
 		componentList.append(model["rff"])
@@ -508,7 +508,7 @@ def sum_galfit(resultFilename, models, kpcPerPixel, timeZ, delim, centerIDs, opt
 	results = ""
 	for component in componentResults.split("\n")[:-1]:
 		results = (results + outputFilename + delim + component + delim + sky + 
-					#delim + str(wholeRFF) + delim + str(partialRFF) + 
+					# delim + str(wholeRFF) + delim + str(partialRFF) + 
 					"\n")
 		
 	# return resulting string
@@ -520,29 +520,29 @@ def main(args):
 	args - equivalent of sys.argv[1:]
 	'''
 	
-	#define the command line interface with simUtility.py
+	# define the command line interface with simUtility.py
 	usage = ("\n%prog resultsFile [-h help] [options (with '-'|'--' prefix)]")
 
 	# used to parse command line arguments
 	parser = OptionParser(usage)
 	
 	# indicate that a bulge component was run to produce results
-	parser.add_option("-b","--bulge", 
+	parser.add_option("-b", "--bulge",
 				help="if running on results of GALFIT bulge (two component) fit",
 				action="store_true")
 	
-	parser.add_option("-d","--delim", 
-				help=("set the delimiter to separate the fields of the summary file "+
+	parser.add_option("-d", "--delim",
+				help=("set the delimiter to separate the fields of the summary file " + 
 					"[default: %default]"),
 				default=" ")
 
 	# indicate that images are candelized
-	parser.add_option("-r","--candelized", 
+	parser.add_option("-r", "--candelized",
 				help="if running on candelized images",
 				action="store_true")
 	
-	parser.add_option("-o","--output", 
-				help=("set the filename to write the output summary file "+
+	parser.add_option("-o", "--output",
+				help=("set the filename to write the output summary file " + 
 					"[default: %default]"),
 				default="summary_" + time.strftime("%m-%d-%Y") + ".csv")
 	
@@ -557,7 +557,7 @@ def main(args):
 	else:
 		inputFilename = args[0]
 		
-	#this will be the file that will contain the images
+	# this will be the file that will contain the images
 	r = open(inputFilename, 'r')
 	
 	# the lines of file containing results
@@ -573,27 +573,27 @@ def main(args):
 	delim = options.delim
 	
 	# the summary file header
-	outFile.write(delim.join(["filename","type","galaxyID","timeStep","age(GYr)",
-							"redshift(z)", "camera","filter",
-							"px(pixels)","errpx(pixels)",
-							"py(pixels)","errpy(pixels)",
-							"mag","errmag",
-							"rad(pixels)","errrad(pixels)",
-							"rad(kpc)", "errrad(kpc)", 
-							"sersicIndex(n)","errsersicIndex(n)",
-							"b/a","errb/a",
-							"angle(deg)","errangle(deg)",
-							"rff","sky"#, "wholeRFF", "partialRFF"
-							]) + "\n" +
-				delim.join(["string","enum","enum","numeric","numeric",
-						"numeric","enum","enum"]) + "\n")
+	outFile.write(delim.join(["filename", "type", "galaxyID", "timeStep", "age(GYr)",
+							"redshift(z)", "camera", "filter",
+							"px(pixels)", "errpx(pixels)",
+							"py(pixels)", "errpy(pixels)",
+							"mag", "errmag",
+							"rad(pixels)", "errrad(pixels)",
+							"rad(kpc)", "errrad(kpc)",
+							"sersicIndex(n)", "errsersicIndex(n)",
+							"b/a", "errb/a",
+							"angle(deg)", "errangle(deg)",
+							"rff", "sky"  # , "wholeRFF", "partialRFF"
+							]) + "\n" + 
+				delim.join(["string", "enum", "enum", "numeric", "numeric",
+						"numeric", "enum", "enum"]) + "\n")
 	
 	# this loops through every result, writing summary to output
 	for resultFilename in resultFilenames:
 	
 		# remove the new line character and any leading or trailing white space
 		resultFilename = resultFilename.strip()
-		print("processing result file: "+resultFilename)
+		print("processing result file: " + resultFilename)
 		
 		# verify that result file exists
 		if not os.path.isfile(resultFilename):
@@ -604,16 +604,16 @@ def main(args):
 		[models, imageWidth, imageHeight, kpcPerPixel, timeZ] = run_pyfits(resultFilename)	
 		
 		# get the id of the centermost galaxy
-		centerID = getCentermostID(imageWidth,imageHeight,models)
-		nextCenterID = getNextCentermostID(imageWidth,imageHeight,models,centerID)
+		centerID = getCentermostID(imageWidth, imageHeight, models)
+		nextCenterID = getNextCentermostID(imageWidth, imageHeight, models, centerID)
 		if options.bulge:
 			centerIDs = [centerID, nextCenterID]
 		else:
 			centerIDs = [centerID]
 			
 		# summarize galfit and write to output
-		outFile.write( sum_galfit(	resultFilename, models, kpcPerPixel, 
-									timeZ, delim, centerIDs, options) )
+		outFile.write(sum_galfit(resultFilename, models, kpcPerPixel,
+									timeZ, delim, centerIDs, options))
 		
 	outFile.close()
 	

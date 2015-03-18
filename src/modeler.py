@@ -1,19 +1,29 @@
+#!/usr/bin/env python
+
+'''
+Author: Ian Tibbetts
+Co-authors: Prof. Elizabeth McGrath
+Last Edited: 8/13/2104
+Colby College Astrophysics Research
+'''
 
 # use tkinter for GUI elements
 import types
+import time
 from optparse import OptionParser
+import sys
 import os
 import simUtility
 import sumSimUtility
-#import plotSimUtility
+# import plotSimUtility
 
 try:
-    import tkinter as tk # python 3
+    import tkinter as tk  # python 3
     tkf = tk.filedialog
     tkm = tk.messagebox
     ttk = tk.ttk
 except ImportError:
-    import Tkinter as tk # python 2
+    import Tkinter as tk  # python 2
     import tkFileDialog as tkf
     import tkMessageBox as tkm
     import ttk
@@ -38,12 +48,12 @@ class ModelerDashboard:
         self.root = tk.Tk()
 
         # set up the geometry for the window
-        self.root.geometry( "%dx%d+50+30" % (width, height) )
+        self.root.geometry("%dx%d+50+30" % (width, height))
         
         # set the title of the window
         self.root.title("Modeling Dashboard")
         # set the maximum size of the window for resizing
-        self.root.maxsize( 1600, 900 )
+        self.root.maxsize(1600, 900)
         
         # setup the menus
         self.buildMenus()
@@ -70,87 +80,96 @@ class ModelerDashboard:
         if self.verbose: print("building the control frame")
         # make the control frames
         headers = ["model", "summarize", "display", "plot"]
-        headers = [header.capitalize()+"\n" for header in headers]
+        headers = [header.capitalize() + "\n" for header in headers]
         frames = [tk.Frame(self.root) for _ in range(len(headers))]
         self.modelFrame, self.sumFrame, self.displayFrame, self.plotFrame = frames
         
         # pack all frames with separators and headers
         for header, frame in zip(headers, frames):
             frame.pack(side=tk.LEFT, padx=2, pady=2, fill=tk.Y)
-            tk.Frame( self.root, width=2, bd=1, relief=tk.SUNKEN
-                      ).pack( side=tk.LEFT, padx = 2, pady = 2, fill=tk.Y)
-            tk.Label( frame, text=header
+            tk.Frame(self.root, width=2, bd=1, relief=tk.SUNKEN
+                      ).pack(side=tk.LEFT, padx=2, pady=2, fill=tk.Y)
+            tk.Label(frame, text=header
                       ).pack(side=tk.TOP)
                       
         bwidth = 20
         # make the model frame controls
-        tk.Button( self.modelFrame, text="Select Images", 
+        tk.Button(self.modelFrame, text="Select Images",
                    command=self.selectImages, width=bwidth
                    ).pack(side=tk.TOP)
-        tk.Button( self.modelFrame, text="Select Run Directory", 
+        tk.Button(self.modelFrame, text="Select Run Directory",
                    command=self.selectRunModelDir, width=bwidth
                    ).pack(side=tk.TOP)
         self.modelBulgeOpt = tk.IntVar()
-        tk.Checkbutton( self.modelFrame, text="include bulge component",
+        tk.Checkbutton(self.modelFrame, text="include bulge component",
                         variable=self.modelBulgeOpt
                         ).pack(side=tk.TOP)
         self.modelGalfitOffOpt = tk.IntVar()
-        tk.Checkbutton( self.modelFrame, text="dont run GALFIT",
+        tk.Checkbutton(self.modelFrame, text="dont run GALFIT",
                         variable=self.modelGalfitOffOpt
                         ).pack(side=tk.TOP)
         self.modelParallelOpt = tk.IntVar()
-        tk.Checkbutton( self.modelFrame, text="run in parallel",
+        tk.Checkbutton(self.modelFrame, text="run in parallel",
                         variable=self.modelParallelOpt
                         ).pack(side=tk.TOP)
         self.modelRealOpt = tk.IntVar()
-        tk.Checkbutton( self.modelFrame, text="images degraded",
+        tk.Checkbutton(self.modelFrame, text="images degraded",
                         variable=self.modelRealOpt
                         ).pack(side=tk.TOP)
-        tk.Label( self.modelFrame, text="MPZ" ).pack(side=tk.TOP)
-        self.modelMPZEntry = tk.Entry( self.modelFrame, width=bwidth )
+        tk.Label(self.modelFrame, text="MPZ").pack(side=tk.TOP)
+        self.modelMPZEntry = tk.Entry(self.modelFrame, width=bwidth)
         self.modelMPZEntry.pack(side=tk.TOP)
-        tk.Label( self.modelFrame, text="Plate Scale" ).pack(side=tk.TOP)
-        self.modelPlateEntry = tk.Entry( self.modelFrame, width=bwidth )
+        tk.Label(self.modelFrame, text="Plate Scale").pack(side=tk.TOP)
+        self.modelPlateEntry = tk.Entry(self.modelFrame, width=bwidth)
         self.modelPlateEntry.pack(side=tk.TOP)
-        tk.Button( self.modelFrame, text="Run Modeling", 
+        tk.Button(self.modelFrame, text="Run Modeling",
                    command=self.runModel, width=bwidth
                    ).pack(side=tk.TOP) 
+        self.modelPBProgress = tk.IntVar()
+        self.modelPBProgress.set(0)
+        tk.Label(self.modelFrame, textvariable=self.modelPBProgress
+                 ).pack(side=tk.TOP)
+        self.modelPB = ttk.Progressbar(master=self.modelFrame,
+                                       orient="horizontal", 
+                                       mode="determinate",
+                                       variable=self.modelPBProgress)
+        self.modelPB.pack(side=tk.TOP)
         
         # make the summary frame controls
-        tk.Button( self.sumFrame, text="Select Results", 
+        tk.Button(self.sumFrame, text="Select Results",
                    command=self.selectResults, width=bwidth
                    ).pack(side=tk.TOP)
         self.sumBulgeOpt = tk.IntVar()
-        tk.Checkbutton( self.sumFrame, text="bulge components included",
+        tk.Checkbutton(self.sumFrame, text="bulge components included",
                         variable=self.sumBulgeOpt
                         ).pack(side=tk.TOP)
         self.sumRealOpt = tk.IntVar()
-        tk.Checkbutton( self.sumFrame, text="images degraded",
+        tk.Checkbutton(self.sumFrame, text="images degraded",
                         variable=self.sumRealOpt
                         ).pack(side=tk.TOP)
-        tk.Label( self.sumFrame, text="Delimiter" ).pack(side=tk.TOP)
-        self.sumDelimEntry = tk.Entry( self.sumFrame, width=bwidth )
+        tk.Label(self.sumFrame, text="Delimiter").pack(side=tk.TOP)
+        self.sumDelimEntry = tk.Entry(self.sumFrame, width=bwidth)
         self.sumDelimEntry.pack(side=tk.TOP)
-        tk.Label( self.sumFrame, text="Output Filename" ).pack(side=tk.TOP)
-        self.sumOutputEntry = tk.Entry( self.sumFrame, width=bwidth )
+        tk.Label(self.sumFrame, text="Output Filename").pack(side=tk.TOP)
+        self.sumOutputEntry = tk.Entry(self.sumFrame, width=bwidth)
         self.sumOutputEntry.pack(side=tk.TOP)
-        tk.Button( self.sumFrame, text="Run Summarizing", 
+        tk.Button(self.sumFrame, text="Run Summarizing",
                    command=self.runSummary, width=bwidth
                    ).pack(side=tk.TOP)
         
         # make the display frame controls
-        tk.Button( self.displayFrame, text="Select Summary", 
+        tk.Button(self.displayFrame, text="Select Summary",
                    command=self.selectSummary, width=bwidth
                    ).pack(side=tk.TOP)
-        tk.Button( self.displayFrame, text="Run Displaying", 
+        tk.Button(self.displayFrame, text="Run Displaying",
                    command=self.runDisplay, width=bwidth
                    ).pack(side=tk.TOP)
         
         # make the plot frame controls
-        tk.Button( self.plotFrame, text="Select Summary", 
+        tk.Button(self.plotFrame, text="Select Summary",
                    command=self.selectSummary, width=bwidth
                    ).pack(side=tk.TOP)
-        tk.Button( self.plotFrame, text="Run Plotting", 
+        tk.Button(self.plotFrame, text="Run Plotting",
                    command=self.runPlot, width=bwidth
                    ).pack(side=tk.TOP)
     
@@ -163,16 +182,16 @@ class ModelerDashboard:
         self.menu = tk.Menu(self.root)
 
         # set the root menu to our new menu
-        self.root.config(menu = self.menu)
+        self.root.config(menu=self.menu)
 
         # create a variable to hold the top level menus
         menulist = []
 
         # create a file menu
-        filemenu = tk.Menu( self.menu )
-        self.menu.add_cascade( label = "File", menu = filemenu )
+        filemenu = tk.Menu(self.menu)
+        self.menu.add_cascade(label="File", menu=filemenu)
         menulist.append([filemenu,
-                        [['Quit, Ctrl-Q OR Esc', self.selectImages], 
+                        [['Quit, Ctrl-Q OR Esc', self.selectImages],
                          ['Reset', self.reset],
                          ['', None]
                          ]])
@@ -190,11 +209,11 @@ class ModelerDashboard:
                     submenu = tk.Menu(self.menu)
                     for subitem in item[1]:
                         submenu.add_command(label=subitem[0], command=subitem[1])
-                    menu.add_cascade( label=item[0], menu=submenu )
+                    menu.add_cascade(label=item[0], menu=submenu)
                 
                 # menu command
                 else:
-                    menu.add_command( label=item[0], command=item[1] )
+                    menu.add_command(label=item[0], command=item[1])
             
     def buildStatus(self):
         '''
@@ -267,6 +286,12 @@ class ModelerDashboard:
         self.sumDelimEntry.delete(0, tk.END)
         self.sumOutputEntry.delete(0, tk.END)
         
+    def runDisplay(self):
+        '''
+        run the displaying program
+        '''
+        if self.verbose: print("running the displaying program")
+        
     def runModel(self):
         '''
         run the modeling program
@@ -305,17 +330,25 @@ class ModelerDashboard:
             commandList.append(plate)
         except ValueError:
             pass
-        
-        pb = ttk.Progressbar(master = self.root, 
-                             orient="horizontal", mode="determinate", 
-                             maximum=len(self.images.get().split("\n")))
-        pb.pack(side=tk.TOP)
+           
+        print(commandList)
         os.chdir(self.runDirectory.get())
-        simUtility.main(commandList, pb)
-        #os.system(" ".join(["python", modelPy] + commandList))
+        self.modelPB["maximum"] = len(self.images.get().split("\n"))
+        try:
+            simUtility.main(commandList, self.modelPBProgress)
+        except:
+            print(sys.exc_info())
+        # OR os.system(" ".join(["python", modelPy] + commandList))
+        self.modelPBProgress.set(0)
         os.chdir(curWD)
-        pb.destroy()
         if self.verbose: print("done modeling")
+        
+    def runPlot(self):
+        '''
+        run the plotting program
+        '''
+        if self.verbose: print("running the plotting program")
+        self.modelPBProgress.set(self.modelPBProgress.get()+1)
         
     def runSummary(self):
         '''
@@ -347,20 +380,8 @@ class ModelerDashboard:
             commandList.append(output)
         
         sumSimUtility.main(commandList)
-        #os.system(" ".join(["python", sumPy]+commandList))
+        # os.system(" ".join(["python", sumPy]+commandList))
         if self.verbose: print("done summarizing")
-        
-    def runDisplay(self):
-        '''
-        run the displaying program
-        '''
-        if self.verbose: print("running the displaying program")
-        
-    def runPlot(self):
-        '''
-        run the plotting program
-        '''
-        if self.verbose: print("running the plotting program")
 
     def selectImages(self):
         '''
@@ -372,8 +393,8 @@ class ModelerDashboard:
             imageDir = os.path.dirname(imageDir)
         else:
             imageDir = "."
-        filenames = tkf.askopenfilenames(parent=self.root, 
-                                         title='Choose image files', 
+        filenames = tkf.askopenfilenames(parent=self.root,
+                                         title='Choose image files',
                                          initialdir=imageDir)
         if filenames:
             if self.verbose: print(filenames)
@@ -389,8 +410,8 @@ class ModelerDashboard:
             resultDir = os.path.dirname(resultDir)
         else:
             resultDir = "."
-        filenames = tkf.askopenfilenames(parent=self.root, 
-                                         title='Choose result files', 
+        filenames = tkf.askopenfilenames(parent=self.root,
+                                         title='Choose result files',
                                          initialdir=resultDir)
         if filenames:
             if self.verbose: print(filenames)
@@ -405,8 +426,8 @@ class ModelerDashboard:
         else:
             curDir = "."
         if self.verbose: print("selecting run directory for modeling")
-        directory = tkf.askdirectory(parent=self.root, 
-                                     title='Choose Directory', 
+        directory = tkf.askdirectory(parent=self.root,
+                                     title='Choose Directory',
                                      initialdir=curDir)
         if directory:
             if self.verbose: print(directory)
@@ -421,8 +442,8 @@ class ModelerDashboard:
             sumDir = os.path.dirname(self.summary.get())
         else:
             sumDir = "."
-        filename = tkf.askopenfilename(parent=self.root, 
-                                       title='Choose summary file', 
+        filename = tkf.askopenfilename(parent=self.root,
+                                       title='Choose summary file',
                                        initialdir=sumDir)
         if filename:
             if self.verbose: print(filename)
@@ -435,19 +456,19 @@ class ModelerDashboard:
         if self.verbose: print("setting the key bindings")
         
         # bind command sequences to the root window
-        self.root.bind( '<Control-q>', self.handleQuit)
-        self.root.bind( '<Escape>', self.handleQuit)
+        self.root.bind('<Control-q>', self.handleQuit)
+        self.root.bind('<Escape>', self.handleQuit)
 
 if __name__ == "__main__":
     
-    #define the command line interface usage message
+    # define the command line interface usage message
     usage = "python %prog [-h help] [options (with '-'|'--' prefix)]"
 
     # used to parse command line arguments, -h will print options by default
     parser = OptionParser(usage)
     
     # indicate that the program should print actions to console
-    parser.add_option("-v","--verbose", 
+    parser.add_option("-v", "--verbose",
                 help="to enable command line printouts of state",
                 action="store_true")
     

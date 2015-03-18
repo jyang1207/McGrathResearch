@@ -55,9 +55,9 @@ def genSigmaImages(simFilename):
 		rms = candelNoiseData - candelNoNoiseData
 		expTime = 5000.0
 		data = np.sqrt(np.square(rms) + 
-					np.square(np.sqrt(np.abs(candelNoiseData*expTime))/expTime))
+					np.square(np.sqrt(np.abs(candelNoiseData * expTime)) / expTime))
 		fits.writeto(sigmaNoiseFilename, data, clobber=True)
-		data = np.sqrt(candelNoNoiseData)/expTime
+		data = np.sqrt(candelNoNoiseData) / expTime
 		fits.writeto(sigmaNoNoiseFilename, data, clobber=True)
 		candelNoiseHDUList.close()
 		candelNoNoiseHDUList.close()
@@ -70,8 +70,8 @@ def genSigmaImages(simFilename):
 
 if __name__ == "__main__":
 
-	#define the command line interface with simUtility.py
-	usage = ("USAGE: python genSigmaImages.py " +
+	# define the command line interface with simUtility.py
+	usage = ("USAGE: python genSigmaImages.py " + 
 			"<file containing list of simulation .fits filenames to be updated>")
 
 	# must have exactly one positional command line argument

@@ -8,8 +8,8 @@ Colby College Astrophysics Research
 '''
 import os
 import sys
-import multiprocessing # to run in parallel using all available cpus
-import time # to print runtime in log
+import multiprocessing  # to run in parallel using all available cpus
+import time  # to print runtime in log
 from optparse import OptionParser
 import pprint
 try:
@@ -32,13 +32,13 @@ class ModelGenerator:
 		
 	def __init__(self, callingDirectory=""):
 		'''constructor sets some initial field defaults'''
-		self.outputCatFilename = "generic.cat" # -CATALOG_NAME <filename>
-		self.segmentationMapFilename = "check.fits" # -CHECKIMAGE_NAME <filename>
+		self.outputCatFilename = "generic.cat"  # -CATALOG_NAME <filename>
+		self.segmentationMapFilename = "check.fits"  # -CHECKIMAGE_NAME <filename>
 		self.sextractorOptionsList = []
 		# "/".join(image.filename.split("/")[:-1]) + "/"
 	
 		# cd into desination directory to prevent processor collisions
-		destDirectory = os.path.join(callingDirectory,"_" + str(os.getpid()))
+		destDirectory = os.path.join(callingDirectory, "_" + str(os.getpid()))
 		if not os.path.isdir(destDirectory):
 			os.mkdir(destDirectory)
 		os.chdir(destDirectory)
@@ -46,12 +46,12 @@ class ModelGenerator:
 		self.destDirectory = destDirectory
 			
 		# set the names of the sextractor configuration files
-		self.sextractorConfigFilename = os.path.join(destDirectory,"configInit.sex")
-		self.sextractorReduceComponentConfigFilename = os.path.join(destDirectory, 
+		self.sextractorConfigFilename = os.path.join(destDirectory, "configInit.sex")
+		self.sextractorReduceComponentConfigFilename = os.path.join(destDirectory,
 														"configFewerComp.sex")
 		
 		# some other required sextractor files
-		requiredFilesDirectory = os.path.join(callingDirectory,"requiredFiles")
+		requiredFilesDirectory = os.path.join(callingDirectory, "requiredFiles")
 		self.sextractorFilterFilename = os.path.join(requiredFilesDirectory,
 													"sex.conv")
 		self.sextractorParamFilename = os.path.join(requiredFilesDirectory,
@@ -90,9 +90,9 @@ class ModelGenerator:
 		else:
 			# adjust relative path or make full path
 			if options.sigmaImage[:2] == "..":
-				sigmaImage = os.path.join("..",options.sigmaImage)
+				sigmaImage = os.path.join("..", options.sigmaImage)
 			else:
-				sigmaImage = os.path.join(self.callingDirectory,options.sigmaImage)
+				sigmaImage = os.path.join(self.callingDirectory, options.sigmaImage)
 				
 			# verify that file exists
 			if not os.path.isfile(sigmaImage):
@@ -107,9 +107,9 @@ class ModelGenerator:
 		else:
 			# adjust relative path or make full path
 			if options.psf[:2] == "..":
-				psf = os.path.join("..",options.psf)
+				psf = os.path.join("..", options.psf)
 			else:
-				psf = os.path.join(self.callingDirectory,options.psf)
+				psf = os.path.join(self.callingDirectory, options.psf)
 				
 			# verify that file exists
 			if not os.path.isfile(psf):
@@ -136,13 +136,13 @@ class ModelGenerator:
 		# if running sextractor, gather options in a list and update fields
 		self.sextractorOptionsList = []
 		for sexIndex, sexOpt in enumerate(sextractorOptions):
-			if sexIndex % 2 == 0:	# even, consider a keyword
+			if sexIndex % 2 == 0:  # even, consider a keyword
 				if sexOpt.upper() == "CATALOG_NAME":
-					continue#self.outputCatFilename = sextractorOptions[sexIndex + 1]
+					continue  # self.outputCatFilename = sextractorOptions[sexIndex + 1]
 				elif sexOpt.upper() == "CHECKIMAGE_NAME":
-					continue#self.segmentationMapFilename = sextractorOptions[sexIndex + 1]
+					continue  # self.segmentationMapFilename = sextractorOptions[sexIndex + 1]
 				self.sextractorOptionsList.append("-" + sexOpt.upper())
-			else:				# even, consider the value for previous keyword
+			else:  # even, consider the value for previous keyword
 				self.sextractorOptionsList.append(sexOpt)
 			
 		
@@ -152,8 +152,8 @@ class ModelGenerator:
 		'''
 		
 		# variables describing the sextractor config file
-		catalogName = "generic.cat" # Name of the output catalogue. If the name "STDOUT" is given and CATALOG TYPE is set to ASCII, ASCII HEAD, ASCII SKYCAT, or ASCII VOTABLE the catalogue will be piped to the standard output (stdout
-		catalogType = "ASCII_HEAD"	# Format of output catalog:
+		catalogName = "generic.cat"  # Name of the output catalogue. If the name "STDOUT" is given and CATALOG TYPE is set to ASCII, ASCII HEAD, ASCII SKYCAT, or ASCII VOTABLE the catalogue will be piped to the standard output (stdout
+		catalogType = "ASCII_HEAD"  # Format of output catalog:
 									# ASCII - ASCII table; the simplest, but space and time consuming,
 									# ASCII HEAD - as ASCII, preceded by a header containing information about the content,
 									# ASCII SKYCAT - SkyCat ASCII format (WCS coordinates required)
@@ -163,9 +163,9 @@ class ModelGenerator:
 		sextractorParamFilename = self.sextractorParamFilename
 		#------------------------------- Extraction ----------------------------------
 		detectType = "CCD" 
-		#fitsUnsigned = Force 16-bit FITS input data to be interpreted as unsigned integers.
-		#flagImage = File name(s) of the flagimage(s)
-		flagType = "OR" # Combination method for flags on the same object:
+		# fitsUnsigned = Force 16-bit FITS input data to be interpreted as unsigned integers.
+		# flagImage = File name(s) of the flagimage(s)
+		flagType = "OR"  # Combination method for flags on the same object:
 						# OR arithmetical OR,
 						# AND arithmetical AND,
 						# MIN minimum of all flag values,
@@ -175,107 +175,107 @@ class ModelGenerator:
 		
 		# TODO: needs work
 		# IDEAS:
-		#	use luminosity to guess how many galaxies are in the image, adjust sextractor to match
+		# 	use luminosity to guess how many galaxies are in the image, adjust sextractor to match
 		
 		# these variable values change for simulation template vs real template
-		if self.realSextractor: #TODO: look at these numbers
-			detectMinArea = "5" # Minimum number of pixels above threshold triggering detection
-			detectThreshold = "0.75"	#Detection threshold (0-2). 1 argument: (ADUs or relative to Background RMS, see THRESH TYPE). 2 arguments: R (mag.arcsec 2 ), Zero-point (mag).
-			deblendThreshold = "16" # Minimum contrast parameter for deblending.
+		if self.realSextractor:  # TODO: look at these numbers
+			detectMinArea = "5"  # Minimum number of pixels above threshold triggering detection
+			detectThreshold = "0.75"  # Detection threshold (0-2). 1 argument: (ADUs or relative to Background RMS, see THRESH TYPE). 2 arguments: R (mag.arcsec 2 ), Zero-point (mag).
+			deblendThreshold = "16"  # Minimum contrast parameter for deblending.
 			deblendMinContrast = "0.0001"
-			cleanBool = "Y" # If true, a cleaning of the catalog is done before being written to disk.
-			cleanParam = "1.0"	# Efficiency of cleaning.
-			analysisThreshold = "5" #Threshold (in surface brightness) at which CLASS STAR and FWHM operate. 1 argument: relative to Background RMS. 2 arguments: mu (mag/arcsec 2 ), Zero-point (mag)
+			cleanBool = "Y"  # If true, a cleaning of the catalog is done before being written to disk.
+			cleanParam = "1.0"  # Efficiency of cleaning.
+			analysisThreshold = "5"  # Threshold (in surface brightness) at which CLASS STAR and FWHM operate. 1 argument: relative to Background RMS. 2 arguments: mu (mag/arcsec 2 ), Zero-point (mag)
 		elif fname == self.sextractorConfigFilename:
-			detectMinArea = "10000" # Minimum number of pixels above threshold triggering detection
-			detectThreshold = "20"	#Detection threshold (0-2). 1 argument: (ADUs or relative to Background RMS, see THRESH TYPE). 2 arguments: R (mag.arcsec 2 ), Zero-point (mag).
-			deblendThreshold = "16" # Minimum contrast parameter for deblending.
-			deblendMinContrast = "0.005"	# Minimum contrast parameter for deblending.
-			cleanBool = "Y" # If true, a cleaning of the catalog is done before being written to disk.
-			cleanParam = "0.5"	# Efficiency of cleaning.
-			analysisThreshold = "5" #Threshold (in surface brightness) at which CLASS STAR and FWHM operate. 1 argument: relative to Background RMS. 2 arguments: mu (mag/arcsec 2 ), Zero-point (mag).
-		else:# fname == self.sextractorReduceComponentConfigFilename:
-			detectMinArea = "10000" # Minimum number of pixels above threshold triggering detection
-			detectThreshold = "50"	# Detection threshold (0-2). 1 argument: (ADUs or relative to Background RMS, see THRESH TYPE). 2 arguments: R (mag.arcsec 2 ), Zero-point (mag).
-			deblendThreshold = "16" # Minimum contrast parameter for deblending.
-			deblendMinContrast = "0.02"	# Minimum contrast parameter for deblending.
-			cleanBool = "Y" # If true, a cleaning of the catalog is done before being written to disk.
-			cleanParam = "0.5"	# Efficiency of cleaning.
-			analysisThreshold = "20" #Threshold (in surface brightness) at which CLASS STAR and FWHM operate. 1 argument: relative to Background RMS. 2 arguments: mu (mag/arcsec 2 ), Zero-point (mag).
+			detectMinArea = "10000"  # Minimum number of pixels above threshold triggering detection
+			detectThreshold = "20"  # Detection threshold (0-2). 1 argument: (ADUs or relative to Background RMS, see THRESH TYPE). 2 arguments: R (mag.arcsec 2 ), Zero-point (mag).
+			deblendThreshold = "16"  # Minimum contrast parameter for deblending.
+			deblendMinContrast = "0.005"  # Minimum contrast parameter for deblending.
+			cleanBool = "Y"  # If true, a cleaning of the catalog is done before being written to disk.
+			cleanParam = "0.5"  # Efficiency of cleaning.
+			analysisThreshold = "5"  # Threshold (in surface brightness) at which CLASS STAR and FWHM operate. 1 argument: relative to Background RMS. 2 arguments: mu (mag/arcsec 2 ), Zero-point (mag).
+		else:  # fname == self.sextractorReduceComponentConfigFilename:
+			detectMinArea = "10000"  # Minimum number of pixels above threshold triggering detection
+			detectThreshold = "50"  # Detection threshold (0-2). 1 argument: (ADUs or relative to Background RMS, see THRESH TYPE). 2 arguments: R (mag.arcsec 2 ), Zero-point (mag).
+			deblendThreshold = "16"  # Minimum contrast parameter for deblending.
+			deblendMinContrast = "0.02"  # Minimum contrast parameter for deblending.
+			cleanBool = "Y"  # If true, a cleaning of the catalog is done before being written to disk.
+			cleanParam = "0.5"  # Efficiency of cleaning.
+			analysisThreshold = "20"  # Threshold (in surface brightness) at which CLASS STAR and FWHM operate. 1 argument: relative to Background RMS. 2 arguments: mu (mag/arcsec 2 ), Zero-point (mag).
 			
-		filterBool = "Y"	#  If true,filtering is applied to the data before extraction.
-		filterName = self.sextractorFilterFilename # Name and path of the file containing the filter definition
-		#filterThresh = ?	# Lower and higher thresholds (in back-ground standard deviations) for a pix-el
-							#to be consideredin filtering (used for retinafiltering only).
-		#threshType = ? # Meaning of the DETECT_THRESH and ANALYSIS_THRESH parameters:
+		filterBool = "Y"  #  If true,filtering is applied to the data before extraction.
+		filterName = self.sextractorFilterFilename  # Name and path of the file containing the filter definition
+		# filterThresh = ?	# Lower and higher thresholds (in back-ground standard deviations) for a pix-el
+							# to be consideredin filtering (used for retinafiltering only).
+		# threshType = ? # Meaning of the DETECT_THRESH and ANALYSIS_THRESH parameters:
 							# RELATIVE - scaling factor to the background RMS,
 							# ABSOLUTE - absolute level (in ADUs or in surface brightness)
 			
-		maskType = "CORRECT"	#CORRECT - replace by values of pixels symmetric with respect to the source center.
-								#BLANK --put detected pixels belonging to neighbors to zero,
-								#NONE no masking,
+		maskType = "CORRECT"  # CORRECT - replace by values of pixels symmetric with respect to the source center.
+								# BLANK --put detected pixels belonging to neighbors to zero,
+								# NONE no masking,
 		#------------------------------ Photometry -----------------------------------
-		photoApertureDiameter = "10."	# these threes variables are related to the Kron radius, which is introduced as a accurate flexible aperture
+		photoApertureDiameter = "10."  # these threes variables are related to the Kron radius, which is introduced as a accurate flexible aperture
 										# that would capture most of the flux from an object.
 		magAutoKronFact = "2.5"
 		magAutoMinRadius = "3.5"
-		saturLevel = "120"	#Pixel value above which it is considered saturated.
-		magGamma = "4.0"	#gamma of the emulsion (slope of the response function). Takes effect in PHOTO mode 
-							#only but NEEDS to be specified, even for CCD images.
-		pixelScale = "0.06" #Pixel size in arcsec.
+		saturLevel = "120"  # Pixel value above which it is considered saturated.
+		magGamma = "4.0"  # gamma of the emulsion (slope of the response function). Takes effect in PHOTO mode 
+							# only but NEEDS to be specified, even for CCD images.
+		pixelScale = "0.06"  # Pixel size in arcsec.
 		#------------------------- Star/Galaxy Separation ----------------------------
-		seeingFWHM = "0.18"# ????? Seeing_FWHM FWHM of stellar images in arcsec.This quantity is used only
-							#for the neural network star/galaxy separation as expressed in the CLASS STAR output.
-		starNNWFilename = self.sextractorNNWFilename #Name of the file containing the neural network weights for star/galaxy separation.
+		seeingFWHM = "0.18"  # ????? Seeing_FWHM FWHM of stellar images in arcsec.This quantity is used only
+							# for the neural network star/galaxy separation as expressed in the CLASS STAR output.
+		starNNWFilename = self.sextractorNNWFilename  # Name of the file containing the neural network weights for star/galaxy separation.
 		#------------------------------ Background -----------------------------------
-		backSize = "600"	# Size, or Width, Height (inpixels) of a background mesh.
-		backFilterSize = "9"	#Size, or Width, Height (inbackground meshes) of the background-filtering mask.
-		backPhotoType = "LOCAL" #Background used to compute magnitudes:
+		backSize = "600"  # Size, or Width, Height (inpixels) of a background mesh.
+		backFilterSize = "9"  # Size, or Width, Height (inbackground meshes) of the background-filtering mask.
+		backPhotoType = "LOCAL"  # Background used to compute magnitudes:
 								# GLOBAL - taken directly from the background map
 								# LOCAL - recomputed in a rectangular annulus around the object
-		backPhotoThickness = "100"	#Thickness (in pixels) of the background LOCAL annulus.
-		backType = "AUTO"	# What background is subtracted from the images: 
+		backPhotoThickness = "100"  # Thickness (in pixels) of the background LOCAL annulus.
+		backType = "AUTO"  # What background is subtracted from the images: 
 						# AUTO - The internal interpolated background-map. In the manual it says "INTERNAL" here but the keyword is AUTO. 
 						# MANUAL A user-supplied constant value provided in BACK VALUE.
-		backValue = ""	# in BACK TYPE MANUAL mode, the constant value to be subtracted from the images.
+		backValue = ""  # in BACK TYPE MANUAL mode, the constant value to be subtracted from the images.
 		#------------------------------ Check Image ----------------------------------
-		checkImageName = "check.fits" # CHECKIMAGE NAME - File name for each "check-image"
-		checkImageType = "SEGMENTATION" #display patches corresponding to pixels attributed to each object
-							#APERTURES-- MAG APER and MAG AUTO integration limits
-							#-OBJECTS-- background-subtracted image with detected objects blanked,
-							#OBJECTS detected objects,
-							#FILTERED background-subtracted filtered image (requires FILTER = Y),
-							#-BACKGROUND background-subtracted image,
-							#MINIBACK RMS low-resolution background noise map, 
-							#MINIBACKGROUND low-resolution background map,
-							#BACKGROUND RMS full-resolution interpolated background noise map,
-							#BACKGROUND full-resolution interpolated background map,
-							#IDENTICAL identical to input image (useful for converting formats),
-							#NONE no check-image,
+		checkImageName = "check.fits"  # CHECKIMAGE NAME - File name for each "check-image"
+		checkImageType = "SEGMENTATION"  # display patches corresponding to pixels attributed to each object
+							# APERTURES-- MAG APER and MAG AUTO integration limits
+							# -OBJECTS-- background-subtracted image with detected objects blanked,
+							# OBJECTS detected objects,
+							# FILTERED background-subtracted filtered image (requires FILTER = Y),
+							# -BACKGROUND background-subtracted image,
+							# MINIBACK RMS low-resolution background noise map, 
+							# MINIBACKGROUND low-resolution background map,
+							# BACKGROUND RMS full-resolution interpolated background noise map,
+							# BACKGROUND full-resolution interpolated background map,
+							# IDENTICAL identical to input image (useful for converting formats),
+							# NONE no check-image,
 		#--------------------- Memory (change with caution!) -------------------------
 		memoryObjStack = "50000"
 		memoryPixStack = "1000000"
 		memoryBufferSize = "8500"
 		#----------------------------- Miscellaneous ---------------------------------
-		verboseType = "QUIET"	#run silently,
-								#NORMAL display warnings and limited info concerning the work in progress,
-								#EXTRA WARNINGS like NORMAL, plus a few more warnings if necessary,
-								#FULL display a more complete information and the principal parameters of all the objects extracted.
+		verboseType = "QUIET"  # run silently,
+								# NORMAL display warnings and limited info concerning the work in progress,
+								# EXTRA WARNINGS like NORMAL, plus a few more warnings if necessary,
+								# FULL display a more complete information and the principal parameters of all the objects extracted.
 		#------------------------------- New Stuff -----------------------------------
-		weightType = "NONE"		#variance-map derived from an external weight-map,
-								#MAP_VAR external variance-map,
-								#MAP RMS variance-map derived from an external RMS-map,
-								#BACKGROUND variance-map derived from the image itself,
-								#NONE no weighting,
-		#WEIGHT IMAGE --File name of the detection and measurement weight image , respectively.
-		#WEIGHT GAIN -- If true, weight maps are considered as gain maps.
-		magZeropoint = "25.96"	   #Zero-point offset to be applied to magnitudes.
+		weightType = "NONE"  # variance-map derived from an external weight-map,
+								# MAP_VAR external variance-map,
+								# MAP RMS variance-map derived from an external RMS-map,
+								# BACKGROUND variance-map derived from the image itself,
+								# NONE no weighting,
+		# WEIGHT IMAGE --File name of the detection and measurement weight image , respectively.
+		# WEIGHT GAIN -- If true, weight maps are considered as gain maps.
+		magZeropoint = "25.96"  # Zero-point offset to be applied to magnitudes.
 		#------------------------- End of variable definitions -----------------------
 		
 		
 		# use above variables to write the config file
 		os.system('touch ' + fname)
-		sextractorConfigFile = open(fname,'w')
+		sextractorConfigFile = open(fname, 'w')
 		sextractorConfigFile.write(
 '''
 # Default configuration file for SExtractor V1.2b14 - > 2.0
@@ -286,7 +286,7 @@ class ModelGenerator:
 
 ''')
 		if catalogName:
-			#generic.fits
+			# generic.fits
 			sextractorConfigFile.write(
 				"CATALOG_NAME	 " + catalogName + "\n")
 		
@@ -297,7 +297,7 @@ class ModelGenerator:
 				"	   # \"NONE\",\"ASCII_HEAD\",\"ASCII\",\"FITS_1.0\", or \"FITS_LDAC\"\n")
 		
 		if sextractorParamFilename:
-			#WFC3.morphWG.param
+			# WFC3.morphWG.param
 			sextractorConfigFile.write(
 				"PARAMETERS_NAME " + sextractorParamFilename + 
 				"  # name of the file containing catalog contents\n")
@@ -310,75 +310,75 @@ class ModelGenerator:
 ''')
 		
 		if detectType:
-			#CCD
+			# CCD
 			sextractorConfigFile.write(
 				"DETECT_TYPE	 " + detectType + 
 				"			  # \"CCD\" or \"PHOTO\" (*)\n")
 		
 		if flagType:
-			#OR
+			# OR
 			sextractorConfigFile.write(
 				"FLAG_TYPE		 " + flagType + "\n")
 		
 		if detectMinArea:
-			#5
+			# 5
 			sextractorConfigFile.write(
-				"DETECT_MINAREA	 " + detectMinArea +
+				"DETECT_MINAREA	 " + detectMinArea + 
 				"				# minimum number of pixels above threshold\n")
 		
 		if detectThreshold:
-			#0.75
+			# 0.75
 			sextractorConfigFile.write(
-				"DETECT_THRESH	 " + detectThreshold +
+				"DETECT_THRESH	 " + detectThreshold + 
 				"			 # <sigmas> or <threshold>,<ZP> in mag.arcsec-2\n")
 		
 		if analysisThreshold:
-			#5
+			# 5
 			sextractorConfigFile.write(
-				"ANALYSIS_THRESH " + analysisThreshold +
+				"ANALYSIS_THRESH " + analysisThreshold + 
 				"				# <sigmas> or <threshold>,<ZP> in mag.arcsec-2\n")
 		
 		if filterBool:
-			#Y
+			# Y
 			sextractorConfigFile.write(
-				"FILTER			 " + filterBool +
+				"FILTER			 " + filterBool + 
 				"				# apply filter for detection (\"Y\" or \"N\")?\n")
 		
 		if filterName:
-			#tophat_9.0_9x9.conv
+			# tophat_9.0_9x9.conv
 			sextractorConfigFile.write(
 				"FILTER_NAME	 " + filterName + 
 				"	  # name of the file containing the filter\n")
 		
 		if deblendThreshold:
-			#16
+			# 16
 			sextractorConfigFile.write(
 				"DEBLEND_NTHRESH " + deblendThreshold + 
 				"			   # Number of deblending sub-thresholds\n")
 		
 		if deblendMinContrast:
-			#0.0001
+			# 0.0001
 			sextractorConfigFile.write(
-				"DEBLEND_MINCONT " + deblendMinContrast +
+				"DEBLEND_MINCONT " + deblendMinContrast + 
 				"  # Minimum contrast parameter for deblending\n\n")
 		
 		if cleanBool:
-			#Y
+			# Y
 			sextractorConfigFile.write(
-				"CLEAN			 " + cleanBool +
+				"CLEAN			 " + cleanBool + 
 				"				# Clean spurious detections? (Y or N)?\n")
 		
 		if cleanParam:
-			#1.0
+			# 1.0
 			sextractorConfigFile.write(
 				"CLEAN_PARAM	 " + cleanParam + 
 				"			  # Cleaning efficiency\n\n")
 		
 		if maskType:
-			#CORRECT
+			# CORRECT
 			sextractorConfigFile.write(
 				"MASK_TYPE		 " + maskType + 
-				"		  # type of detection MASKing: can be one of\n" +
+				"		  # type of detection MASKing: can be one of\n" + 
 				"								 # \"NONE\", \"BLANK\" or \"CORRECT\"\n")
 		
 		sextractorConfigFile.write(
@@ -389,33 +389,33 @@ class ModelGenerator:
 ''')
 		
 		if photoApertureDiameter:
-			#10.
+			# 10.
 			sextractorConfigFile.write(
-				"PHOT_APERTURES	  " + photoApertureDiameter +
+				"PHOT_APERTURES	  " + photoApertureDiameter + 
 				"	# MAG_APER aperture diameter(s) in pixels\n")
 		
 		if magAutoKronFact and magAutoMinRadius:
-			#2.5, 3.5
+			# 2.5, 3.5
 			sextractorConfigFile.write(
-				"PHOT_AUTOPARAMS " + magAutoKronFact + ", " + magAutoMinRadius +
+				"PHOT_AUTOPARAMS " + magAutoKronFact + ", " + magAutoMinRadius + 
 				"		 # MAG_AUTO parameters: <Kron_fact>,<min_radius>\n")
 		
 		if saturLevel:
-			#120
+			# 120
 			sextractorConfigFile.write(
 				"SATUR_LEVEL	 " + saturLevel + 
 				"			  # level (in ADUs) at which arises saturation\n")
 		
 		if magGamma:
-			#4.0
+			# 4.0
 			sextractorConfigFile.write(
-				"MAG_GAMMA		 " + magGamma +
+				"MAG_GAMMA		 " + magGamma + 
 				"			  # gamma of emulsion (for photographic scans)\n")
 		
 		if pixelScale:
-			#0.06
+			# 0.06
 			sextractorConfigFile.write(
-				"PIXEL_SCALE	 " + pixelScale +
+				"PIXEL_SCALE	 " + pixelScale + 
 				"			 # size of pixel in arcsec (0=use FITS WCS info).\n")
 		
 		sextractorConfigFile.write(
@@ -426,13 +426,13 @@ class ModelGenerator:
 ''')
 		
 		if seeingFWHM:
-			#0.18
+			# 0.18
 			sextractorConfigFile.write(
 				"SEEING_FWHM	 " + seeingFWHM + 
 				"			 # stellar FWHM in arcsec\n")
 		
 		if starNNWFilename:
-			#default.nnw
+			# default.nnw
 			sextractorConfigFile.write(
 				"STARNNW_NAME	 " + starNNWFilename + 
 				"	  # Neural-Network_Weight table filename\n")
@@ -445,41 +445,41 @@ class ModelGenerator:
 ''')
 		
 		if backSize:
-			#256
+			# 256
 			sextractorConfigFile.write(
 				"BACK_SIZE		 " + backSize + 
 				"			  # Background mesh: <size> or <width>,<height>\n")
 		
 		if backType:
-			#not in original
+			# not in original
 			sextractorConfigFile.write(
 				"BACK_TYPE		 " + backType + 
-				"			  # What background is subtracted from the images:" +
+				"			  # What background is subtracted from the images:" + 
 '''
 				# AUTO - The internal interpolated background-map. In the manual it says "INTERNAL" here but the keyword is AUTO. 
 				# MANUAL A user-supplied constant value provided in BACK VALUE.
 ''')
 		
 		if backValue:
-			#not in original
+			# not in original
 			sextractorConfigFile.write(
 				"BACK_VALUE		  " + backValue + 
 				"			  # in BACK TYPE MANUAL mode, the constant value to be subtracted from the images.\n")
 		
 		if backFilterSize:
-			#9
+			# 9
 			sextractorConfigFile.write(
-				"BACK_FILTERSIZE " + backFilterSize +
+				"BACK_FILTERSIZE " + backFilterSize + 
 				"				# Background filter: <size> or <width>,<height>\n\n")
 		
 		if backPhotoType:
-			#LOCAL
+			# LOCAL
 			sextractorConfigFile.write(
 				"BACKPHOTO_TYPE	 " + backPhotoType + 
 				"			# can be \"GLOBAL\" or \"LOCAL\" (*)\n")
 		
 		if backPhotoThickness:
-			#100
+			# 100
 			sextractorConfigFile.write(
 				"BACKPHOTO_THICK " + backPhotoThickness + 
 				"			  # thickness of the background LOCAL annulus (*)\n")
@@ -492,13 +492,13 @@ class ModelGenerator:
 ''')
 		
 		if checkImageName:
-			#check.fits
+			# check.fits
 			sextractorConfigFile.write(
 				"CHECKIMAGE_NAME  " + checkImageName + 
 				"	# CHECKIMAGE NAME - File name for each \"check-image\"\n")
 		
 		if checkImageType:
-			#SEGMENTATION
+			# SEGMENTATION
 			sextractorConfigFile.write(
 				"CHECKIMAGE_TYPE  " + checkImageType + 
 				"	# can be one of \"NONE\", \"BACKGROUND\"," + 
@@ -520,19 +520,19 @@ class ModelGenerator:
 ''')
 		
 		if memoryObjStack:
-			#2000
+			# 2000
 			sextractorConfigFile.write(
-				"MEMORY_OBJSTACK " + memoryObjStack +
+				"MEMORY_OBJSTACK " + memoryObjStack + 
 				"			 # number of objects in stack\n")
 		
 		if memoryPixStack:
-			#200000
+			# 200000
 			sextractorConfigFile.write(
 				"MEMORY_PIXSTACK " + memoryPixStack + 
 				"		   # number of pixels in stack\n")
 		
 		if memoryBufferSize:
-			#2048
+			# 2048
 			sextractorConfigFile.write(
 				"MEMORY_BUFSIZE	 " + memoryBufferSize + 
 				"			 # number of lines in buffer\n")
@@ -545,7 +545,7 @@ class ModelGenerator:
 ''')
 		
 		if verboseType:
-			#QUIET
+			# QUIET
 			sextractorConfigFile.write(
 				"VERBOSE_TYPE	 " + verboseType + 
 				"			# can be \"QUIET\", \"NORMAL\" or \"FULL\" (*)\n")
@@ -558,7 +558,7 @@ class ModelGenerator:
 ''')
 		
 		if weightType:
-			#MAP_WEIGHT
+			# MAP_WEIGHT
 			sextractorConfigFile.write(
 				"WEIGHT_TYPE   " + weightType + "\n")
 		
@@ -571,7 +571,7 @@ class ModelGenerator:
 ''')
 		
 		if magZeropoint:
-			#25.96
+			# 25.96
 			sextractorConfigFile.write(
 				"MAG_ZEROPOINT	 " + magZeropoint + 
 				"			# H-band magnitude zero-point\n")
@@ -600,7 +600,7 @@ class ModelGenerator:
 		self.segmentationMapFilename = os.path.join(self.destDirectory,
 									".".join(image["filename"].split("/")[-1
 										].split(".")[:-1]) + "_check.fits")
-		os.system(	"sex " + image["filename"] + 
+		os.system("sex " + image["filename"] + 
 					" -c " + configFilename + 
 					" -CATALOG_NAME " + self.outputCatFilename + 
 					" -CHECKIMAGE_NAME " + self.segmentationMapFilename + 
@@ -625,7 +625,7 @@ class ModelGenerator:
 		# if there are too many galaxies after the first fit, recursively
 		# run sextractor again, now with a different configuration file
 		if (not self.realSextractor and (configFilename == self.sextractorConfigFilename) and 
-			(numGalaxies > 3)): # TODO: this could be a function of image brightness
+			(numGalaxies > 3)):  # TODO: this could be a function of image brightness
 			return self.run_sextractor(image, self.sextractorReduceComponentConfigFilename)
 		
 		# loop over every line in catalog to build list of image models				
@@ -676,7 +676,7 @@ class ModelGenerator:
 				else:
 					defaultStr = defaultStr + "FLUX_RADIUS "
 					galaxyRad = 50.0
-				galaxySers = 2.5 # need to have accurate KronRadius for above
+				galaxySers = 2.5  # need to have accurate KronRadius for above
 								
 				if "A_IMAGE" in indexDict:
 					galaxyA = float(galaxyOutputList[indexDict["A_IMAGE"]])
@@ -708,12 +708,12 @@ class ModelGenerator:
 					
 				# if eith a or b are zero, use 1-ellipticity, otherwise use b/a
 				if galaxyA and galaxyB:
-					galaxyBA = galaxyB/galaxyA
+					galaxyBA = galaxyB / galaxyA
 				else:
-					galaxyBA = 1.0-galaxyE
+					galaxyBA = 1.0 - galaxyE
 
 				# store (x,y) of the galaxy as the image's model
-				image["models"].append({"centerCoords":[galaxyX,galaxyY],
+				image["models"].append({"centerCoords":[galaxyX, galaxyY],
 										"magnitude":galaxyMag,
 										"radius":galaxyRad,
 										"ba":galaxyBA,
@@ -737,10 +737,10 @@ class ModelGenerator:
 							].split(".")[:-1]) + ".reg")
 		
 		# write the header
-		regFileString = ("#Region file format: DS9 version 4.1\n" +
+		regFileString = ("#Region file format: DS9 version 4.1\n" + 
 						"global color=green dashlist=8 3 width=1 " + 
 						"font=\"helvetica 10 normal roman\" select=1 " + 
-						"highlite=1 dash=0 fixed=0 edit=1 move=1 delete=1 " +
+						"highlite=1 dash=0 fixed=0 edit=1 move=1 delete=1 " + 
 						"include=1 source=1\n" + "physical\n")
 		
 		# write a circle for each component of the image
@@ -776,16 +776,16 @@ class ModelGenerator:
 	
 		
 	def defineGalfitFilenames(self, image):
-		filename = os.path.join(self.destDirectory, 
+		filename = os.path.join(self.destDirectory,
 					".".join(image["filename"].split("/")[-1].split(".")[:-1]))
-		self.galfit_single_constraint_filename =	filename + "_single_constraint.txt"
+		self.galfit_single_constraint_filename = 	filename + "_single_constraint.txt"
 		self.galfit_single_parameter_filename = 	filename + "_single_param.txt"
-		self.galfit_single_output_filename =		filename + "_single_multi.fits"
-		self.galfit_single_result_filename =		filename + "_single_result.txt"
+		self.galfit_single_output_filename = 		filename + "_single_multi.fits"
+		self.galfit_single_result_filename = 		filename + "_single_result.txt"
 		self.galfit_bulge_constraint_filename = 	filename + "_bulge_constraint.txt"
-		self.galfit_bulge_parameter_filename =		filename + "_bulge_param.txt"
-		self.galfit_bulge_output_filename =			filename + "_bulge_multi.fits"
-		self.galfit_bulge_result_filename =			filename + "_bulge_result.txt"
+		self.galfit_bulge_parameter_filename = 		filename + "_bulge_param.txt"
+		self.galfit_bulge_output_filename = 			filename + "_bulge_multi.fits"
+		self.galfit_bulge_result_filename = 			filename + "_bulge_result.txt"
 		if not self.sigmaImage:
 			sigmaImage = ".".join(image["filename"].split(".")[:-1]) + "_sigma.fits"
 			if os.path.isfile(sigmaImage):
@@ -806,7 +806,7 @@ class ModelGenerator:
 		paramFile.write("# IMAGE and GALFIT CONTROL PARAMETERS\n")
 		paramFile.write("A) " + image["filename"] + 
 			"						#Input data image block\n")
-		paramFile.write("B) " + ouputFilename +
+		paramFile.write("B) " + ouputFilename + 
 			"						#Output data image block\n")
 		paramFile.write("C) " + sigmaFilename + 
 			"						#Sigma image name (made from data if blank or 'none')\n")
@@ -816,7 +816,7 @@ class ModelGenerator:
 			"						#PSF fine sampling factor relative to data\n")
 		paramFile.write("F) none" + 					
 			"						#Bad pixel mask (FITS file or ASCIIcoord list)\n")
-		paramFile.write("G) none" +  
+		paramFile.write("G) none" + 
 			"						#File with parameter constraints (ASCII file)\n")
 		paramFile.write("H) " + "1" + " " + str(image["width"]) + " " + 
 											"1" + " " + str(image["height"]) + 
@@ -886,7 +886,7 @@ class ModelGenerator:
 		with open(resultFilename, "r") as resultFile:
 			resultContents = resultFile.readlines()
 		
-		closestDist = 0.0 # same as false in python
+		closestDist = 0.0  # same as false in python
 		closestID = -1
 		currentID = -1
 		skipSky = False
@@ -912,9 +912,9 @@ class ModelGenerator:
 			if not skipSky and resultLine.strip()[:2] == "1)":
 				px = resultLineList[1]
 				py = resultLineList[2]
-				dx = imageWidth/2.0 - float(px)
-				dy = imageHeight/2.0 - float(py)
-				dist = dx*dx + dy*dy
+				dx = imageWidth / 2.0 - float(px)
+				dy = imageHeight / 2.0 - float(py)
+				dist = dx * dx + dy * dy
 				if not closestDist or (dist < closestDist):
 					closestDist = dist
 					closestID = currentID
@@ -939,7 +939,7 @@ class ModelGenerator:
 			resultLineList = resultLine.split()
 				
 			if resultLine.strip()[:2] == "B)":
-				bulgeParamStr = (bulgeParamStr + "B) " + self.galfit_bulge_output_filename +
+				bulgeParamStr = (bulgeParamStr + "B) " + self.galfit_bulge_output_filename + 
 							"						#Output data image block\n")
 				
 			elif resultLine.strip()[:2] == "G)":
@@ -1005,7 +1005,7 @@ class ModelGenerator:
 		# write the bulge constraint file for two given components
 		with open(self.galfit_bulge_constraint_filename, "w") as constraintFile:
 			constraintFile.write(str(centerID) + "," + str(bulgeComponentID) + 
-						" x -5  5	# Soft constraint: Constrains x position\n" +
+						" x -5  5	# Soft constraint: Constrains x position\n" + 
 						str(centerID) + "," + str(bulgeComponentID) + 
 						" y -5  5	# Soft constraint: Constrains y position\n")
 		
@@ -1023,7 +1023,7 @@ class ModelGenerator:
 		
 		# writes the single component parameter file
 		with open(self.galfit_single_parameter_filename, 'w') as paramFile:
-			self.write_galfit_parameter(image, paramFile, 
+			self.write_galfit_parameter(image, paramFile,
 										self.galfit_single_output_filename,
 										self.sigmaImage)
 	
@@ -1034,7 +1034,7 @@ class ModelGenerator:
 		print(os.getcwd())
 		# detects atomic galfit error
 		if not os.path.isfile(self.galfit_single_output_filename):
-			self.logMsg = (	self.logMsg + 
+			self.logMsg = (self.logMsg + 
 							" galfit failed on single component, " + 
 							"probably mushroom (atomic galfit error)")
 			return
@@ -1044,7 +1044,7 @@ class ModelGenerator:
 			self.logMsg = self.logMsg + " galfit.01 DNE"
 			return
 
-		os.system(" ".join(["mv","galfit.01",self.galfit_single_result_filename]))
+		os.system(" ".join(["mv", "galfit.01", self.galfit_single_result_filename]))
 		
 		# done unless command line specified that a second galfit run
 		# should be done by adding a bulge component to the result of the first run
@@ -1064,7 +1064,7 @@ class ModelGenerator:
 			
 			# detects atomic galfit error
 			if not os.path.isfile(self.galfit_bulge_output_filename):
-				self.logMsg = (	self.logMsg + 
+				self.logMsg = (self.logMsg + 
 								" galfit failed on bulge component, " + 
 								"probably mushroom (atomic galfit error)")
 				return
@@ -1075,7 +1075,7 @@ class ModelGenerator:
 				return
 			
 			# rename galfit.NN to result file
-			os.system(" ".join(["mv","galfit.01",self.galfit_bulge_result_filename]))
+			os.system(" ".join(["mv", "galfit.01", self.galfit_bulge_result_filename]))
 		
 		# if we get here then nothing went wrong!
 		self.logMsg = self.logMsg + " success"
@@ -1132,7 +1132,7 @@ class ModelGenerator:
 		return self.logMsg
 		
 
-def runModelGeneratorSerial(parser, options, sextractorKeywordOptions, 
+def runModelGeneratorSerial(parser, options, sextractorKeywordOptions,
 							callingDirectory, imageFilenames, pb=None):
 	'''
 	uses the command line inputs gathered in __main__ to create an
@@ -1152,7 +1152,7 @@ def runModelGeneratorSerial(parser, options, sextractorKeywordOptions,
 	
 	# parse the command line options
 	modelGen.parseGalfitOptions(parser, options)
-	modelGen.parseSextractorOptions(parser, options.realSextractor, 
+	modelGen.parseSextractorOptions(parser, options.realSextractor,
 									sextractorKeywordOptions)
 	
 	# write the sextractor config file, which will be used for all images
@@ -1166,7 +1166,7 @@ def runModelGeneratorSerial(parser, options, sextractorKeywordOptions,
 		# run modeling method
 		logResults.append(modelGen.modelImage(imageFilename.strip()))
 		if pb:
-			pb.step(1)
+			pb.set(pb.get()+1) #pb.step(1)
 
 	return [logResults, modelGen.destDirectory]
 
@@ -1199,7 +1199,7 @@ def runModelGeneratorParallel(parameterList):
 	
 	# parse the command line options
 	modelGen.parseGalfitOptions(parser, options)
-	modelGen.parseSextractorOptions(parser, options.realSextractor, 
+	modelGen.parseSextractorOptions(parser, options.realSextractor,
 									sextractorKeywordOptions)
 	
 	# write the sextractor config file, which will be used for all images
@@ -1209,7 +1209,7 @@ def runModelGeneratorParallel(parameterList):
 	# run modeling method and return the resulting line in the log
 	logResult = modelGen.modelImage(imageFilename.strip())
 	if pb:
-		pb.step(1)
+		pb.set(pb.get()+1) #pb.step(1)
 	return [logResult, modelGen.destDirectory]
 
 def main(args, pb=None):
@@ -1220,47 +1220,47 @@ def main(args, pb=None):
 	NOTE: argparse is the current version as of python 2.7, 
 			but optparse is used to maintain better backwards compatibility
 	'''
-	#define the command line interface with simUtility.py
-	usage = ("\n%prog inputFile [-h help] [options (with '-'|'--' prefix)]" +
+	# define the command line interface with simUtility.py
+	usage = ("\n%prog inputFile [-h help] [options (with '-'|'--' prefix)]" + 
 			"  [sextractor options (no '-' prefix)]\n")
 			
 	# used to parse command line arguments
 	parser = OptionParser(usage)
 	
 	# fit an additional component after the initial GALFIT fit
-	parser.add_option("-b","--bulge", 
+	parser.add_option("-b", "--bulge",
 				help="include to run a GALFIT bulge fit after the initial galaxy fit",
 				action="store_true")
 						
 	# suppress running galfit after sextractor
-	parser.add_option("-g","--galfitOff", 
+	parser.add_option("-g", "--galfitOff",
 				help="include to suppress running galfit after Source-Extractor",
 				action="store_true")
 	
 	# run in parallel
-	parser.add_option("-p","--parallel", 
+	parser.add_option("-p", "--parallel",
 				help="include to run images in parallel, otherwise series",
 				action="store_true")
 						
 	# run sextractor
-	parser.add_option("-r","--realSextractor", 
+	parser.add_option("-r", "--realSextractor",
 				help="include to run Source-Extractor for real images, otherwise sim images assumed",
 				action="store_true")
 	
 	# the GALFIT sigma image
-	parser.add_option("-s","--sigmaImage", 
+	parser.add_option("-s", "--sigmaImage",
 				help="set the file defining the GALFIT sigma image")
 			
 	# Magnitude photometric zeropoint	
 	parser.add_option("--mpz", metavar="MagnitudePhotometricZeropoint",
-				type="float", default=26.23, 
-				help="set the magnitude photometric zeropoint for" +
+				type="float", default=26.23,
+				help="set the magnitude photometric zeropoint for" + 
 					" GALFIT to use [default: %default]")
 						
 	# Plate scale
 	parser.add_option("--plate", metavar="PlateScale",
-				type="float", default=0.06, 
-				help="set the plate scale for GALFIT to use" +
+				type="float", default=0.06,
+				help="set the plate scale for GALFIT to use" + 
 						"[default: %default]")
 								
 	# PSF file. verified after parsing
@@ -1297,7 +1297,7 @@ def main(args, pb=None):
 	# verify there are images to model 
 	numImages = len(imageFilenames)
 	if numImages == 0:
-		parser.error("input file " + args[0] +
+		parser.error("input file " + args[0] + 
 					" has no contents (full path image filenames).")
 					
 	# verify that the calling computer has the necessary commands in PATH
@@ -1320,15 +1320,15 @@ def main(args, pb=None):
 		# check for image existence
 		if not os.path.isfile(newFilename):
 			parser.error("input file has filename " + newFilename + "\n"
-						"This file does not exist or is not accessible\n" +
+						"This file does not exist or is not accessible\n" + 
 						"input file " + args[0] + 
 						" must be only full path image filenames, one per line.")
 			
 		# adjust for image filename if relative, otherwise make full path
 		if newFilename[:2] == "..":
-			newFilename = os.path.join("..",newFilename)
+			newFilename = os.path.join("..", newFilename)
 		else:
-			newFilename = os.path.join(os.getcwd(),newFilename)
+			newFilename = os.path.join(os.getcwd(), newFilename)
 		newFilenames.append(newFilename)
 	imageFilenames = newFilenames
 	
@@ -1347,7 +1347,7 @@ def main(args, pb=None):
 	counter = 0
 	while True:
 		try:
-			os.mkdir(collectiveDestDirectory+strCounter)
+			os.mkdir(collectiveDestDirectory + strCounter)
 			collectiveDestDirectory += strCounter
 			break
 		except:
@@ -1361,12 +1361,12 @@ def main(args, pb=None):
 	logResults = []
 	if not (options.parallel and (numImages >= numCPUs)):
 		print("running in serial")
-		[logResults,destDirectory] = runModelGeneratorSerial(parser, options, 
-															args[1:], 
-															os.getcwd(), 
+		[logResults, destDirectory] = runModelGeneratorSerial(parser, options,
+															args[1:],
+															os.getcwd(),
 															imageFilenames, pb)
-		os.system(" ".join(["mv", os.path.join(destDirectory,"*"), collectiveDestDirectory]))
-		os.system(" ".join(["rm -r",destDirectory]))
+		os.system(" ".join(["mv", os.path.join(destDirectory, "*"), collectiveDestDirectory]))
+		os.system(" ".join(["rm -r", destDirectory]))
 	
 	# run the parallel version
 	else:
@@ -1375,7 +1375,7 @@ def main(args, pb=None):
 		imageArgs = []
 		print ("running in parallel")
 		for imageFilename in imageFilenames:
-			imageArgs.append([	parser, options, args[1:], 
+			imageArgs.append([	parser, options, args[1:],
 								os.getcwd(), imageFilename, pb])
 								
 		# see documentation on multiprocessing pool and map function
@@ -1396,20 +1396,20 @@ def main(args, pb=None):
 		
 		# move all individual logResults into the new collective logResults folder
 		for destDirectory in destDirectories:
-			os.system(" ".join(["mv", os.path.join(destDirectory,"*"), collectiveDestDirectory]))
-			os.system(" ".join(["rmdir",destDirectory]))
+			os.system(" ".join(["mv", os.path.join(destDirectory, "*"), collectiveDestDirectory]))
+			os.system(" ".join(["rmdir", destDirectory]))
 		
 	# end program run time, print total
 	elapsed = time.time() - startTime
-	print(" ".join(["total","time","elapsed","=",str(int(elapsed)),"seconds",
-			"about","equal","to",str(int(elapsed/60.0)),"minutes"]))
+	print(" ".join(["total", "time", "elapsed", "=", str(int(elapsed)), "seconds",
+			"about", "equal", "to", str(int(elapsed / 60.0)), "minutes"]))
 
 	# compose the log
 	log = ("run on " + time.strftime("%m-%d-%Y-%T") + 
 			" with command line input " + " ".join(sys.argv + 
-			["total","time","elapsed","=",str(int(elapsed)),"seconds",
-			"about","equal","to",str(int(elapsed/60.0)),"minutes",
-			"about","equal","to",str(int((elapsed/60.0)/60.0)),"hours"]) + "\n")
+			["total", "time", "elapsed", "=", str(int(elapsed)), "seconds",
+			"about", "equal", "to", str(int(elapsed / 60.0)), "minutes",
+			"about", "equal", "to", str(int((elapsed / 60.0) / 60.0)), "hours"]) + "\n")
 	for logLine in logResults:
 		log = log + logLine + "\n"
 	

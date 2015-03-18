@@ -30,7 +30,7 @@ def updateHeader(simFilename):
 		simHDUList = fits.open(simFilename)
 		simHeader = simHDUList[0].header
 	except:
-		print(	"failed to open sim file " + simFilename + 
+		print("failed to open sim file " + simFilename + 
 				" with fits")
 		return False
 		
@@ -42,7 +42,7 @@ def updateHeader(simFilename):
 		candelHDUList = fits.open(candelFilename)
 		candelHeader = candelHDUList[0].header
 	except:
-		print(	"failed to open candelized file " + candelFilename + 
+		print("failed to open candelized file " + candelFilename + 
 				" with fits")
 		simHDUList.close()
 		return False
@@ -50,7 +50,7 @@ def updateHeader(simFilename):
 	try:
 		simHeader.set("SCALESIM", candelHeader["SCALESIM"], "pc per pixel of SUNRISE img")
 	except:
-		print(	"failed to write to sim header " + simFilename + 
+		print("failed to write to sim header " + simFilename + 
 				" from candel header " + candelFilename + 
 				" with fits")
 		simHDUList.close()
@@ -64,8 +64,8 @@ def updateHeader(simFilename):
 
 if __name__ == "__main__":
 
-	#define the command line interface with simUtility.py
-	usage = ("USAGE: python updateHeader.py " +
+	# define the command line interface with simUtility.py
+	usage = ("USAGE: python updateHeader.py " + 
 			"<file containing list of simulation .fits filenames to be updated>")
 
 	# must have exactly one positional command line argument

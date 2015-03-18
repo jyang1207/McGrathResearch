@@ -9,7 +9,7 @@ Colby College Astrophysics Research
 
 import matplotlib.pyplot as plt
 import matplotlib.pylab as pyl
-#import matplotlib.ticker as ticker
+# import matplotlib.ticker as ticker
 import numpy as np
 import os
 # import itertools
@@ -57,12 +57,12 @@ def getFormats():
 		formats.append(color + markers[index])
 	
 	for index, color in enumerate(colors):
-		formats.append(color + markers[(index+1)*-1])
+		formats.append(color + markers[(index + 1) * -1])
 	
 	return formats
 
-def plotAllCamera(	plotComponents, fieldDescriptions, xFieldName='age', 
-	yFieldName='ser', curSubPlot=plt, includeLegend = True, cameras="all"):
+def plotAllCamera(plotComponents, fieldDescriptions, xFieldName='age',
+	yFieldName='ser', curSubPlot=plt, includeLegend=True, cameras="all"):
 	'''
 	plot specified cameras in plot components and optionally include legend
 	plots the components given on the plot given, using fieldDescriptions to set axis scales
@@ -80,29 +80,29 @@ def plotAllCamera(	plotComponents, fieldDescriptions, xFieldName='age',
 				newcamset.append(cam)
 		camSet = newcamset
 		if not camSet:
-			print("camera "+cameras+" has no data")
+			print("camera " + cameras + " has no data")
 	
 	fieldValByAge = dict([[age, []] for age in ageSet])
 	for componentNumber, fieldVal in enumerate(plotComponents[yFieldName]):
 		fieldValByAge[plotComponents[xFieldName][componentNumber]].append(
-								[fieldVal,plotComponents['cam'][componentNumber]])
+								[fieldVal, plotComponents['cam'][componentNumber]])
 
 	for ind, cam in enumerate(camSet):
 		xVals = []
 		yVals = []
 		for age in ageSet:
 			found = False
-			for [fieldVal,curCam] in fieldValByAge[age]:
+			for [fieldVal, curCam] in fieldValByAge[age]:
 				if curCam == cam and not found:
 					yVals.append(fieldVal)
 					found = True
 			if found:
 				xVals.append(age)
-		curSubPlot.plot(xVals, yVals, formats[ind], label='Camera '+str(cam))
-		curSubPlot.xlim([fieldDescriptions[xFieldName][2],fieldDescriptions[xFieldName][3]])
-		curSubPlot.ylim([fieldDescriptions[yFieldName][2],fieldDescriptions[yFieldName][3]])
-		#if yFieldName == "rad":
-		#	 curSubPlot.set_yscale("log")
+		curSubPlot.plot(xVals, yVals, formats[ind], label='Camera ' + str(cam))
+		curSubPlot.xlim([fieldDescriptions[xFieldName][2], fieldDescriptions[xFieldName][3]])
+		curSubPlot.ylim([fieldDescriptions[yFieldName][2], fieldDescriptions[yFieldName][3]])
+		# if yFieldName == "rad":
+		# 	 curSubPlot.set_yscale("log")
 		if includeLegend:
 			curSubPlot.legend(loc='upper left', prop={'size':10})
 	
@@ -126,13 +126,13 @@ def plotAvgCamera(plotComponents, fieldDescriptions, xFieldName='age', yFieldNam
 	xVals = ageSet
 	
 	# compute a linear fit to overplot
-	#fit = pyl.polyfit(xVals, yVals, 1)
-	#print(fit)
-	#fitFn = pyl.poly1d(fit)
-	#curSubPlot.plot(xVals, yVals, 'bo', xVals, fitFn(xVals), 'b-')
+	# fit = pyl.polyfit(xVals, yVals, 1)
+	# print(fit)
+	# fitFn = pyl.poly1d(fit)
+	# curSubPlot.plot(xVals, yVals, 'bo', xVals, fitFn(xVals), 'b-')
 	curSubPlot.errorbar(xVals, yVals, yerr=yErr, ecolor='r', linewidth=0.1, fmt="ro")
-	curSubPlot.xlim([fieldDescriptions[xFieldName][2],fieldDescriptions[xFieldName][3]])
-	curSubPlot.ylim([fieldDescriptions[yFieldName][2],fieldDescriptions[yFieldName][3]])
+	curSubPlot.xlim([fieldDescriptions[xFieldName][2], fieldDescriptions[xFieldName][3]])
+	curSubPlot.ylim([fieldDescriptions[yFieldName][2], fieldDescriptions[yFieldName][3]])
 	
 	return
 
@@ -169,12 +169,12 @@ def getBulgeErrors(data, galaxyName):
 	'''
 	magByAge = {}
 	for componentNumber, curName in enumerate(data["id"]):
-		curAge =	data['ts'][componentNumber]
-		curType =	data['typ'][componentNumber]
-		curMag =	data['mag'][componentNumber]
-		curCam =	data['cam'][componentNumber]
-		if ((not galaxyName) or (curName == galaxyName)) and (curType in ["bulge","disk"]):
-			curKey = str(curName)+"_"+str(curAge)+"cam"+str(curCam)
+		curAge = 	data['ts'][componentNumber]
+		curType = 	data['typ'][componentNumber]
+		curMag = 	data['mag'][componentNumber]
+		curCam = 	data['cam'][componentNumber]
+		if ((not galaxyName) or (curName == galaxyName)) and (curType in ["bulge", "disk"]):
+			curKey = str(curName) + "_" + str(curAge) + "cam" + str(curCam)
 			if not (curKey in magByAge):
 				magByAge[curKey] = [curMag, curType]
 			else:
@@ -185,12 +185,12 @@ def getBulgeErrors(data, galaxyName):
 		curMags = magByAge[curKey]
 		try:
 			if curMags[0][1] == curMags[1][1]:
-				print(" ".join(["excluding",str(curKey),str(curMags)]))
-				excludeList.append([str(curKey).split("cam")[0].split("_")[1], 
+				print(" ".join(["excluding", str(curKey), str(curMags)]))
+				excludeList.append([str(curKey).split("cam")[0].split("_")[1],
 									str(curKey).split("cam")[1]])
 		except:
-			print(" ".join(["excluding",str(curKey),str(curMags)]))
-			excludeList.append([str(curKey).split("cam")[0].split("_")[1], 
+			print(" ".join(["excluding", str(curKey), str(curMags)]))
+			excludeList.append([str(curKey).split("cam")[0].split("_")[1],
 								str(curKey).split("cam")[1]])
 	return excludeList
 
@@ -198,15 +198,15 @@ def getGalaxies(allFieldNames, data, galaxyType="central", galaxyName=""):
 	'''
 	filters data by type and name of galaxy, returning matching galaxies
 	'''
-	excluded=[]
+	excluded = []
 	exclusionList = getBulgeErrors(data, galaxyName)
 	
 	# filter records down to just the galaxies of given type
 	typedGalaxies = dict([[fieldName, []] for fieldName in allFieldNames])
 	for componentNumber, curType in enumerate(data['typ']):
-		curName =	data['id'][componentNumber]
-		curTS =		data['ts'][componentNumber]
-		curCam =	data['cam'][componentNumber]
+		curName = 	data['id'][componentNumber]
+		curTS = 		data['ts'][componentNumber]
+		curCam = 	data['cam'][componentNumber]
 		
 		# if not excluded and of the correct type
 		if (curType == galaxyType) and not([str(curTS), str(curCam)] in exclusionList):
@@ -238,7 +238,7 @@ def getData(summaryFilename, fieldDescriptions):
 	'''
 
 	# read the columns into a 2D array with names and formats as above
-	rawData = pyl.loadtxt(summaryFilename, 
+	rawData = pyl.loadtxt(summaryFilename,
 						  dtype={'names':list(fieldDescriptions.keys()),
 								 'formats':[fieldDescriptions[name][0] for name in fieldDescriptions]},
 						  skiprows=2)
@@ -248,7 +248,7 @@ def getData(summaryFilename, fieldDescriptions):
 	for colIndex, name in enumerate(fieldDescriptions):
 		
 		# loadtxt does an annoying byte array thing, decode undoes it so strings are strings
-		if fieldDescriptions[name][0][0] in ['a','S']:
+		if fieldDescriptions[name][0][0] in ['a', 'S']:
 			data[name] = [component[colIndex].decode('utf-8') for component in rawData]
 		else:
 			data[name] = [component[colIndex] for component in rawData]
@@ -267,31 +267,31 @@ if __name__ == "__main__":
 	poslow = 285
 	poshigh = 315
 	fieldDescriptions = OrderedDict()
-	fieldDescriptions['typ'] =		['a10','Galaxy Type']
-	fieldDescriptions['id'] =		['a10','Galaxy ID']
-	fieldDescriptions['ts'] =		['a10','Time Step (a)']
-	fieldDescriptions['age'] =		['f4','Age (Gyr)',0,8]
-	fieldDescriptions['red'] =		['f4','Redshift (z)',5,0]
-	fieldDescriptions['cam'] =		['i4','Camera Number']
-	fieldDescriptions['fil'] =		['a10','Filter']
-	fieldDescriptions['px'] =		['f4','X Position (pixels)',poslow,poshigh]
-	fieldDescriptions['epx'] =		['f4','Error in x position (pixels)', -error, error]
-	fieldDescriptions['py'] =		['f4','Y Position (pixels)',poslow,poshigh]
-	fieldDescriptions['epy'] =		['f4','Error in y position (pixels)', -error, error]
-	fieldDescriptions['mag'] =		['f4','Magnitude',30,15]
-	fieldDescriptions['emag'] =		['f4','Error in magnitude', -error, error]
-	fieldDescriptions['rpix'] =		['f4',r"$R_{eff}$ (pixels)",0.5,50]
-	fieldDescriptions['erpix'] =	['f4','Error in radius (pixels)', -error, error]
-	fieldDescriptions['rad'] =		['f4',r"$R_{eff}$ (kpc)",0.5,15]
-	fieldDescriptions['erad'] =		['f4','Error in radius (kpc)', -error, error]
-	fieldDescriptions['ser'] =		['f4','Sersic Index',0.05,8.5]
-	fieldDescriptions['eser'] =		['f4','Error in sersic index', -error, error]
-	fieldDescriptions['ba'] =		['f4','Axis Ratio',0.05,1.2]
-	fieldDescriptions['eba'] =		['f4','Error in axis ratio', -error, error]
-	fieldDescriptions['pa'] =		['f4','Position Angle (deg)',-180,180]
-	fieldDescriptions['epa'] =		['f4','Error in position angle (deg)', -error, error]
-	fieldDescriptions['rff'] =		['f4','RFF', 0, 1]
-	fieldDescriptions['sky'] =		['f4','sky value']
+	fieldDescriptions['typ'] = 		['a10', 'Galaxy Type']
+	fieldDescriptions['id'] = 		['a10', 'Galaxy ID']
+	fieldDescriptions['ts'] = 		['a10', 'Time Step (a)']
+	fieldDescriptions['age'] = 		['f4', 'Age (Gyr)', 0, 8]
+	fieldDescriptions['red'] = 		['f4', 'Redshift (z)', 5, 0]
+	fieldDescriptions['cam'] = 		['i4', 'Camera Number']
+	fieldDescriptions['fil'] = 		['a10', 'Filter']
+	fieldDescriptions['px'] = 		['f4', 'X Position (pixels)', poslow, poshigh]
+	fieldDescriptions['epx'] = 		['f4', 'Error in x position (pixels)', -error, error]
+	fieldDescriptions['py'] = 		['f4', 'Y Position (pixels)', poslow, poshigh]
+	fieldDescriptions['epy'] = 		['f4', 'Error in y position (pixels)', -error, error]
+	fieldDescriptions['mag'] = 		['f4', 'Magnitude', 30, 15]
+	fieldDescriptions['emag'] = 		['f4', 'Error in magnitude', -error, error]
+	fieldDescriptions['rpix'] = 		['f4', r"$R_{eff}$ (pixels)", 0.5, 50]
+	fieldDescriptions['erpix'] = 	['f4', 'Error in radius (pixels)', -error, error]
+	fieldDescriptions['rad'] = 		['f4', r"$R_{eff}$ (kpc)", 0.5, 15]
+	fieldDescriptions['erad'] = 		['f4', 'Error in radius (kpc)', -error, error]
+	fieldDescriptions['ser'] = 		['f4', 'Sersic Index', 0.05, 8.5]
+	fieldDescriptions['eser'] = 		['f4', 'Error in sersic index', -error, error]
+	fieldDescriptions['ba'] = 		['f4', 'Axis Ratio', 0.05, 1.2]
+	fieldDescriptions['eba'] = 		['f4', 'Error in axis ratio', -error, error]
+	fieldDescriptions['pa'] = 		['f4', 'Position Angle (deg)', -180, 180]
+	fieldDescriptions['epa'] = 		['f4', 'Error in position angle (deg)', -error, error]
+	fieldDescriptions['rff'] = 		['f4', 'RFF', 0, 1]
+	fieldDescriptions['sky'] = 		['f4', 'sky value']
 	
 	# all of the fields for which there are lower and upper bounds for plotting
 	fieldOptions = []
@@ -299,54 +299,54 @@ if __name__ == "__main__":
 		if len(fieldDescriptions[fieldName]) > 3:
 			fieldOptions.append(fieldName)
 		
-	#define the command line interface with simUtility.py
+	# define the command line interface with simUtility.py
 	usage = ("\n%prog summaryFile [-h help] [options (with '-'|'--' prefix)]")
 			
 	# used to parse command line arguments
 	parser = OptionParser(usage)
 	
 	# indicate that a there are MRP counterparts to all galaxy names
-	parser.add_option("-m","--includeMRP", 
+	parser.add_option("-m", "--includeMRP",
 					  help="to plot MRP counterparts adjacent",
 					  action="store_true")
 
 	# indicate that you want all cameras plotted separately
-	parser.add_option("-r","--candelized", 
+	parser.add_option("-r", "--candelized",
 					  help="to indicate candelized results are being plotted",
 					  action="store_true")
 	
 	# pass the list of galaxies
-	parser.add_option("-n","--galaxyNames",
+	parser.add_option("-n", "--galaxyNames",
 					  help="the space separated list of galaxy names to be plotted (must exist in summary file)."
 					  		+ " The default is all unique galaxy ids plotted separately",
 					  dest="galaxyNames",
 					  action="callback", callback=vararg_callback, default=[])
 	
 	# pass the list of y field names
-	parser.add_option("-y","--yFields",
+	parser.add_option("-y", "--yFields",
 					  help=("the space separated list of y field names to be plotted, available options are: " + 
 					  		str(fieldOptions) + ", default: ser"),
 					  dest="yFields",
 					  action="callback", callback=vararg_callback, default=[])
 	
 	# pass the field name to be plotted on the x axis
-	parser.add_option("-x","--xFieldName",
+	parser.add_option("-x", "--xFieldName",
 					  help=("the field name of the x values, available options are: " + 
 					  		str(fieldOptions) + ", default: %default"),
 					  default="red")
 	
 	# pass the type of component to plot
-	parser.add_option("-t","--componentType",
+	parser.add_option("-t", "--componentType",
 					  help="the type of component to be plotted (central, bulge, disk), default: %default",
 					  default="central")
 	
 	# indicate that a bulge component was run to produce results
-	parser.add_option("-p","--plotType",
+	parser.add_option("-p", "--plotType",
 					  help="the type of plot, available options are: " + str(plotTypes) + ", default: %default",
 					  default=plotTypes[0])
 
 	# indicate that you want all cameras plotted separately
-	parser.add_option("-c","--allCameras", 
+	parser.add_option("-c", "--allCameras",
 					  help="specify specific cameras (e.g. 0 or 1 or... or all)",
 					  default="")
 	
@@ -356,7 +356,7 @@ if __name__ == "__main__":
 	[options, args] = parser.parse_args()
 	
 	if not len(args) or not os.path.isfile(args[0]):
-		parser.error(	"summary file must be an existing file with space " +
+		parser.error("summary file must be an existing file with space " + 
 						"delimited summary data")
 		
 	error = 5
@@ -371,15 +371,15 @@ if __name__ == "__main__":
 	fieldDescriptions['py'][2] = poslow
 	fieldDescriptions['py'][3] = poshigh
 	
-	###
+	# ##
 	print("\nCommand line options...")
-	###
+	# ##
 	pprint(vars(options))
 	print("summary file used: " + args[0])
 	
-	###
+	# ##
 	print("\nValidating field names...")
-	###
+	# ##
 	# verify given y fields
 	yFields = []
 	for yFieldName in options.yFields:
@@ -396,18 +396,18 @@ if __name__ == "__main__":
 		print("\tno valid x field specified, using redshift as the default")
 		xFieldName = 'red'
 		
-	###
+	# ##
 	print("\nValidating plot type...")
-	###
+	# ##
 	if options.plotType in plotTypes:
 		plotType = options.plotType
 	else:
 		print("\tno valid plot type specified, using '" + plotTypes[0] + "' as the default")
 		plotType = plotTypes[0]
 	
-	###
+	# ##
 	print("\nReading data from summary file...")
-	###
+	# ##
 	# dictionary with field names as keys (above) and array of field values as value
 	data = getData(args[0], fieldDescriptions)
 	print("\tData read successfully, using y fields:")
@@ -422,11 +422,11 @@ if __name__ == "__main__":
 		for galaxyName in np.unique(data["id"]):
 			if not (options.includeMRP and galaxyName.endswith("MRP")):
 				options.galaxyNames.append(galaxyName)
-	print("\t\t"+str(options.galaxyNames))
+	print("\t\t" + str(options.galaxyNames))
 				
-	###
+	# ##
 	print("\nPlotting...")
-	###
+	# ##
 	if options.candelized:
 		titleSuffix = " type " + options.componentType + " candelized"
 	else:
@@ -436,15 +436,15 @@ if __name__ == "__main__":
 	if plotType == "default":
 		for galaxyName in options.galaxyNames:
 		
-			curData = getGalaxies(	fieldDescriptions.keys(), data, 
+			curData = getGalaxies(fieldDescriptions.keys(), data,
 									options.componentType, galaxyName)
 			if not curData[xFieldName]:
 				print("no data for galaxy " + galaxyName)
 				continue	
 			numCols = 1
 			if options.includeMRP:
-				mrpData = getGalaxies(	fieldDescriptions.keys(), data, 
-										options.componentType, galaxyName+"MRP")
+				mrpData = getGalaxies(fieldDescriptions.keys(), data,
+										options.componentType, galaxyName + "MRP")
 				if not mrpData[xFieldName]:
 					print("no data for galaxy " + galaxyName + "MRP")
 				else:
@@ -457,37 +457,37 @@ if __name__ == "__main__":
 						
 				if options.allCameras:
 					numRows = 2
-					plt.subplot(numRows,numCols,1)
+					plt.subplot(numRows, numCols, 1)
 					plt.title("all cameras")
 					plotAllCamera(curData, fieldDescriptions, xFieldName, yFieldName, cameras=options.allCameras)
 					plt.xlabel(xlabel)
 					plt.ylabel(ylabel)
 					if numCols == 2:
-						plt.subplot(numRows,numCols,2)
+						plt.subplot(numRows, numCols, 2)
 						plt.title("all cameras")
 						plotAllCamera(mrpData, fieldDescriptions, xFieldName, yFieldName, cameras=options.allCameras)
 						plt.xlabel(xlabel)
 						plt.ylabel(ylabel + " (with MRP)")
-						plt.subplot(numRows,numCols,4)
+						plt.subplot(numRows, numCols, 4)
 						plt.title("avg cameras")
 						plotAvgCamera(mrpData, fieldDescriptions, xFieldName, yFieldName)
 						plt.xlabel(xlabel)
 						plt.ylabel(ylabel + " (with MRP)")
-						plt.subplot(numRows,numCols,3)
+						plt.subplot(numRows, numCols, 3)
 					else:
-						plt.subplot(numRows,numCols,2)
+						plt.subplot(numRows, numCols, 2)
 					plt.title("avg cameras")
 					plotAvgCamera(curData, fieldDescriptions, xFieldName, yFieldName)
 					plt.xlabel(xlabel)
 					plt.ylabel(ylabel)
 				else:
 					numRows = 1
-					plt.subplot(numRows,numCols,1)
+					plt.subplot(numRows, numCols, 1)
 					plotAvgCamera(curData, fieldDescriptions, xFieldName, yFieldName)
 					plt.xlabel(xlabel)
 					plt.ylabel(ylabel)
 					if numCols == 2:
-						plt.subplot(numRows,numCols,2)
+						plt.subplot(numRows, numCols, 2)
 						plotAvgCamera(mrpData, fieldDescriptions, xFieldName, yFieldName)
 						plt.xlabel(xlabel)
 						plt.ylabel(ylabel + " (with MRP)")
@@ -507,30 +507,30 @@ if __name__ == "__main__":
 			
 			numCols = len(options.galaxyNames)
 			for galaxyIndex, galaxyName in enumerate(options.galaxyNames, start=1): 
-				curData = getGalaxies(	fieldDescriptions.keys(), data, 
+				curData = getGalaxies(fieldDescriptions.keys(), data,
 										options.componentType, galaxyName)
 				if not curData[xFieldName]:
 					print("no data for galaxy " + galaxyName + " y field " + yFieldName)
 					continue	
 				if options.includeMRP:
-					mrpData = getGalaxies(	fieldDescriptions.keys(), data, 
-											options.componentType, galaxyName+"MRP")
+					mrpData = getGalaxies(fieldDescriptions.keys(), data,
+											options.componentType, galaxyName + "MRP")
 					if not mrpData[xFieldName]:
 						print("no data for galaxy " + galaxyName + "MRP")
 				
-				plt.subplot(numRows,numCols,galaxyIndex)
+				plt.subplot(numRows, numCols, galaxyIndex)
 				plt.title(galaxyName)
 				plotAvgCamera(curData, fieldDescriptions, xFieldName, yFieldName)
 				plt.xlabel(xlabel)
 				plt.ylabel(ylabel)
 				
 				if options.includeMRP and mrpData[xFieldName]:
-					plt.subplot(numRows,numCols,galaxyIndex+numCols)
+					plt.subplot(numRows, numCols, galaxyIndex + numCols)
 					plotAvgCamera(mrpData, fieldDescriptions, xFieldName, yFieldName)
 					plt.xlabel(xlabel)
 					plt.ylabel(ylabel + " (with MRP)")
 				elif options.allCameras:
-					plt.subplot(numRows,numCols,galaxyIndex+numCols)
+					plt.subplot(numRows, numCols, galaxyIndex + numCols)
 					plotAllCamera(curData, fieldDescriptions, xFieldName, yFieldName, cameras=options.allCameras)
 					plt.xlabel(xlabel)
 					plt.ylabel(ylabel + " (all cameras)")
@@ -544,14 +544,14 @@ if __name__ == "__main__":
 			
 		for galaxyName in options.galaxyNames:
 		
-			curData = getGalaxies(	fieldDescriptions.keys(), data, 
+			curData = getGalaxies(fieldDescriptions.keys(), data,
 									options.componentType, galaxyName)
 			if not curData[xFieldName]:
 				print("no data for galaxy " + galaxyName)
 				continue	
 			if options.includeMRP:
-				mrpData = getGalaxies(	fieldDescriptions.keys(), data, 
-										options.componentType, galaxyName+"MRP")
+				mrpData = getGalaxies(fieldDescriptions.keys(), data,
+										options.componentType, galaxyName + "MRP")
 				if not mrpData[xFieldName]:
 					print("no data for galaxy " + galaxyName + "MRP")
 					
@@ -562,18 +562,18 @@ if __name__ == "__main__":
 				xlabel = fieldDescriptions[xFieldName][1]
 				ylabel = fieldDescriptions[yFieldName][1]	
 				
-				plt.subplot(numRows,numCols,yFieldIndex)
+				plt.subplot(numRows, numCols, yFieldIndex)
 				plotAvgCamera(curData, fieldDescriptions, xFieldName, yFieldName)
 				plt.xlabel(xlabel)
 				plt.ylabel(ylabel)
 				
 				if options.includeMRP and mrpData[xFieldName]:
-					plt.subplot(numRows,numCols,yFieldIndex+numCols)
+					plt.subplot(numRows, numCols, yFieldIndex + numCols)
 					plotAvgCamera(mrpData, fieldDescriptions, xFieldName, yFieldName)
 					plt.xlabel(xlabel)
 					plt.ylabel(ylabel + " (with MRP)")
 				elif options.allCameras:
-					plt.subplot(numRows,numCols,galaxyIndex+numCols)
+					plt.subplot(numRows, numCols, galaxyIndex + numCols)
 					plotAllCamera(curData, fieldDescriptions, xFieldName, yFieldName, cameras=options.allCameras)
 					plt.xlabel(xlabel)
 					plt.ylabel(ylabel + " (all cameras)")
