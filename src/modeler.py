@@ -9,9 +9,8 @@ Colby College Astrophysics Research
 
 # use tkinter for GUI elements
 import types
-import time
+import threading
 from optparse import OptionParser
-import sys
 import os
 import simUtility
 import sumSimUtility
@@ -126,14 +125,17 @@ class ModelerDashboard:
                    command=self.runModel, width=bwidth
                    ).pack(side=tk.TOP) 
         self.modelPBProgress = tk.IntVar()
-        self.modelPBProgress.set(0)
-        tk.Label(self.modelFrame, textvariable=self.modelPBProgress
-                 ).pack(side=tk.TOP)
+        self.modelPBProgress.trace("w", self.updateRemaining)
         self.modelPB = ttk.Progressbar(master=self.modelFrame,
                                        orient="horizontal", 
                                        mode="determinate",
+                                       maximum=0,
                                        variable=self.modelPBProgress)
         self.modelPB.pack(side=tk.TOP)
+        self.modelPBRemaining = tk.StringVar()
+        tk.Label(self.modelFrame, textvariable=self.modelPBRemaining
+                 ).pack(side=tk.TOP)
+        self.modelPBProgress.set(0)
         
         # make the summary frame controls
         tk.Button(self.sumFrame, text="Select Results",
@@ -332,16 +334,21 @@ class ModelerDashboard:
             pass
            
         print(commandList)
-        os.chdir(self.runDirectory.get())
-        self.modelPB["maximum"] = len(self.images.get().split("\n"))
-        try:
-            simUtility.main(commandList, self.modelPBProgress)
-        except:
-            print(sys.exc_info())
-        # OR os.system(" ".join(["python", modelPy] + commandList))
         self.modelPBProgress.set(0)
-        os.chdir(curWD)
-        if self.verbose: print("done modeling")
+        self.modelPB["maximum"] = len(self.images.get().split("\n"))
+        t1 = threading.Thread(target=simUtility.mainExternal, 
+                              args=(commandList, self.runDirectory.get(), os.getcwd(), 
+                                    self.modelPBProgress))
+        t1.start()
+        
+#         tkm.showinfo("Started Modeling", 
+# '''
+# The modeling is in progress. 
+# It will continue to run in a separate thread.
+# The console will show its output, and a progress bar will show its progress.
+# Each image takes around a minute, so it will take a while to finish running.
+# You may quit the dashboard, but aborting the modeling may strand processes.
+# ''')        
         
     def runPlot(self):
         '''
@@ -458,6 +465,14 @@ class ModelerDashboard:
         # bind command sequences to the root window
         self.root.bind('<Control-q>', self.handleQuit)
         self.root.bind('<Escape>', self.handleQuit)
+        
+    def updateRemaining(self, *args):
+        '''
+        update the estimated remaining time for the modeling
+        '''
+        m = self.modelPB["maximum"]
+        h, m = divmod(m, 60)
+        self.modelPBRemaining.set("Remaining hr:min = "+str(h)+":"+str(m))
 
 if __name__ == "__main__":
     

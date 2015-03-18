@@ -1215,6 +1215,8 @@ def runModelGeneratorParallel(parameterList):
 def main(args, pb=None):
 	'''
 	args - equivalent of sys.argv[1:]
+	runDir - the directory to set os to while modeling
+	callDir - the directory to reset os to upon completion
 	pb - optional progress bar with maximum=num files
 	parses the command line using the optparse package
 	NOTE: argparse is the current version as of python 2.7, 
@@ -1272,6 +1274,7 @@ def main(args, pb=None):
 	# args - anything left over after parsing options
 	[options, args] = parser.parse_args(args)
 	pprint.pprint(vars(options))
+	print(args)
 	
 	# real images need psfs, warn if no psf specified for real
 	if options.realSextractor and not options.psf:
@@ -1336,7 +1339,7 @@ def main(args, pb=None):
 		parser.error("cannot use pyfits or astropy in parallel")
 	
 	# done with immediate verifying of comamnd line #
-		
+	
 	# for parallel, only use half the cpus available
 	numCPUs = int(multiprocessing.cpu_count())
 	
@@ -1420,6 +1423,29 @@ def main(args, pb=None):
 	print ("writing log file to " + logFilename)
 	with open(logFilename, 'w') as logFile:
 		logFile.write(log)
+		
+def mainExternal(args, runDir, callDir, pb=None):
+	'''
+	args - equivalent of sys.argv[1:]
+	runDir - the directory to set os to while modeling
+	callDir - the directory to reset os to upon completion
+	pb - optional progress bar with maximum=num files):
+	'''
+	
+	'''
+	for _ in range(10):
+		time.sleep(2)
+		pb.set(pb.get()+1)
+		print("done modeling an image")
+	return
+	'''
+	os.chdir(runDir)
+	try:
+		main(args, pb)
+	except:
+		print(sys.exc_info())
+	os.chdir(callDir)
+	print("done modeling")
 		
 if __name__ == "__main__":
 	main(sys.argv[1:])
