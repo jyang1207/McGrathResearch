@@ -1217,7 +1217,7 @@ def main(args, pb=None):
 	args - equivalent of sys.argv[1:]
 	runDir - the directory to set os to while modeling
 	callDir - the directory to reset os to upon completion
-	pb - optional progress bar with maximum=num files
+	pb - optional tk.IntVar tracking progress, incremet after each file
 	parses the command line using the optparse package
 	NOTE: argparse is the current version as of python 2.7, 
 			but optparse is used to maintain better backwards compatibility

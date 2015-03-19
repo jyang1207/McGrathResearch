@@ -515,9 +515,10 @@ def sum_galfit(resultFilename, models, kpcPerPixel, timeZ, delim, centerIDs, opt
 	return results
 
 
-def main(args):
+def main(args, pb=None):
 	'''
 	args - equivalent of sys.argv[1:]
+	pb - optional tk.IntVar tracking progress, incremet after each file
 	'''
 	
 	# define the command line interface with simUtility.py
@@ -545,6 +546,11 @@ def main(args):
 				help=("set the filename to write the output summary file " + 
 					"[default: %default]"),
 				default="summary_" + time.strftime("%m-%d-%Y") + ".csv")
+
+	# indicate that the program should print actions to console
+	parser.add_option("-v", "--verbose",
+                help="to enable command line printouts of state",
+                action="store_true")
 	
 	# parse the command line using above parameter rules
 	# options - list with everthing defined above, 
@@ -594,7 +600,7 @@ def main(args):
 	
 		# remove the new line character and any leading or trailing white space
 		resultFilename = resultFilename.strip()
-		print("processing result file: " + resultFilename)
+		if options.verbose: print("processing result file: " + resultFilename)
 		
 		# verify that result file exists
 		if not os.path.isfile(resultFilename):
@@ -615,6 +621,8 @@ def main(args):
 		# summarize galfit and write to output
 		outFile.write(sum_galfit(resultFilename, models, kpcPerPixel,
 									timeZ, delim, centerIDs, options))
+		if pb:
+			pb.set(pb.get()+1)
 		
 	outFile.close()
 	

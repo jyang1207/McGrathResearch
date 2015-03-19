@@ -167,6 +167,18 @@ class Dashboard:
         tk.Button(self.sumFrame, text="Run Summarizing",
                    command=self.runSummary, width=bwidth
                    ).pack(side=tk.TOP)
+        self.sumPBProgress = tk.IntVar()
+        self.sumPB = ttk.Progressbar(master=self.sumFrame,
+                                       orient="horizontal", 
+                                       mode="determinate",
+                                       maximum=0,
+                                       variable=self.sumPBProgress)
+        self.sumPB.pack(side=tk.TOP)
+        #self.sumPBProgress.trace("w", self.updateRemaining)
+        self.sumPBRemaining = tk.StringVar()
+        tk.Label(self.sumFrame, textvariable=self.sumPBRemaining
+                 ).pack(side=tk.TOP)
+        self.sumPBProgress.set(0)
         
         # make the display frame controls
         tk.Button(self.displayFrame, text="Select Summary",
@@ -379,6 +391,7 @@ class Dashboard:
         else:
             resFilename = self.results.get()
         commandList = [resFilename]
+        if self.verbose: commandList.append("-v")
         if self.sumBulgeOpt.get(): commandList.append("-b")
         if self.sumRealOpt.get(): commandList.append("-r")
         delim = self.sumDelimEntry.get()
@@ -390,9 +403,11 @@ class Dashboard:
             commandList.append("-o")
             commandList.append(output)
         if self.verbose: print(commandList)
-        sumSimUtility.main(commandList)
-        # os.system(" ".join(["python", sumPy]+commandList))
-        if self.verbose: print("done summarizing")
+        self.modelPB["maximum"] = len(self.images.get().split("\n"))
+        self.modelPBProgress.set(0)
+        t1 = threading.Thread(target=sumSimUtility.main, 
+                              args=(commandList, self.sumPBProgress))
+        t1.start()
 
     def selectImages(self):
         '''
