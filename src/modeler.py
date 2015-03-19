@@ -96,6 +96,11 @@ class ModelerDashboard:
         tk.Button(self.modelFrame, text="Select Images",
                    command=self.selectImages, width=bwidth
                    ).pack(side=tk.TOP)
+        tk.Label(self.modelFrame, text="OR").pack(side=tk.TOP)
+        tk.Button(self.modelFrame, text="Select Image File",
+                   command=self.selectImageFile, width=bwidth
+                   ).pack(side=tk.TOP)
+        tk.Label(self.modelFrame, text="------ AND ------").pack(side=tk.TOP)
         tk.Button(self.modelFrame, text="Select Run Directory",
                    command=self.selectRunModelDir, width=bwidth
                    ).pack(side=tk.TOP)
@@ -140,6 +145,10 @@ class ModelerDashboard:
         # make the summary frame controls
         tk.Button(self.sumFrame, text="Select Results",
                    command=self.selectResults, width=bwidth
+                   ).pack(side=tk.TOP)
+        tk.Label(self.sumFrame, text="OR").pack(side=tk.TOP)
+        tk.Button(self.sumFrame, text="Select Result File",
+                   command=self.selectResultFile, width=bwidth
                    ).pack(side=tk.TOP)
         self.sumBulgeOpt = tk.IntVar()
         tk.Checkbutton(self.sumFrame, text="bulge components included",
@@ -233,7 +242,7 @@ class ModelerDashboard:
         tk.Label(self.statusFrame, textvariable=self.runDirectory
                  ).pack(side=tk.TOP)
                  
-        tk.Label(self.statusFrame, text="\nImage Filenames:"
+        tk.Label(self.statusFrame, text="\nImage Filename:"
                  ).pack(side=tk.TOP)
         self.images = tk.StringVar()
         self.images.set("")
@@ -310,9 +319,12 @@ class ModelerDashboard:
             tkm.showerror("Modeling program DNE", "Could not find %s" % modelPy)
             return
         if self.verbose: print("running the modeling program")
-        imFilename = os.path.join(self.runDirectory.get(), "images.txt")
-        with open(imFilename, "w") as imFile:
-            imFile.write(self.images.get())
+        if self.images.get()[-5:] == ".fits":
+            imFilename = os.path.join(self.runDirectory.get(), "images.txt")
+            with open(imFilename, "w") as imFile:
+                imFile.write(self.images.get())
+        else:
+            imFilename = self.images.get()
         commandList = [imFilename]
         if self.modelBulgeOpt.get(): commandList.append("-b")
         if self.modelGalfitOffOpt.get(): commandList.append("-g")
@@ -370,9 +382,12 @@ class ModelerDashboard:
         if not os.path.isfile(sumPy):
             tkm.showerror("Summarizing program DNE", "Could not find %s" % sumPy)
             return
-        resFilename = os.path.join(self.runDirectory.get(), "resultFilenames.txt")
-        with open(resFilename, "w") as imFile:
-            imFile.write(self.images.get())
+        if self.results.get()[-5:] == ".fits":
+            resFilename = os.path.join(self.runDirectory.get(), "resultFilenames.txt")
+            with open(resFilename, "w") as imFile:
+                imFile.write(self.images.get())
+        else:
+            resFilename = self.results.get()
         commandList = [resFilename]
         if self.verbose: commandList.append("-v")
         if self.sumBulgeOpt.get(): commandList.append("-b")
@@ -404,15 +419,29 @@ class ModelerDashboard:
                                          title='Choose image files',
                                          initialdir=imageDir)
         if filenames:
-            if self.verbose: print(filenames)
             self.images.set("\n".join(filenames))
+            
+    def selectImageFile(self):
+        '''
+        select the file containing full path image files
+        '''
+        if self.verbose: print("selecting images file")
+        if self.images.get() and self.images.get()[-5:] != ".fits":
+            imageDir = os.path.dirname(self.images.get())
+        else:
+            imageDir = "."
+        filename = tkf.askopenfilename(parent=self.root,
+                                       title='Choose images file',
+                                       initialdir=imageDir)
+        if filename:
+            self.images.set(filename)
 
     def selectResults(self):
         '''
         select the fits cube galfit results to be summarized
         '''
         if self.verbose: print("selecting results")
-        if self.resurts.get():
+        if self.results.get():
             resultDir = self.result.get().split("\n")[0]
             resultDir = os.path.dirname(resultDir)
         else:
@@ -423,6 +452,21 @@ class ModelerDashboard:
         if filenames:
             if self.verbose: print(filenames)
             self.results.set("\n".join(filenames))
+            
+    def selectResultFile(self):
+        '''
+        select the file containing full path result files
+        '''
+        if self.verbose: print("selecting results file")
+        if self.results.get() and self.results.get()[-5:] != ".fits":
+            resultDir = os.path.dirname(self.results.get())
+        else:
+            resultDir = "."
+        filename = tkf.askopenfilename(parent=self.root,
+                                       title='Choose results file',
+                                       initialdir=resultDir)
+        if filename:
+            self.results.set(filename)
 
     def selectRunModelDir(self):
         '''
