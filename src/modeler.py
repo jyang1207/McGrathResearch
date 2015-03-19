@@ -534,6 +534,6 @@ if __name__ == "__main__":
     [options, args] = parser.parse_args()
     
     # run the application
-    md = ModelerDashboard(1200, 800, options.verbose)
+    md = ModelerDashboard(1200, 500, options.verbose)
     md.main()
     print("done")
