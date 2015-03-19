@@ -174,6 +174,7 @@ class ModelGenerator:
 		
 		
 		# TODO: needs work
+		# NOTE: called once before looping over images and modeling
 		# IDEAS:
 		# 	use luminosity to guess how many galaxies are in the image, adjust sextractor to match
 		
