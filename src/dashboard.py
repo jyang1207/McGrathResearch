@@ -42,6 +42,18 @@ class Dashboard:
         self.runDirectory = None
         self.results = None
         self.summary = None
+        self.imageFiletypes = [("All Files","*"),
+                               ("Image files", "*.fits"),
+                               ("Simulation files", "*simulation*.fits"),
+                               ("Candelized files", "*candelized*.fits"),
+                               ("Multicube files", "*multi*.fits"),
+                               ("Single Multicube files", "*single*multi*.fits"),
+                               ("Bulge Multicube files", "*bulge*multi*.fits"),
+                               ("No Noise files", "*nonoise*.fits"),
+                               ("Noise files", "*noise*.fits")]
+        self.summaryFiletypes = [("All Files", "*"),
+                                 ("Text Files", "*.txt"),
+                                 ("CSV Files", "*.csv")]
         
         # create a tk object, which is the root window
         self.root = tk.Tk()
@@ -421,7 +433,8 @@ class Dashboard:
             imageDir = "."
         filenames = tkf.askopenfilenames(parent=self.root,
                                          title='Choose image files',
-                                         initialdir=imageDir)
+                                         initialdir=imageDir,
+                                         filetypes=self.imageFiletypes)
         if filenames:
             self.numImages = len(filenames)
             self.images.set("\n".join(filenames))
@@ -437,7 +450,8 @@ class Dashboard:
             imageDir = "."
         filename = tkf.askopenfilename(parent=self.root,
                                        title='Choose images file',
-                                       initialdir=imageDir)
+                                       initialdir=imageDir,
+                                       filetypes=self.summaryFiletypes[:-1])
         if filename:
             with open(filename, 'r') as ifile:
                 self.numImages = len(ifile.readlines())
@@ -457,7 +471,8 @@ class Dashboard:
             resultDir = "."
         filenames = tkf.askopenfilenames(parent=self.root,
                                          title='Choose result files',
-                                         initialdir=resultDir)
+                                         initialdir=resultDir,
+                                         filetypes=self.imageFiletypes)
         if filenames:
             self.numResults = len(filenames)
             self.results.set("\n".join(filenames))
@@ -473,7 +488,8 @@ class Dashboard:
             resultDir = "."
         filename = tkf.askopenfilename(parent=self.root,
                                        title='Choose results file',
-                                       initialdir=resultDir)
+                                       initialdir=resultDir,
+                                       filetypes=self.summaryFiletypes[:-1])
         if filename:
             with open(filename, 'r') as rfile:
                 self.numResults = len(rfile.readlines())
@@ -506,7 +522,8 @@ class Dashboard:
             sumDir = "."
         filename = tkf.askopenfilename(parent=self.root,
                                        title='Choose summary file',
-                                       initialdir=sumDir)
+                                       initialdir=sumDir,
+                                       filetypes=self.summaryFiletypes)
         if filename:
             if self.verbose: print(filename)
             self.summary.set(filename)
