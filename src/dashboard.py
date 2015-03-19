@@ -345,7 +345,7 @@ class Dashboard:
         except ValueError:
             pass
            
-        print(commandList)
+        if self.verbose: print(commandList)
         self.modelPB["maximum"] = len(self.images.get().split("\n"))
         self.modelPBProgress.set(0)
         t1 = threading.Thread(target=simUtility.mainExternal, 
@@ -397,10 +397,10 @@ class Dashboard:
             commandList.append("-d")
             commandList.append(delim)
         output = self.sumOutputEntry.get()
-        if delim: 
+        if output: 
             commandList.append("-o")
             commandList.append(output)
-        
+        if self.verbose: print(commandList)
         sumSimUtility.main(commandList)
         # os.system(" ".join(["python", sumPy]+commandList))
         if self.verbose: print("done summarizing")
@@ -444,6 +444,8 @@ class Dashboard:
         if self.results.get():
             resultDir = self.result.get().split("\n")[0]
             resultDir = os.path.dirname(resultDir)
+        elif self.runDirectory.get():
+            resultDir = self.runDirectory.get()
         else:
             resultDir = "."
         filenames = tkf.askopenfilenames(parent=self.root,
