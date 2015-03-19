@@ -353,7 +353,7 @@ class Dashboard:
             pass
            
         if self.verbose: print(commandList)
-        self.modelPB["maximum"] = len(self.images.get().split("\n"))
+        self.modelPB["maximum"] = self.numImages
         self.modelPBProgress.set(0)
         t1 = threading.Thread(target=simUtility.mainExternal, 
                               args=(commandList, self.runDirectory.get(), 
@@ -403,7 +403,7 @@ class Dashboard:
             commandList.append("-o")
             commandList.append(output)
         if self.verbose: print(commandList)
-        self.sumPB["maximum"] = len(self.results.get().split("\n"))
+        self.sumPB["maximum"] = self.numResults
         self.sumPBProgress.set(0)
         t1 = threading.Thread(target=sumSimUtility.main, 
                               args=(commandList, self.sumPBProgress))
@@ -423,6 +423,7 @@ class Dashboard:
                                          title='Choose image files',
                                          initialdir=imageDir)
         if filenames:
+            self.numImages = len(filenames)
             self.images.set("\n".join(filenames))
             
     def selectImageFile(self):
@@ -438,6 +439,8 @@ class Dashboard:
                                        title='Choose images file',
                                        initialdir=imageDir)
         if filename:
+            with open(filename, 'r') as ifile:
+                self.numImages = len(ifile.readlines())
             self.images.set(filename)
 
     def selectResults(self):
@@ -446,7 +449,7 @@ class Dashboard:
         '''
         if self.verbose: print("selecting results")
         if self.results.get():
-            resultDir = self.result.get().split("\n")[0]
+            resultDir = self.results.get().split("\n")[0]
             resultDir = os.path.dirname(resultDir)
         elif self.runDirectory.get():
             resultDir = self.runDirectory.get()
@@ -456,7 +459,7 @@ class Dashboard:
                                          title='Choose result files',
                                          initialdir=resultDir)
         if filenames:
-            if self.verbose: print(filenames)
+            self.numResults = len(filenames)
             self.results.set("\n".join(filenames))
             
     def selectResultFile(self):
@@ -472,6 +475,8 @@ class Dashboard:
                                        title='Choose results file',
                                        initialdir=resultDir)
         if filename:
+            with open(filename, 'r') as rfile:
+                self.numResults = len(rfile.readlines())
             self.results.set(filename)
 
     def selectRunModelDir(self):
