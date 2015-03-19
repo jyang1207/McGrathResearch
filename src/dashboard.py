@@ -403,8 +403,8 @@ class Dashboard:
             commandList.append("-o")
             commandList.append(output)
         if self.verbose: print(commandList)
-        self.modelPB["maximum"] = len(self.images.get().split("\n"))
-        self.modelPBProgress.set(0)
+        self.sumPB["maximum"] = len(self.results.get().split("\n"))
+        self.sumPBProgress.set(0)
         t1 = threading.Thread(target=sumSimUtility.main, 
                               args=(commandList, self.sumPBProgress))
         t1.start()
