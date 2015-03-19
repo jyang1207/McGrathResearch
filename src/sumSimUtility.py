@@ -551,6 +551,7 @@ def main(args):
 	# args - anything left over after parsing options
 	[options, args] = parser.parse_args()
 	pprint.pprint(vars(options))
+	print(args)
 
 	if not (len(args) and os.path.isfile(args[0])):
 		parser.error("must give an existing file with result filenames")

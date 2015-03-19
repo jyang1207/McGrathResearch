@@ -27,7 +27,7 @@ except ImportError:
     import tkMessageBox as tkm
     import ttk
     
-class ModelerDashboard:
+class Dashboard:
     '''
     class to build and manage the display
     '''
@@ -383,9 +383,9 @@ class ModelerDashboard:
             tkm.showerror("Summarizing program DNE", "Could not find %s" % sumPy)
             return
         if self.results.get()[-5:] == ".fits":
-            resFilename = os.path.join(self.runDirectory.get(), "resultFilenames.txt")
+            resFilename = "resultFilenames.txt"
             with open(resFilename, "w") as imFile:
-                imFile.write(self.images.get())
+                imFile.write(self.results.get())
         else:
             resFilename = self.results.get()
         commandList = [resFilename]
@@ -534,6 +534,6 @@ if __name__ == "__main__":
     [options, args] = parser.parse_args()
     
     # run the application
-    md = ModelerDashboard(1200, 500, options.verbose)
+    md = Dashboard(1200, 500, options.verbose)
     md.main()
     print("done")
