@@ -313,11 +313,6 @@ class Dashboard:
         elif not self.runDirectory.get():
             tkm.showerror("No Directory", "No directory selected for modeling")
             return
-        curWD = os.getcwd()
-        modelPy = os.path.join(curWD, "simUtility.py")
-        if not os.path.isfile(modelPy):
-            tkm.showerror("Modeling program DNE", "Could not find %s" % modelPy)
-            return
         if self.verbose: print("running the modeling program")
         if self.images.get()[-5:] == ".fits":
             imFilename = os.path.join(self.runDirectory.get(), "images.txt")
@@ -349,8 +344,8 @@ class Dashboard:
         self.modelPB["maximum"] = len(self.images.get().split("\n"))
         self.modelPBProgress.set(0)
         t1 = threading.Thread(target=simUtility.mainExternal, 
-                              args=(commandList, self.runDirectory.get(), os.getcwd(), 
-                                    self.modelPBProgress))
+                              args=(commandList, self.runDirectory.get(), 
+                                    os.getcwd(), self.modelPBProgress))
         t1.start()
         
 #         tkm.showinfo("Started Modeling", 
@@ -377,11 +372,6 @@ class Dashboard:
         if not self.results.get():
             tkm.showerror("No Filenames", "No results to model")
             return
-        curWD = os.getcwd()
-        sumPy = os.path.join(curWD, "sumSimUtility.py")
-        if not os.path.isfile(sumPy):
-            tkm.showerror("Summarizing program DNE", "Could not find %s" % sumPy)
-            return
         if self.results.get()[-5:] == ".fits":
             resFilename = "resultFilenames.txt"
             with open(resFilename, "w") as imFile:
@@ -389,7 +379,6 @@ class Dashboard:
         else:
             resFilename = self.results.get()
         commandList = [resFilename]
-        if self.verbose: commandList.append("-v")
         if self.sumBulgeOpt.get(): commandList.append("-b")
         if self.sumRealOpt.get(): commandList.append("-r")
         delim = self.sumDelimEntry.get()

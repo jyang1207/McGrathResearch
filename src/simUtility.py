@@ -1223,7 +1223,7 @@ def main(args, pb=None):
 			but optparse is used to maintain better backwards compatibility
 	'''
 	# define the command line interface with simUtility.py
-	usage = ("\n%prog inputFile [-h help] [options (with '-'|'--' prefix)]" + 
+	usage = ("\nsimUtility.py inputFile [-h help] [options (with '-'|'--' prefix)]" + 
 			"  [sextractor options (no '-' prefix)]\n")
 			
 	# used to parse command line arguments

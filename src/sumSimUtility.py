@@ -521,7 +521,7 @@ def main(args):
 	'''
 	
 	# define the command line interface with simUtility.py
-	usage = ("\n%prog resultsFile [-h help] [options (with '-'|'--' prefix)]")
+	usage = ("\nsumSimUtility.py resultsFile [-h help] [options (with '-'|'--' prefix)]")
 
 	# used to parse command line arguments
 	parser = OptionParser(usage)
@@ -549,7 +549,7 @@ def main(args):
 	# parse the command line using above parameter rules
 	# options - list with everthing defined above, 
 	# args - anything left over after parsing options
-	[options, args] = parser.parse_args()
+	[options, args] = parser.parse_args(args)
 	pprint.pprint(vars(options))
 	print(args)
 
