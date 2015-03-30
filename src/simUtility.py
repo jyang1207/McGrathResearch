@@ -791,6 +791,8 @@ class ModelGenerator:
 			sigmaImage = ".".join(image["filename"].split(".")[:-1]) + "_sigma.fits"
 			if os.path.isfile(sigmaImage):
 				self.sigmaImage = sigmaImage
+			else:
+				print("Could not find sigma image "+sigmaImage)
 	
 	def write_galfit_parameter(self, image, paramFile, ouputFilename, sigmaFilename):
 		'''
@@ -1414,8 +1416,7 @@ def main(args, pb=None):
 			["total", "time", "elapsed", "=", str(int(elapsed)), "seconds",
 			"about", "equal", "to", str(int(elapsed / 60.0)), "minutes",
 			"about", "equal", "to", str(int((elapsed / 60.0) / 60.0)), "hours"]) + "\n")
-	for logLine in logResults:
-		log = log + logLine + "\n"
+	log += "\n".join(logResults)
 	
 	# create the log file in a collective destination directory
 	logFilename = os.path.join(collectiveDestDirectory, "rungalfit_log.txt")
