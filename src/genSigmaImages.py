@@ -53,7 +53,7 @@ def genSigmaImages(simFilename):
 		candelNoiseData = candelNoiseHDUList[0].data
 		# for candelized, sigma is sqrt(rms^2 + (sqrt(pixelVal*expTime)/expTime)^2)
 		rms = candelNoiseData - candelNoNoiseData
-		expTime = 5000.0 # TODO: adjust for your data
+		expTime = 3000.0 # TODO: adjust for your data
 		data = np.sqrt(np.square(rms) + 
 					np.square(np.sqrt(np.abs(candelNoiseData * expTime)) / expTime))
 		fits.writeto(sigmaNoiseFilename, data, clobber=True)
