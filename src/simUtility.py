@@ -787,7 +787,7 @@ class ModelGenerator:
 		self.galfit_bulge_parameter_filename = 		filename + "_bulge_param.txt"
 		self.galfit_bulge_output_filename = 			filename + "_bulge_multi.fits"
 		self.galfit_bulge_result_filename = 			filename + "_bulge_result.txt"
-		if not self.sigmaImage:
+		if self.sigmaImage.upper() == "NONE":
 			sigmaImage = ".".join(image["filename"].split(".")[:-1]) + "_sigma.fits"
 			if os.path.isfile(sigmaImage):
 				self.sigmaImage = sigmaImage
