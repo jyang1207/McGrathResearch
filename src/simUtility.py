@@ -792,9 +792,9 @@ class ModelGenerator:
 			if os.path.isfile(sigmaImage):
 				self.sigmaImage = sigmaImage
 			else:
-				print("Could not find sigma image "+sigmaImage)
+				print("IANERROR: Could not find sigma image "+sigmaImage)
 	
-	def write_galfit_parameter(self, image, paramFile, ouputFilename, sigmaFilename):
+	def write_galfit_parameter(self, image, paramFile, ouputFilename):
 		'''
 		writes the galfit parameter file for the single component
 		
@@ -811,7 +811,7 @@ class ModelGenerator:
 			"						#Input data image block\n")
 		paramFile.write("B) " + ouputFilename + 
 			"						#Output data image block\n")
-		paramFile.write("C) " + sigmaFilename + 
+		paramFile.write("C) " + self.sigmaImage + 
 			"						#Sigma image name (made from data if blank or 'none')\n")
 		paramFile.write("D) " + self.psf + 
 			"						#Input PSF image and (optional) diffusion kernel\n")
@@ -1027,8 +1027,7 @@ class ModelGenerator:
 		# writes the single component parameter file
 		with open(self.galfit_single_parameter_filename, 'w') as paramFile:
 			self.write_galfit_parameter(image, paramFile,
-										self.galfit_single_output_filename,
-										self.sigmaImage)
+										self.galfit_single_output_filename)
 	
 		print(os.getcwd())
 		# run galfit on paramter file
