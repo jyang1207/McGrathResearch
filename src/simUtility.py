@@ -791,6 +791,7 @@ class ModelGenerator:
 			sigmaImage = ".".join(image["filename"].split(".")[:-1]) + "_sigma.fits"
 			if os.path.isfile(sigmaImage):
 				self.sigmaImage = sigmaImage
+				print("IANERROR:" + self.sigmaImage)
 			else:
 				print("IANERROR: Could not find sigma image "+sigmaImage)
 	
