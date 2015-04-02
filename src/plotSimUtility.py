@@ -8,7 +8,8 @@ Colby College Astrophysics Research
 '''
 
 import matplotlib.pyplot as plt
-import matplotlib.pylab as pyl
+from matplotlib.pylab import loadtxt
+from matplotlib import ticker
 # import matplotlib.ticker as ticker
 import numpy as np
 import os
@@ -60,81 +61,6 @@ def getFormats():
 		formats.append(color + markers[(index + 1) * -1])
 	
 	return formats
-
-def plotAllCamera(plotComponents, fieldDescriptions, xFieldName='age',
-	yFieldName='ser', curSubPlot=plt, includeLegend=True, cameras="all"):
-	'''
-	plot specified cameras in plot components and optionally include legend
-	plots the components given on the plot given, using fieldDescriptions to set axis scales
-	'''
-	formats = [fStr + "-" for fStr in getFormats()]
-	
-	# plot sersic index vs age, separate for each camera angles
-	ageSet = np.unique(plotComponents[xFieldName])
-	
-	camSet = np.unique(plotComponents['cam'])
-	if cameras.isdigit():
-		newcamset = []
-		for cam in camSet:
-			if str(cam).endswith(cameras):
-				newcamset.append(cam)
-		camSet = newcamset
-		if not camSet:
-			print("camera " + cameras + " has no data")
-	
-	fieldValByAge = dict([[age, []] for age in ageSet])
-	for componentNumber, fieldVal in enumerate(plotComponents[yFieldName]):
-		fieldValByAge[plotComponents[xFieldName][componentNumber]].append(
-								[fieldVal, plotComponents['cam'][componentNumber]])
-
-	for ind, cam in enumerate(camSet):
-		xVals = []
-		yVals = []
-		for age in ageSet:
-			found = False
-			for [fieldVal, curCam] in fieldValByAge[age]:
-				if curCam == cam and not found:
-					yVals.append(fieldVal)
-					found = True
-			if found:
-				xVals.append(age)
-		curSubPlot.plot(xVals, yVals, formats[ind], label='Camera ' + str(cam))
-		curSubPlot.xlim([fieldDescriptions[xFieldName][2], fieldDescriptions[xFieldName][3]])
-		curSubPlot.ylim([fieldDescriptions[yFieldName][2], fieldDescriptions[yFieldName][3]])
-		# if yFieldName == "rad":
-		# 	 curSubPlot.set_yscale("log")
-		if includeLegend:
-			curSubPlot.legend(loc='upper left', prop={'size':10})
-	
-def plotAvgCamera(plotComponents, fieldDescriptions, xFieldName='age', yFieldName='ser', curSubPlot=plt):
-	'''
-	average cameras in plot components and plot errorbars
-	plots the components given on the plot given, using fieldDescriptions to set axis scales
-	'''
-	# plot sersic index vs age, averaging all camera angles
-	ageSet = np.unique(plotComponents[xFieldName])
-	fieldValByAge = dict([[age, []] for age in ageSet])
-	for componentNumber, fieldVal in enumerate(plotComponents[yFieldName]):
-		fieldValByAge[plotComponents[xFieldName][componentNumber]].append(fieldVal)
-	
-	yVals = []
-	yErr = []
-	for age in ageSet:
-		yVals.append(np.mean(fieldValByAge[age]))
-		yErr.append(np.std(fieldValByAge[age]))
-	
-	xVals = ageSet
-	
-	# compute a linear fit to overplot
-	# fit = pyl.polyfit(xVals, yVals, 1)
-	# print(fit)
-	# fitFn = pyl.poly1d(fit)
-	# curSubPlot.plot(xVals, yVals, 'bo', xVals, fitFn(xVals), 'b-')
-	curSubPlot.errorbar(xVals, yVals, yerr=yErr, ecolor='r', linewidth=0.1, fmt="ro")
-	curSubPlot.xlim([fieldDescriptions[xFieldName][2], fieldDescriptions[xFieldName][3]])
-	curSubPlot.ylim([fieldDescriptions[yFieldName][2], fieldDescriptions[yFieldName][3]])
-	
-	return
 
 # TODO not implemented after revision
 def calcBulgeToTotal(bulgeMag, diskMag):
@@ -223,9 +149,11 @@ def getGalaxies(allFieldNames, data, galaxyType="central", galaxyName=""):
 			([str(curTS), str(curCam)] in exclusionList)):
 			excluded.append([str(curTS), str(curCam)])
 
+	for field in typedGalaxies:
+		typedGalaxies[field] = np.asarray(typedGalaxies[field])
 	return typedGalaxies
 	
-def getData(summaryFilename, fieldDescriptions):
+def getData(summaryFilename, fieldDescriptions, delimiter=""):
 	'''
 	given a summary file, return a formatted dictionary of field name to values
 	
@@ -238,10 +166,12 @@ def getData(summaryFilename, fieldDescriptions):
 	'''
 
 	# read the columns into a 2D array with names and formats as above
-	rawData = pyl.loadtxt(summaryFilename,
-						  dtype={'names':list(fieldDescriptions.keys()),
-								 'formats':[fieldDescriptions[name][0] for name in fieldDescriptions]},
-						  skiprows=2)
+	dtype={'names':list(fieldDescriptions.keys()),
+		'formats':[fieldDescriptions[name][0] for name in fieldDescriptions]}
+	if delimiter:
+		rawData = loadtxt(summaryFilename, delimiter=delimiter, dtype=dtype, skiprows=3)		
+	else: 
+		rawData = loadtxt(summaryFilename, dtype=dtype, skiprows=3)
 	
 	# dictionary with field names as keys and array of field values as value
 	data = {}
@@ -249,11 +179,136 @@ def getData(summaryFilename, fieldDescriptions):
 		
 		# loadtxt does an annoying byte array thing, decode undoes it so strings are strings
 		if fieldDescriptions[name][0][0] in ['a', 'S']:
-			data[name] = [component[colIndex].decode('utf-8') for component in rawData]
+			data[name] = np.asarray([component[colIndex].decode('utf-8') 
+									for component in rawData])
 		else:
-			data[name] = [component[colIndex] for component in rawData]
+			data[name] = np.asarray([component[colIndex] 
+									for component in rawData])
 
 	return data
+
+def plotAllCamera(data, fieldDescriptions, xFieldName='age',
+	yFieldName='ser', curSubPlot=plt, includeLegend=True, cameras="all"):
+	'''
+	plot specified cameras in plot components and optionally include legend
+	plots the components given on the plot given, using fieldDescriptions to set axis scales
+	'''
+	formats = [fStr + "-" for fStr in getFormats()]
+	
+	# plot sersic index vs age, separate for each camera angles
+	ageSet = np.unique(data[xFieldName])
+	
+	camSet = np.unique(data['cam'])
+	if cameras.isdigit():
+		newcamset = []
+		for cam in camSet:
+			if str(cam).endswith(cameras):
+				newcamset.append(cam)
+		camSet = newcamset
+		if not camSet:
+			print("camera " + cameras + " has no data")
+	
+	fieldValByAge = dict([[age, []] for age in ageSet])
+	for componentNumber, fieldVal in enumerate(data[yFieldName]):
+		fieldValByAge[data[xFieldName][componentNumber]].append(
+								[fieldVal, data['cam'][componentNumber]])
+
+	for ind, cam in enumerate(camSet):
+		xVals = []
+		yVals = []
+		for age in ageSet:
+			found = False
+			for [fieldVal, curCam] in fieldValByAge[age]:
+				if curCam == cam and not found:
+					yVals.append(fieldVal)
+					found = True
+			if found:
+				xVals.append(age)
+		curSubPlot.plot(xVals, yVals, formats[ind], label='Camera ' + str(cam))
+		curSubPlot.xlim([fieldDescriptions[xFieldName][2], fieldDescriptions[xFieldName][3]])
+		curSubPlot.ylim([fieldDescriptions[yFieldName][2], fieldDescriptions[yFieldName][3]])
+		# if yFieldName == "rad":
+		# 	 curSubPlot.set_yscale("log")
+		if includeLegend:
+			curSubPlot.legend(loc='upper left', prop={'size':10})
+	
+def plotAvgCamera(data, fieldDescriptions, xFieldName='age', yFieldName='ser', curSubPlot=plt):
+	'''
+	average cameras in plot components and plot errorbars
+	plots the components given on the plot given, using fieldDescriptions to set axis scales
+	'''
+	# plot sersic index vs age, averaging all camera angles
+	ageSet = np.unique(data[xFieldName])
+	fieldValByAge = dict([[age, []] for age in ageSet])
+	for componentNumber, fieldVal in enumerate(data[yFieldName]):
+		fieldValByAge[data[xFieldName][componentNumber]].append(fieldVal)
+	
+	yVals = []
+	yErr = []
+	for age in ageSet:
+		yVals.append(np.mean(fieldValByAge[age]))
+		yErr.append(np.std(fieldValByAge[age]))
+	
+	xVals = ageSet
+	
+	# compute a linear fit to overplot
+	# fit = pyl.polyfit(xVals, yVals, 1)
+	# print(fit)
+	# fitFn = pyl.poly1d(fit)
+	# curSubPlot.plot(xVals, yVals, 'bo', xVals, fitFn(xVals), 'b-')
+	curSubPlot.errorbar(xVals, yVals, yerr=yErr, ecolor='r', linewidth=0.1, fmt="ro")
+	curSubPlot.xlim([fieldDescriptions[xFieldName][2], fieldDescriptions[xFieldName][3]])
+	curSubPlot.ylim([fieldDescriptions[yFieldName][2], fieldDescriptions[yFieldName][3]])
+	
+	return
+
+def mozenaPlot(data):
+	'''
+	create the plot from Mark Mozena's thesis with given data
+	Sersic vs Reff vs Axis Ratio
+	'''
+	zrange = np.where(data["red"] > 1.4)
+	zrange = np.where(data["red"][zrange] < 2.6)
+	
+	serVSrad = plt.subplot(221)
+	serVSrad.plot(data["rad"][zrange], data["ser"][zrange], "bs")
+	serVSrad.set_xscale("log")
+	serVSrad.set_ylabel("Sersic (n)")
+	serVSrad.set_ylim(0, 5.5)
+	serVSrad.set_yticks([1, 2, 3, 4, 5])
+	serVSrad.yaxis.set_minor_locator(ticker.AutoMinorLocator(n=2))
+	plt.setp( serVSrad.get_xticklabels(), visible=False)
+	
+	baVSrad = plt.subplot(223, sharex=serVSrad)
+	baVSrad.plot(data["rad"][zrange], data["ba"][zrange], "bs")
+	baVSrad.set_xlabel("$R_{eff}$ (kpc)")
+	baVSrad.set_xscale("log")
+	baVSrad.set_xlim(0.5, 100)
+	baVSrad.set_xticks([1.0, 3.0, 10.0])
+	baVSrad.xaxis.set_major_formatter(ticker.LogFormatter(labelOnlyBase=False))
+	baVSrad.set_ylabel("Axis Ratio (q)")
+
+	baVSser = plt.subplot(224, sharey=baVSrad)
+	baVSser.plot(data["ser"][zrange], data["ba"][zrange], "bs")
+	baVSser.set_xlim(0, 5.5)
+	baVSser.set_xticks([1, 2, 3, 4, 5])
+	baVSser.xaxis.set_minor_locator(ticker.AutoMinorLocator(n=2))
+	baVSser.set_xlabel("Sersic (n)")
+	baVSser.set_ylim(0, 1.1)
+	baVSser.set_yticks([0.2, 0.4, 0.6, 0.8, 1.0])
+	baVSser.yaxis.set_minor_locator(ticker.AutoMinorLocator(n=2))
+	plt.setp( baVSser.get_yticklabels(), visible=False)
+
+	# remove extra space between subplots
+	plt.tight_layout(w_pad=0, h_pad=0)
+	
+	# these are matplotlib.patch.Patch properties
+	props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+	# place a text box in upper left in axes coords
+	textstr = "Simulations\nAllCameras\n$z=1.4-2.6$"
+	plt.figtext(0.6, 0.8, textstr, fontsize=14,
+	        verticalalignment='top', bbox=props)
+	return
 	
 	
 if __name__ == "__main__":
@@ -267,6 +322,7 @@ if __name__ == "__main__":
 	poslow = 285
 	poshigh = 315
 	fieldDescriptions = OrderedDict()
+	fieldDescriptions['fn'] = 		['a10', 'Filename']
 	fieldDescriptions['typ'] = 		['a10', 'Galaxy Type']
 	fieldDescriptions['id'] = 		['a10', 'Galaxy ID']
 	fieldDescriptions['ts'] = 		['a10', 'Time Step (a)']
@@ -284,9 +340,9 @@ if __name__ == "__main__":
 	fieldDescriptions['erpix'] = 	['f4', 'Error in radius (pixels)', -error, error]
 	fieldDescriptions['rad'] = 		['f4', r"$R_{eff}$ (kpc)", 0.5, 15]
 	fieldDescriptions['erad'] = 		['f4', 'Error in radius (kpc)', -error, error]
-	fieldDescriptions['ser'] = 		['f4', 'Sersic Index', 0.05, 8.5]
+	fieldDescriptions['ser'] = 		['f4', 'Sersic (n)', 0.05, 8.5]
 	fieldDescriptions['eser'] = 		['f4', 'Error in sersic index', -error, error]
-	fieldDescriptions['ba'] = 		['f4', 'Axis Ratio', 0.05, 1.2]
+	fieldDescriptions['ba'] = 		['f4', 'Axis Ratio (q)', 0.05, 1.2]
 	fieldDescriptions['eba'] = 		['f4', 'Error in axis ratio', -error, error]
 	fieldDescriptions['pa'] = 		['f4', 'Position Angle (deg)', -180, 180]
 	fieldDescriptions['epa'] = 		['f4', 'Error in position angle (deg)', -error, error]
@@ -345,9 +401,14 @@ if __name__ == "__main__":
 					  help="the type of plot, available options are: " + str(plotTypes) + ", default: %default",
 					  default=plotTypes[0])
 
-	# indicate that you want all cameras plotted separately
-	parser.add_option("-c", "--allCameras",
+	# indicate cameras to be plotted
+	parser.add_option("-c", "--cameras",
 					  help="specify specific cameras (e.g. 0 or 1 or... or all)",
+					  default="")
+	
+	# indicate that you want all cameras plotted separately
+	parser.add_option("-d", "--delimiter",
+					  help="specify delimiter of data summary file, default whitespace",
 					  default="")
 	
 	# parse the command line using above parameter rules
@@ -409,7 +470,7 @@ if __name__ == "__main__":
 	print("\nReading data from summary file...")
 	# ##
 	# dictionary with field names as keys (above) and array of field values as value
-	data = getData(args[0], fieldDescriptions)
+	data = getData(args[0], fieldDescriptions, options.delimiter)
 	print("\tData read successfully, using y fields:")
 	for yFieldName in yFields:
 		print("\t\t" + fieldDescriptions[yFieldName][1] + 
@@ -455,17 +516,17 @@ if __name__ == "__main__":
 				ylabel = fieldDescriptions[yFieldName][1]
 				plt.figure().suptitle(galaxyName + " " + ylabel + " vs " + xlabel + titleSuffix)
 						
-				if options.allCameras:
+				if options.cameras:
 					numRows = 2
 					plt.subplot(numRows, numCols, 1)
 					plt.title("all cameras")
-					plotAllCamera(curData, fieldDescriptions, xFieldName, yFieldName, cameras=options.allCameras)
+					plotAllCamera(curData, fieldDescriptions, xFieldName, yFieldName, cameras=options.cameras)
 					plt.xlabel(xlabel)
 					plt.ylabel(ylabel)
 					if numCols == 2:
 						plt.subplot(numRows, numCols, 2)
 						plt.title("all cameras")
-						plotAllCamera(mrpData, fieldDescriptions, xFieldName, yFieldName, cameras=options.allCameras)
+						plotAllCamera(mrpData, fieldDescriptions, xFieldName, yFieldName, cameras=options.cameras)
 						plt.xlabel(xlabel)
 						plt.ylabel(ylabel + " (with MRP)")
 						plt.subplot(numRows, numCols, 4)
@@ -495,7 +556,7 @@ if __name__ == "__main__":
 	# single component fit results, one plot per field, all galaxies
 	elif plotType == "allGalaxies":
 	
-		if options.includeMRP or options.allCameras:
+		if options.includeMRP or options.cameras:
 			numRows = 2
 		else:
 			numRows = 1
@@ -529,15 +590,15 @@ if __name__ == "__main__":
 					plotAvgCamera(mrpData, fieldDescriptions, xFieldName, yFieldName)
 					plt.xlabel(xlabel)
 					plt.ylabel(ylabel + " (with MRP)")
-				elif options.allCameras:
+				elif options.cameras:
 					plt.subplot(numRows, numCols, galaxyIndex + numCols)
-					plotAllCamera(curData, fieldDescriptions, xFieldName, yFieldName, cameras=options.allCameras)
+					plotAllCamera(curData, fieldDescriptions, xFieldName, yFieldName, cameras=options.cameras)
 					plt.xlabel(xlabel)
 					plt.ylabel(ylabel + " (all cameras)")
 					
 				
 	elif plotType == "allFields":
-		if options.includeMRP or options.allCameras:
+		if options.includeMRP or options.cameras:
 			numRows = 2
 		else:
 			numRows = 1
@@ -572,9 +633,9 @@ if __name__ == "__main__":
 					plotAvgCamera(mrpData, fieldDescriptions, xFieldName, yFieldName)
 					plt.xlabel(xlabel)
 					plt.ylabel(ylabel + " (with MRP)")
-				elif options.allCameras:
+				elif options.cameras:
 					plt.subplot(numRows, numCols, galaxyIndex + numCols)
-					plotAllCamera(curData, fieldDescriptions, xFieldName, yFieldName, cameras=options.allCameras)
+					plotAllCamera(curData, fieldDescriptions, xFieldName, yFieldName, cameras=options.cameras)
 					plt.xlabel(xlabel)
 					plt.ylabel(ylabel + " (all cameras)")
 					
@@ -584,8 +645,9 @@ if __name__ == "__main__":
 		
 	# this is for manual use, limited/inconsistent use of other command line flags
 	elif plotType == "special":
-		print("plot type '" + plotType + "' not yet implemented")
-		exit()
+		#print("plot type '" + plotType + "' not yet implemented")
+		curData = getGalaxies(fieldDescriptions.keys(), data, options.componentType)
+		mozenaPlot(curData)
 			
 	else:
 		print("plot type '" + plotType + "' not yet implemented")

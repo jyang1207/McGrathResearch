@@ -1100,7 +1100,7 @@ class ModelGenerator:
 	
 			# run iraf's imhead method to populate image dimensions
 			if not self.run_imhead(curImage):
-				errorMsg = "could not get image dimensions using PIL"
+				errorMsg = "could not get image dimensions"
 				print(errorMsg)
 				self.logMsg = self.logMsg + errorMsg
 				return self.logMsg
