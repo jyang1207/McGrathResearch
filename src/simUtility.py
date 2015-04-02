@@ -1370,7 +1370,8 @@ def main(args, pb=None):
 															args[1:],
 															os.getcwd(),
 															imageFilenames, pb)
-		os.system(" ".join(["mv", os.path.join(destDirectory, "*"), collectiveDestDirectory]))
+		os.system(" ".join(["echo", os.path.join(destDirectory, "*"), "|", 
+						"xargs", "mv", "-t", collectiveDestDirectory]))
 		os.system(" ".join(["rm -r", destDirectory]))
 	
 	# run the parallel version
@@ -1401,7 +1402,8 @@ def main(args, pb=None):
 		
 		# move all individual logResults into the new collective logResults folder
 		for destDirectory in destDirectories:
-			os.system(" ".join(["mv", os.path.join(destDirectory, "*"), collectiveDestDirectory]))
+			os.system(" ".join(["echo", os.path.join(destDirectory, "*"), "|", 
+							"xargs", "mv", "-t", collectiveDestDirectory]))
 			os.system(" ".join(["rmdir", destDirectory]))
 		
 	# end program run time, print total
