@@ -269,9 +269,9 @@ def mozenaPlot(data):
 	'''
 	zrange = np.where(data["red"] > 1.4)
 	zrange = np.where(data["red"][zrange] < 2.6)
-	
+	s=0.1
 	serVSrad = plt.subplot(221)
-	serVSrad.plot(data["rad"][zrange], data["ser"][zrange], "bs")
+	serVSrad.plot(data["rad"][zrange], data["ser"][zrange], "bs", s=s)
 	serVSrad.set_xscale("log")
 	serVSrad.set_ylabel("Sersic (n)")
 	serVSrad.set_ylim(0, 5.5)
@@ -280,16 +280,16 @@ def mozenaPlot(data):
 	plt.setp( serVSrad.get_xticklabels(), visible=False)
 	
 	baVSrad = plt.subplot(223, sharex=serVSrad)
-	baVSrad.plot(data["rad"][zrange], data["ba"][zrange], "bs")
+	baVSrad.plot(data["rad"][zrange], data["ba"][zrange], "bs", s=s)
 	baVSrad.set_xlabel("$R_{eff}$ (kpc)")
 	baVSrad.set_xscale("log")
-	baVSrad.set_xlim(0.5, 20)
+	baVSrad.set_xlim(0.5, 15)
 	baVSrad.set_xticks([1.0, 3.0, 10.0])
 	baVSrad.xaxis.set_major_formatter(ticker.LogFormatter(labelOnlyBase=False))
 	baVSrad.set_ylabel("Axis Ratio (q)")
 
 	baVSser = plt.subplot(224, sharey=baVSrad)
-	baVSser.plot(data["ser"][zrange], data["ba"][zrange], "bs")
+	baVSser.plot(data["ser"][zrange], data["ba"][zrange], "bs", s=s)
 	baVSser.set_xlim(0, 5.5)
 	baVSser.set_xticks([1, 2, 3, 4, 5])
 	baVSser.xaxis.set_minor_locator(ticker.AutoMinorLocator(n=2))
