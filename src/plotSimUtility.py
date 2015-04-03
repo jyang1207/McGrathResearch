@@ -269,7 +269,7 @@ def mozenaPlot(data):
 	'''
 	zrange = np.where(data["red"] > 1.4)
 	zrange = np.where(data["red"][zrange] < 2.6)
-	s=0.1
+	s=0.5
 	serVSrad = plt.subplot(221)
 	serVSrad.plot(data["rad"][zrange], data["ser"][zrange], "bs", ms=s)
 	serVSrad.set_xscale("log")
