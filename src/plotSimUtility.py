@@ -305,7 +305,7 @@ def mozenaPlot(data):
 	# these are matplotlib.patch.Patch properties
 	props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
 	# place a text box in upper left in axes coords
-	textstr = "Simulations\nAll Cameras\n$z=1.4-2.6$"
+	textstr = "Simulations\nAll Cameras\nz=1.4-2.6"
 	plt.figtext(0.6, 0.8, textstr, fontsize=14,
 	        verticalalignment='top', bbox=props)
 	return
@@ -576,7 +576,7 @@ if __name__ == "__main__":
 				if options.includeMRP:
 					mrpData = getGalaxies(fieldDescriptions.keys(), data,
 											options.componentType, galaxyName + "MRP")
-					if not mrpData[xFieldName]:
+					if not mrpData[xFieldName].shape[0]:
 						print("no data for galaxy " + galaxyName + "MRP")
 				
 				plt.subplot(numRows, numCols, galaxyIndex)
@@ -613,7 +613,7 @@ if __name__ == "__main__":
 			if options.includeMRP:
 				mrpData = getGalaxies(fieldDescriptions.keys(), data,
 										options.componentType, galaxyName + "MRP")
-				if not mrpData[xFieldName]:
+				if not mrpData[xFieldName].shape[0]:
 					print("no data for galaxy " + galaxyName + "MRP")
 					
 			plt.figure().suptitle(galaxyName + titleSuffix)
