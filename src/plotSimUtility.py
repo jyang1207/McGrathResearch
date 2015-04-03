@@ -305,7 +305,7 @@ def mozenaPlot(data):
 	# these are matplotlib.patch.Patch properties
 	props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
 	# place a text box in upper left in axes coords
-	textstr = "Simulations\nAllCameras\n$z=1.4-2.6$"
+	textstr = "Simulations\nAll Cameras\n$z=1.4-2.6$"
 	plt.figtext(0.6, 0.8, textstr, fontsize=14,
 	        verticalalignment='top', bbox=props)
 	return
@@ -499,7 +499,7 @@ if __name__ == "__main__":
 		
 			curData = getGalaxies(fieldDescriptions.keys(), data,
 									options.componentType, galaxyName)
-			if not curData[xFieldName]:
+			if not curData[xFieldName].shape[0]:
 				print("no data for galaxy " + galaxyName)
 				continue	
 			numCols = 1
@@ -570,7 +570,7 @@ if __name__ == "__main__":
 			for galaxyIndex, galaxyName in enumerate(options.galaxyNames, start=1): 
 				curData = getGalaxies(fieldDescriptions.keys(), data,
 										options.componentType, galaxyName)
-				if not curData[xFieldName]:
+				if not curData[xFieldName].shape[0]:
 					print("no data for galaxy " + galaxyName + " y field " + yFieldName)
 					continue	
 				if options.includeMRP:
@@ -607,7 +607,7 @@ if __name__ == "__main__":
 		
 			curData = getGalaxies(fieldDescriptions.keys(), data,
 									options.componentType, galaxyName)
-			if not curData[xFieldName]:
+			if not curData[xFieldName].shape[0]:
 				print("no data for galaxy " + galaxyName)
 				continue	
 			if options.includeMRP:
@@ -646,8 +646,10 @@ if __name__ == "__main__":
 	# this is for manual use, limited/inconsistent use of other command line flags
 	elif plotType == "special":
 		#print("plot type '" + plotType + "' not yet implemented")
-		curData = getGalaxies(fieldDescriptions.keys(), data, options.componentType)
-		mozenaPlot(curData)
+		for galaxyName in options.galaxyNames:
+			plt.figure(galaxyName + titleSuffix)
+			curData = getGalaxies(fieldDescriptions.keys(), data, options.componentType, galaxyName)
+			mozenaPlot(curData)
 			
 	else:
 		print("plot type '" + plotType + "' not yet implemented")
