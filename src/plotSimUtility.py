@@ -283,7 +283,7 @@ def mozenaPlot(data):
 	baVSrad.plot(data["rad"][zrange], data["ba"][zrange], "bs")
 	baVSrad.set_xlabel("$R_{eff}$ (kpc)")
 	baVSrad.set_xscale("log")
-	baVSrad.set_xlim(0.5, 100)
+	baVSrad.set_xlim(0.5, 20)
 	baVSrad.set_xticks([1.0, 3.0, 10.0])
 	baVSrad.xaxis.set_major_formatter(ticker.LogFormatter(labelOnlyBase=False))
 	baVSrad.set_ylabel("Axis Ratio (q)")
