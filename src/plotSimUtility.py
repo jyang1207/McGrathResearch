@@ -646,10 +646,10 @@ if __name__ == "__main__":
 	# this is for manual use, limited/inconsistent use of other command line flags
 	elif plotType == "special":
 		#print("plot type '" + plotType + "' not yet implemented")
-		for galaxyName in options.galaxyNames:
-			plt.figure(galaxyName + titleSuffix)
-			curData = getGalaxies(fieldDescriptions.keys(), data, options.componentType, galaxyName)
-			mozenaPlot(curData)
+		#for galaxyName in options.galaxyNames:
+		plt.figure(titleSuffix)
+		curData = getGalaxies(fieldDescriptions.keys(), data, options.componentType)#, galaxyName)
+		mozenaPlot(curData)
 			
 	else:
 		print("plot type '" + plotType + "' not yet implemented")
