@@ -585,7 +585,7 @@ if __name__ == "__main__":
 				plt.xlabel(xlabel)
 				plt.ylabel(ylabel)
 				
-				if options.includeMRP and mrpData[xFieldName]:
+				if options.includeMRP and mrpData[xFieldName].shape[0]:
 					plt.subplot(numRows, numCols, galaxyIndex + numCols)
 					plotAvgCamera(mrpData, fieldDescriptions, xFieldName, yFieldName)
 					plt.xlabel(xlabel)
