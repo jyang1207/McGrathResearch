@@ -506,7 +506,7 @@ if __name__ == "__main__":
 			if options.includeMRP:
 				mrpData = getGalaxies(fieldDescriptions.keys(), data,
 										options.componentType, galaxyName + "MRP")
-				if not mrpData[xFieldName]:
+				if not mrpData[xFieldName].shape[0]:
 					print("no data for galaxy " + galaxyName + "MRP")
 				else:
 					numCols = 2
