@@ -342,7 +342,7 @@ if __name__ == "__main__":
 	fieldDescriptions['erad'] = 		['f4', 'Error in radius (kpc)', -error, error]
 	fieldDescriptions['ser'] = 		['f4', 'Sersic (n)', 0.05, 8.5]
 	fieldDescriptions['eser'] = 		['f4', 'Error in sersic index', -error, error]
-	fieldDescriptions['ba'] = 		['f4', 'Axis Ratio (q)', 0.05, 1.2]
+	fieldDescriptions['ba'] = 		['f4', 'Axis Ratio (q)', 0.05, 1.0]
 	fieldDescriptions['eba'] = 		['f4', 'Error in axis ratio', -error, error]
 	fieldDescriptions['pa'] = 		['f4', 'Position Angle (deg)', -180, 180]
 	fieldDescriptions['epa'] = 		['f4', 'Error in position angle (deg)', -error, error]
