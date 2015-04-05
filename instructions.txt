@@ -11,8 +11,8 @@ VELA04MRP 297861 2.813 6
 VELA04MRP 333418 3.318 5
 #######some useful command line terminal input examples:########
 
-ls ../../hydroart/VELA03/VELA03_a0.[^01]*/images/*F160W_s* > images.txt
-ls ../../hydroart/VELA03MRP/VELA03MRP_0.[^01]*/images/*F160W_s* > images.txt
+ls /diskarrays/astro_array1/hydroartMod/VELA[01][2345]*/*.[^01]*/images/*F160W*_noise.fits > 160noiseImages.txt
+ls /diskarrays/astro_array1/hydroartMod/VELA2[678]*/*.[^01]*/images/*F160W*_noise.fits >> 160noiseImages.txt
 
 #
 #for dividing timesteps between multiple processors
