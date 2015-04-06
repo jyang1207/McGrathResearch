@@ -8,7 +8,7 @@ Colby College Astrophysics Research
 '''
 
 import matplotlib.pyplot as plt
-from matplotlib.pylab import loadtxt
+from matplotlib.pylab import genfromtxt
 from matplotlib import ticker
 # import matplotlib.ticker as ticker
 import numpy as np
@@ -169,22 +169,21 @@ def getData(summaryFilename, fieldDescriptions, delimiter=""):
 	dtype={'names':list(fieldDescriptions.keys()),
 		'formats':[fieldDescriptions[name][0] for name in fieldDescriptions]}
 	if delimiter:
-		rawData = loadtxt(summaryFilename, delimiter=delimiter, dtype=dtype, skiprows=3)		
+		rawData = genfromtxt(summaryFilename, delimiter=delimiter, dtype=dtype, 
+							skip_header=2)
 	else: 
-		rawData = loadtxt(summaryFilename, dtype=dtype, skiprows=3)
+		rawData = genfromtxt(summaryFilename, dtype=dtype, skip_header=2)
 	
 	# dictionary with field names as keys and array of field values as value
 	data = {}
 	for colIndex, name in enumerate(fieldDescriptions):
-		
-		# loadtxt does an annoying byte array thing, decode undoes it so strings are strings
+		# fix an annoying byte array thing, decode undoes it so strings are strings
 		if fieldDescriptions[name][0][0] in ['a', 'S']:
 			data[name] = np.asarray([component[colIndex].decode('utf-8') 
 									for component in rawData])
 		else:
 			data[name] = np.asarray([component[colIndex] 
 									for component in rawData])
-
 	return data
 
 def plotAllCamera(data, fieldDescriptions, xFieldName='age',
@@ -262,6 +261,24 @@ def plotAvgCamera(data, fieldDescriptions, xFieldName='age', yFieldName='ser', c
 	
 	return
 
+def barroPlot(data):
+	'''
+	create barro plot of log(ssfr) against log(mass/rad^1.5)
+	'''
+	zrange = np.where(data["red"] > 0)
+	zrange = np.where(data["red"][zrange] < 10)
+	logMass = np.log10(data["mass"])
+	mrange = np.where(logMass > 8)
+	mrange = np.where(logMass[mrange] < 13)
+	crange = np.intersect1d(zrange[0], mrange[0], assume_unique=True)
+	
+	xdata = np.log10(data["mass"]/(data["rad"]**(1.5)))
+	ydata = np.log10(data["ssfr"])
+	plt.plot(xdata[crange], ydata[crange], "bs", ms=0.5)
+	#plt.xlim(9, 11.75)
+	plt.ylim(3, -5)
+	return
+
 def mozenaPlot(data):
 	'''
 	create the plot from Mark Mozena's thesis with given data
@@ -314,7 +331,8 @@ def mozenaPlot(data):
 if __name__ == "__main__":
 	
 	# master list of all available plot types
-	plotTypes = ["default", "allGalaxies", "allFields", "bulgeToTotal", "special"]
+	plotTypes = ["default", "allGalaxies", "allFields", "bulgeToTotal", 
+				"mozena", "barro", "special"]
 			
 	# dictionary of lists [format, text, lower, upper], one for each field in summary file
 	# careful changing this list, ordered to match the order of columns in summary file
@@ -335,19 +353,22 @@ if __name__ == "__main__":
 	fieldDescriptions['py'] = 		['f4', 'Y Position (pixels)', poslow, poshigh]
 	fieldDescriptions['epy'] = 		['f4', 'Error in y position (pixels)', -error, error]
 	fieldDescriptions['mag'] = 		['f4', 'Magnitude', 30, 15]
-	fieldDescriptions['emag'] = 		['f4', 'Error in magnitude', -error, error]
-	fieldDescriptions['rpix'] = 		['f4', r"$R_{eff}$ (pixels)", 0.5, 50]
+	fieldDescriptions['emag'] = 	['f4', 'Error in magnitude', -error, error]
+	fieldDescriptions['rpix'] = 	['f4', r"$R_{eff}$ (pixels)", 0.5, 50]
 	fieldDescriptions['erpix'] = 	['f4', 'Error in radius (pixels)', -error, error]
 	fieldDescriptions['rad'] = 		['f4', r"$R_{eff}$ (kpc)", 0.5, 15]
-	fieldDescriptions['erad'] = 		['f4', 'Error in radius (kpc)', -error, error]
+	fieldDescriptions['erad'] = 	['f4', 'Error in radius (kpc)', -error, error]
 	fieldDescriptions['ser'] = 		['f4', 'Sersic (n)', 0.05, 8.5]
-	fieldDescriptions['eser'] = 		['f4', 'Error in sersic index', -error, error]
+	fieldDescriptions['eser'] = 	['f4', 'Error in sersic index', -error, error]
 	fieldDescriptions['ba'] = 		['f4', 'Axis Ratio (q)', 0.05, 1.0]
 	fieldDescriptions['eba'] = 		['f4', 'Error in axis ratio', -error, error]
 	fieldDescriptions['pa'] = 		['f4', 'Position Angle (deg)', -180, 180]
 	fieldDescriptions['epa'] = 		['f4', 'Error in position angle (deg)', -error, error]
 	fieldDescriptions['rff'] = 		['f4', 'RFF', 0, 1]
 	fieldDescriptions['sky'] = 		['f4', 'sky value']
+	fieldDescriptions['sfr'] = 		['f4', 'SFR']
+	fieldDescriptions['ssfr'] = 	['f4', 'sSFR']
+	fieldDescriptions['mass'] = 	['f4', 'Mass']	
 	
 	# all of the fields for which there are lower and upper bounds for plotting
 	fieldOptions = []
@@ -645,11 +666,22 @@ if __name__ == "__main__":
 		
 	# this is for manual use, limited/inconsistent use of other command line flags
 	elif plotType == "special":
+		print("plot type '" + plotType + "' not yet implemented")
+		exit()
+
+	elif plotType == "mozena":
 		#print("plot type '" + plotType + "' not yet implemented")
 		#for galaxyName in options.galaxyNames:
-		plt.figure(titleSuffix)
+		plt.figure(titleSuffix)#galaxyName+titleSuffix)
 		curData = getGalaxies(fieldDescriptions.keys(), data, options.componentType)#, galaxyName)
 		mozenaPlot(curData)
+		
+	elif plotType == "barro":
+		#print("plot type '" + plotType + "' not yet implemented")
+		for galaxyName in options.galaxyNames:
+			plt.figure(galaxyName+titleSuffix)
+			curData = getGalaxies(fieldDescriptions.keys(), data, options.componentType, galaxyName)
+			barroPlot(curData)
 			
 	else:
 		print("plot type '" + plotType + "' not yet implemented")
