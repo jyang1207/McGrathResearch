@@ -96,7 +96,7 @@ def updateHeaderSummary(simFilenames, sumLines, delim=","):
 		
 		found = False
 		for simFilename in simFilenames:
-			if simFilename.startswith(key):
+			if simFilename.split("/")[-1].startswith(key):
 				# attempt to open the sim file using fits and get the header dictionary
 				try:
 					simHDUList = fits.open(simFilename)
@@ -129,7 +129,7 @@ if __name__ == "__main__":
 	# define the command line interface with simUtility.py
 	usage = ("USAGE: python updateHeader.py " + 
 			"<file containing list of simulation .fits filenames to be updated>"+
-			" <file containing mass and sfr columns indexed by id and aexp")
+			" <file containing mass and sfr columns indexed by id and aexp>")
 
 	# must have at least one positional command line argument
 	if len(sys.argv) < 2 or not os.path.isfile(sys.argv[1]):
