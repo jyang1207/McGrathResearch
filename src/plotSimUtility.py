@@ -292,10 +292,10 @@ def vivianPlot(data, keys):
 	norpData = getGalaxies(keys, data, "central", galaxyName)
 	
 	rpCondition = np.ones_like(rpData["red"], bool)
-	rpCondition &= rpData["mass"] > 0
+	#rpCondition &= rpData["mass"] > 0
 	rpCondition &= (rpData["red"] > 1) & (rpData["red"] < 1.5) 
 	norpCondition = np.ones_like(norpData["red"], bool)
-	norpCondition &= norpData["mass"] > 0
+	#norpCondition &= norpData["mass"] > 0
 	norpCondition &= (norpData["red"] > 1) & (norpData["red"] < 1.5) 
 	
 	s=5
