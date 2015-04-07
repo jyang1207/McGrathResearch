@@ -90,7 +90,7 @@ def updateHeaderSummary(simFilenames, sumLines, delim=","):
 		mass = fields[massCol]
 		ssfr = str(float(sfr)*(10**9)/float(mass))
 		if gname.endswith("RP"):
-			key = "%s_a%.6f"%(gname,aval)
+			key = "%s_%.6f"%(gname,aval)
 		else:
 			key = "%s_a%.3f"%(gname,aval)
 		
