@@ -224,12 +224,12 @@ def plotAllCamera(data, fieldDescriptions, xFieldName='age',
 			if found:
 				xVals.append(age)
 		curSubPlot.plot(xVals, yVals, formats[ind], label='Camera ' + str(cam))
-		curSubPlot.xlim([fieldDescriptions[xFieldName][2], fieldDescriptions[xFieldName][3]])
-		curSubPlot.ylim([fieldDescriptions[yFieldName][2], fieldDescriptions[yFieldName][3]])
-		# if yFieldName == "rad":
-		# 	 curSubPlot.set_yscale("log")
-		if includeLegend:
-			curSubPlot.legend(loc='upper left', prop={'size':10})
+	curSubPlot.xlim([fieldDescriptions[xFieldName][2], fieldDescriptions[xFieldName][3]])
+	curSubPlot.ylim([fieldDescriptions[yFieldName][2], fieldDescriptions[yFieldName][3]])
+	# if yFieldName == "rad":
+	# 	 curSubPlot.set_yscale("log")
+	if includeLegend:
+		curSubPlot.legend(loc='upper left', prop={'size':10})
 	
 def plotAvgCamera(data, fieldDescriptions, xFieldName='age', yFieldName='ser', curSubPlot=plt):
 	'''
@@ -280,22 +280,31 @@ def barroPlot(data):
 	plt.ylabel("$log(sSFR)[Gyr^{-1}]$")
 	return
 
-def vivianPlot(data):
+def vivianPlot(data, keys):
 	'''
 	create barro plot of log(ssfr) against log(mass/rad^1.5)
 	'''
+	plt.figure()
 	condition = np.ones_like(data["red"], bool)
 	condition &= data["mass"] > 0
 	#condition &= data["cam"] == 1
 	condition &= (data["red"] > 1) & (data["red"] < 1.5) 
 	#condition &= (data["mass"] > 10**10.6) & (data["mass"] < 10**10.8)
-	xdata = data["rad"][condition]
-	ydata = data["ba"][condition]
-	plt.plot(xdata, ydata, "bs", ms=0.5)
-	#plt.xlim(9, 11.75)
-	#plt.ylim([-2.5, 1.5])
+	
+	galaxyName = "VELA02MRP"
+	rpData = getGalaxies(keys, data, "central", galaxyName)
+	galaxyName = "VELA02"
+	norpData = getGalaxies(keys, data, "central", galaxyName)
+	
+	xdata = rpData["rad"][condition&(data["cam"]==5)]
+	ydata = rpData["ba"][condition&(data["cam"]==5)]
+	plt.plot(xdata, ydata, "b*", ms=1, label="RP Random")
+	
+	plt.xlim(0, 10)
+	plt.ylim([0, 1])
 	plt.xlabel("Semi-major Axis [Kpc]")
 	plt.ylabel("Axis Ratio")
+	plt.legend()
 	return
 
 
@@ -718,10 +727,8 @@ if __name__ == "__main__":
 	elif plotType == "vivian":
 		#print("plot type '" + plotType + "' not yet implemented")
 		#for galaxyName in options.galaxyNames:
-		galaxyName = "VELA02MRP"
-		plt.figure(galaxyName+titleSuffix)
-		curData = getGalaxies(fieldDescriptions.keys(), data, options.componentType, galaxyName)
-		vivianPlot(curData)
+		
+		vivianPlot(data, fieldDescriptions.keys())
 			
 	else:
 		print("plot type '" + plotType + "' not yet implemented")
