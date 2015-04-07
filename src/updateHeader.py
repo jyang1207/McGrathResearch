@@ -149,9 +149,10 @@ if __name__ == "__main__":
 	with open(sys.argv[2], 'r') as sumFile:
 		sumLines = sumFile.readlines()
 
+	simFilenames = [sfn.strip() for sfn in simFilenames]
 	updateHeaderSummary(simFilenames, sumLines)
 		
 	# iterate over filenames, updating the header info
 #	for simFilename in simFilenames:
-#		if not updateHeaderNoise(simFilename.strip()):
+#		if not updateHeaderNoise(simFilename):
 #			continue
