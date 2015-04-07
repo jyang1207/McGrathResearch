@@ -362,7 +362,7 @@ if __name__ == "__main__":
 	
 	# master list of all available plot types
 	plotTypes = ["default", "allGalaxies", "allFields", "bulgeToTotal", 
-				"mozena", "barro", "special"]
+				"mozena", "barro", "special", "vivian"]
 			
 	# dictionary of lists [format, text, lower, upper], one for each field in summary file
 	# careful changing this list, ordered to match the order of columns in summary file
