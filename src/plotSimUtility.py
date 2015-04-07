@@ -301,27 +301,27 @@ def vivianPlot(data, keys):
 	s=5
 	xdata = rpData["rad"][rpCondition&(rpData["cam"]==5)]
 	ydata = rpData["ba"][rpCondition&(rpData["cam"]==5)]
-	plt.plot(xdata, ydata, "b*", ms=s, label="RP Random")
+	plt.scatterplot(xdata, ydata, "b*", ms=s, label="RP Random")
 	
 	xdata = rpData["rad"][rpCondition&(rpData["cam"]==0)]
 	ydata = rpData["ba"][rpCondition&(rpData["cam"]==0)]
-	plt.plot(xdata, ydata, "bs", ms=s, label="RP Face-on")
+	plt.scatterplot(xdata, ydata, "bs", ms=s, label="RP Face-on")
 	
 	xdata = rpData["rad"][rpCondition&(rpData["cam"]==1)]
 	ydata = rpData["ba"][rpCondition&(rpData["cam"]==1)]
-	plt.plot(xdata, ydata, "g^", ms=s, label="RP Edge-on")
+	plt.scatterplot(xdata, ydata, "g^", ms=s, label="RP Edge-on")
 	
 	xdata = norpData["rad"][norpCondition&(norpData["cam"]==5)]
 	ydata = norpData["ba"][norpCondition&(norpData["cam"]==5)]
-	plt.plot(xdata, ydata, "b*", ms=s, label="No RP Random")
+	plt.scatterplot(xdata, ydata, "b*", ms=s, label="No RP Random")
 	
 	xdata = norpData["rad"][norpCondition&(norpData["cam"]==0)]
 	ydata = norpData["ba"][norpCondition&(norpData["cam"]==0)]
-	plt.plot(xdata, ydata, "bs", ms=s, label="No RP Face-on")
+	plt.scatterplot(xdata, ydata, "bs", ms=s, label="No RP Face-on")
 	
 	xdata = norpData["rad"][norpCondition&(norpData["cam"]==1)]
 	ydata = norpData["ba"][norpCondition&(norpData["cam"]==1)]
-	plt.plot(xdata, ydata, "g^", ms=s, label="No RP Edge-on")
+	plt.scatterplot(xdata, ydata, "g^", ms=s, label="No RP Edge-on")
 	
 	plt.xlim(0, 10)
 	plt.ylim([0, 1])
