@@ -265,18 +265,19 @@ def barroPlot(data):
 	'''
 	create barro plot of log(ssfr) against log(mass/rad^1.5)
 	'''
-	zrange = np.where(data["red"] > 0)
-	zrange = np.where(data["red"][zrange] < 10)
-	logMass = np.log10(data["mass"])
-	mrange = np.where(logMass > 8)
-	mrange = np.where(logMass[mrange] < 13)
-	crange = np.intersect1d(zrange[0], mrange[0], assume_unique=True)
-	
-	xdata = np.log10(data["mass"]/(data["rad"]**(1.5)))
-	ydata = np.log10(data["ssfr"])
-	plt.plot(xdata[crange], ydata[crange], "bs", ms=0.5)
+	condition = np.ones_like(data["red"], bool)
+	condition &= data["mass"] > 0
+	condition &= data["cam"] == 1
+	condition &= (data["red"] > 2) & (data["red"] < 3) 
+	#condition &= (data["mass"] > 10**10.6) & (data["mass"] < 10**10.8)
+	xdata = np.log10(data["mass"][condition]/(data["rad"][condition]**(1.5)))
+	ydata = np.log10(data["ssfr"][condition])
+	plt.plot(xdata, ydata, "bs", ms=0.5)
 	#plt.xlim(9, 11.75)
-	plt.ylim(3, -5)
+	plt.ylim([-2.5, 1.5])
+	plt.gca().invert_yaxis()
+	plt.xlabel("$log(\Sigma)[M_{\odot}kpc^{-1.5}]$")
+	plt.ylabel("$log(sSFR)[Gyr^{-1}]$")
 	return
 
 def mozenaPlot(data):
@@ -284,34 +285,43 @@ def mozenaPlot(data):
 	create the plot from Mark Mozena's thesis with given data
 	Sersic vs Reff vs Axis Ratio
 	'''
-	zrange = np.where(data["red"] > 1.4)
-	zrange = np.where(data["red"][zrange] < 2.6)
+	condition = np.ones_like(data["red"], bool)
+	condition &= data["cam"] != 0
+	condition &= data["cam"] != 1
+	condition &= (data["red"] > 1.4) & (data["red"] < 2.6) 
+	condition &= (data["mass"] > 10**8.5) & (data["mass"] < 10**11)
 	s=0.5
+	ser = data["ser"][condition]
+	rad = data["rad"][condition]
+	ba = data["ba"][condition]
+	serlim = [0, 5.5]
+	serticks = [1, 2, 3, 4, 5]
+	
 	serVSrad = plt.subplot(221)
-	serVSrad.plot(data["rad"][zrange], data["ser"][zrange], "bs", ms=s)
+	serVSrad.plot(rad, ser, "bs", ms=s)
 	serVSrad.set_xscale("log")
-	serVSrad.set_ylabel("Sersic (n)")
-	serVSrad.set_ylim(0, 5.5)
-	serVSrad.set_yticks([1, 2, 3, 4, 5])
+	serVSrad.set_ylabel("Sersic (n)", labelpad=15)
+	serVSrad.set_ylim(serlim)
+	serVSrad.set_yticks(serticks)
 	serVSrad.yaxis.set_minor_locator(ticker.AutoMinorLocator(n=2))
 	plt.setp( serVSrad.get_xticklabels(), visible=False)
 	
 	baVSrad = plt.subplot(223, sharex=serVSrad)
-	baVSrad.plot(data["rad"][zrange], data["ba"][zrange], "bs", ms=s)
+	baVSrad.plot(rad, ba, "bs", ms=s)
 	baVSrad.set_xlabel("$R_{eff}$ (kpc)")
 	baVSrad.set_xscale("log")
-	baVSrad.set_xlim(0.5, 15)
+	baVSrad.set_xlim(0.5, 12)
 	baVSrad.set_xticks([1.0, 3.0, 10.0])
 	baVSrad.xaxis.set_major_formatter(ticker.LogFormatter(labelOnlyBase=False))
 	baVSrad.set_ylabel("Axis Ratio (q)")
 
 	baVSser = plt.subplot(224, sharey=baVSrad)
-	baVSser.plot(data["ser"][zrange], data["ba"][zrange], "bs", ms=s)
-	baVSser.set_xlim(0, 5.5)
-	baVSser.set_xticks([1, 2, 3, 4, 5])
+	baVSser.plot(ser, ba, "bs", ms=s)
+	baVSser.set_xlim(serlim)
+	baVSser.set_xticks(serticks)
 	baVSser.xaxis.set_minor_locator(ticker.AutoMinorLocator(n=2))
 	baVSser.set_xlabel("Sersic (n)")
-	baVSser.set_ylim(0, 1.1)
+	baVSser.set_ylim(0, 1.05)
 	baVSser.set_yticks([0.2, 0.4, 0.6, 0.8, 1.0])
 	baVSser.yaxis.set_minor_locator(ticker.AutoMinorLocator(n=2))
 	plt.setp( baVSser.get_yticklabels(), visible=False)
@@ -322,9 +332,10 @@ def mozenaPlot(data):
 	# these are matplotlib.patch.Patch properties
 	props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
 	# place a text box in upper left in axes coords
-	textstr = "Simulations\nAll Cameras\nz=1.4-2.6"
-	plt.figtext(0.6, 0.8, textstr, fontsize=14,
-	        verticalalignment='top', bbox=props)
+	textstr = "Simulations\nFour Random Cameras\n$z = 1.4 - 2.6$"
+	textstr += "\n$log(M_{\odot}) = 8.5 - 11.0$\n$N = %d$" % len(ser)
+	plt.figtext(0.6, 0.9, textstr, fontsize=16,
+	        verticalalignment='top')#, bbox=props)
 	return
 	
 	
@@ -678,10 +689,11 @@ if __name__ == "__main__":
 		
 	elif plotType == "barro":
 		#print("plot type '" + plotType + "' not yet implemented")
-		for galaxyName in options.galaxyNames:
-			plt.figure(galaxyName+titleSuffix)
-			curData = getGalaxies(fieldDescriptions.keys(), data, options.componentType, galaxyName)
-			barroPlot(curData)
+		#for galaxyName in options.galaxyNames:
+		galaxyName = ""
+		plt.figure(galaxyName+titleSuffix)
+		curData = getGalaxies(fieldDescriptions.keys(), data, options.componentType, galaxyName)
+		barroPlot(curData)
 			
 	else:
 		print("plot type '" + plotType + "' not yet implemented")
