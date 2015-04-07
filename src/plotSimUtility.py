@@ -285,20 +285,42 @@ def vivianPlot(data, keys):
 	create barro plot of log(ssfr) against log(mass/rad^1.5)
 	'''
 	plt.figure()
-	condition = np.ones_like(data["red"], bool)
-	condition &= data["mass"] > 0
-	#condition &= data["cam"] == 1
-	condition &= (data["red"] > 1) & (data["red"] < 1.5) 
-	#condition &= (data["mass"] > 10**10.6) & (data["mass"] < 10**10.8)
-	
+	plt.title("VELA02 & VELA02MRP 1<z<1.5")
 	galaxyName = "VELA02MRP"
 	rpData = getGalaxies(keys, data, "central", galaxyName)
 	galaxyName = "VELA02"
 	norpData = getGalaxies(keys, data, "central", galaxyName)
 	
-	xdata = rpData["rad"][condition&(data["cam"]==5)]
-	ydata = rpData["ba"][condition&(data["cam"]==5)]
+	rpCondition = np.ones_like(rpData["red"], bool)
+	rpCondition &= rpData["mass"] > 0
+	rpCondition &= (rpData["red"] > 1) & (rpData["red"] < 1.5) 
+	norpCondition = np.ones_like(norpData["red"], bool)
+	norpCondition &= norpData["mass"] > 0
+	norpCondition &= (norpData["red"] > 1) & (norpData["red"] < 1.5) 
+	
+	xdata = rpData["rad"][rpCondition&(rpData["cam"]==5)]
+	ydata = rpData["ba"][rpCondition&(rpData["cam"]==5)]
 	plt.plot(xdata, ydata, "b*", ms=1, label="RP Random")
+	
+	xdata = rpData["rad"][rpCondition&(rpData["cam"]==0)]
+	ydata = rpData["ba"][rpCondition&(rpData["cam"]==0)]
+	plt.plot(xdata, ydata, "bs", ms=1, label="RP Face-on")
+	
+	xdata = rpData["rad"][rpCondition&(rpData["cam"]==1)]
+	ydata = rpData["ba"][rpCondition&(rpData["cam"]==1)]
+	plt.plot(xdata, ydata, "g^", ms=1, label="RP Edge-on")
+	
+	xdata = norpData["rad"][norpCondition&(norpData["cam"]==5)]
+	ydata = norpData["ba"][norpCondition&(norpData["cam"]==5)]
+	plt.plot(xdata, ydata, "b*", ms=1, label="No RP Random")
+	
+	xdata = norpData["rad"][norpCondition&(norpData["cam"]==0)]
+	ydata = norpData["ba"][norpCondition&(norpData["cam"]==0)]
+	plt.plot(xdata, ydata, "bs", ms=1, label="No RP Face-on")
+	
+	xdata = norpData["rad"][norpCondition&(norpData["cam"]==1)]
+	ydata = norpData["ba"][norpCondition&(norpData["cam"]==1)]
+	plt.plot(xdata, ydata, "g^", ms=1, label="No RP Edge-on")
 	
 	plt.xlim(0, 10)
 	plt.ylim([0, 1])
