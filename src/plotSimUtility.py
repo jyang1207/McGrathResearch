@@ -280,6 +280,25 @@ def barroPlot(data):
 	plt.ylabel("$log(sSFR)[Gyr^{-1}]$")
 	return
 
+def vivianPlot(data):
+	'''
+	create barro plot of log(ssfr) against log(mass/rad^1.5)
+	'''
+	condition = np.ones_like(data["red"], bool)
+	condition &= data["mass"] > 0
+	#condition &= data["cam"] == 1
+	condition &= (data["red"] > 1) & (data["red"] < 1.5) 
+	#condition &= (data["mass"] > 10**10.6) & (data["mass"] < 10**10.8)
+	xdata = data["rad"][condition]
+	ydata = data["ba"][condition]
+	plt.plot(xdata, ydata, "bs", ms=0.5)
+	#plt.xlim(9, 11.75)
+	#plt.ylim([-2.5, 1.5])
+	plt.xlabel("Semi-major Axis [Kpc]")
+	plt.ylabel("Axis Ratio")
+	return
+
+
 def mozenaPlot(data):
 	'''
 	create the plot from Mark Mozena's thesis with given data
@@ -683,8 +702,9 @@ if __name__ == "__main__":
 	elif plotType == "mozena":
 		#print("plot type '" + plotType + "' not yet implemented")
 		#for galaxyName in options.galaxyNames:
-		plt.figure(titleSuffix)#galaxyName+titleSuffix)
-		curData = getGalaxies(fieldDescriptions.keys(), data, options.componentType)#, galaxyName)
+		galaxyName = ""
+		plt.figure(galaxyName+titleSuffix)
+		curData = getGalaxies(fieldDescriptions.keys(), data, options.componentType, galaxyName)
 		mozenaPlot(curData)
 		
 	elif plotType == "barro":
@@ -694,6 +714,14 @@ if __name__ == "__main__":
 		plt.figure(galaxyName+titleSuffix)
 		curData = getGalaxies(fieldDescriptions.keys(), data, options.componentType, galaxyName)
 		barroPlot(curData)
+		
+	elif plotType == "vivian":
+		#print("plot type '" + plotType + "' not yet implemented")
+		#for galaxyName in options.galaxyNames:
+		galaxyName = "VELA02MRP"
+		plt.figure(galaxyName+titleSuffix)
+		curData = getGalaxies(fieldDescriptions.keys(), data, options.componentType, galaxyName)
+		vivianPlot(curData)
 			
 	else:
 		print("plot type '" + plotType + "' not yet implemented")
