@@ -301,33 +301,33 @@ def vivianPlot(data, keys):
 	s=5
 	xdata = rpData["rad"][rpCondition&(rpData["cam"]==5)]
 	ydata = rpData["ba"][rpCondition&(rpData["cam"]==5)]
-	plt.scatter(xdata, ydata, "b*", label="RP Random")
+	plt.plot(xdata, ydata, "b*", ms=s, label="RP Random")
 	
 	xdata = rpData["rad"][rpCondition&(rpData["cam"]==0)]
 	ydata = rpData["ba"][rpCondition&(rpData["cam"]==0)]
-	plt.scatter(xdata, ydata, "bs", label="RP Face-on")
+	plt.plot(xdata, ydata, "bs", ms=s, label="RP Face-on")
 	
 	xdata = rpData["rad"][rpCondition&(rpData["cam"]==1)]
 	ydata = rpData["ba"][rpCondition&(rpData["cam"]==1)]
-	plt.scatter(xdata, ydata, "g^", label="RP Edge-on")
+	plt.plot(xdata, ydata, "g^", ms=s, label="RP Edge-on")
 	
 	xdata = norpData["rad"][norpCondition&(norpData["cam"]==5)]
 	ydata = norpData["ba"][norpCondition&(norpData["cam"]==5)]
-	plt.scatter(xdata, ydata, "b*", label="No RP Random")
+	plt.plot(xdata, ydata, "b*", ms=s, label="No RP Random")
 	
 	xdata = norpData["rad"][norpCondition&(norpData["cam"]==0)]
 	ydata = norpData["ba"][norpCondition&(norpData["cam"]==0)]
-	plt.scatter(xdata, ydata, "bs", label="No RP Face-on")
+	plt.plot(xdata, ydata, "bs", ms=s, label="No RP Face-on")
 	
 	xdata = norpData["rad"][norpCondition&(norpData["cam"]==1)]
 	ydata = norpData["ba"][norpCondition&(norpData["cam"]==1)]
-	plt.scatter(xdata, ydata, "g^", label="No RP Edge-on")
+	plt.plot(xdata, ydata, "g^", ms=s, label="No RP Edge-on")
 	
 	plt.xlim(0, 10)
 	plt.ylim([0, 1])
 	plt.xlabel("Semi-major Axis [Kpc]")
 	plt.ylabel("Axis Ratio")
-	plt.legend()
+	plt.legend(numpoints=1)
 	return
 
 
