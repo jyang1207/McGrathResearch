@@ -93,33 +93,36 @@ def updateHeaderSummary(simFilenames, sumLines, delim=","):
 			key = "%s_a%.6f"%(gname,aval)
 		else:
 			key = "%s_a%.3f"%(gname,aval)
-		try:
-			for simFilename in simFilenames:
-				dup[-3:] = [sfr, ssfr, mass]
-			print("found key "+key)
-		except KeyError:
-			print("no key " + key)
-	
-	# attempt to open the sim file using fits and get the header dictionary
-	try:
-		simHDUList = fits.open(simFilename)
-		simHeader = simHDUList[0].header
-	except:
-		print("failed to open sim file " + simFilename + 
-				" with fits")
-		return False
-	
-	try:
-		simHeader.set("MASS", mass, "mass of stars in units of stellar masses")
-		simHeader.set("SFR", sfr, "star formation rate per year")
-	except:
-		print("failed to write to sim header " + simFilename)
-		simHDUList.close()
-		return False
 		
-	simHDUList.writeto(simFilename, clobber=True)
-	simHDUList.close()
-	return True
+		found = False
+		for simFilename in simFilenames:
+			if simFilename.startswith(key):
+				# attempt to open the sim file using fits and get the header dictionary
+				try:
+					simHDUList = fits.open(simFilename)
+					simHeader = simHDUList[0].header
+					found = True
+					break
+				except:
+					print("failed to open sim file " + simFilename + 
+							" with fits")
+					break
+		if found:
+			print("found key "+key)
+		else:
+			print("no key " + key)
+			continue
+		try:
+			simHeader.set("MASS", mass, "mass of stars in units of stellar masses")
+			simHeader.set("SSFR", ssfr, "specific star formation rate per Gyr")
+			simHeader.set("SFR", sfr, "star formation rate per year")
+		except:
+			print("failed to write to sim header " + simFilename)
+			simHDUList.close()
+			continue
+			
+		simHDUList.writeto(simFilename, clobber=True)
+		simHDUList.close()
 
 if __name__ == "__main__":
 
