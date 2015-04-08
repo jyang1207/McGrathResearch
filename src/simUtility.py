@@ -1185,6 +1185,7 @@ def runModelGeneratorParallel(parameterList):
 	'''
 	
 	# handle parameters this way to enable parallelism
+	print parameterList
 	parser = parameterList[0]
 	options = parameterList[1]
 	sextractorKeywordOptions = parameterList[2]
