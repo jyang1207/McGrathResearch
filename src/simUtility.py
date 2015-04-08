@@ -766,10 +766,10 @@ class ModelGenerator:
 			the image on which to invoke imexam
 		'''
 		
-		try:
+		if allowParallel:
 			dims = iraf.imhead(image["filename"]).split("[")[-2][:-1].split(",")
 			image["width"], image["height"] = dims
-		except:
+		else:
 			with fits.open(image["filename"]) as imfile:
 				image["width"], image["height"] = imfile[0].data.shape
 		image["models"] = []
