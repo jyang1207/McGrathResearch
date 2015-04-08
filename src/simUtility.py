@@ -768,7 +768,7 @@ class ModelGenerator:
 		if allowParallel:
 			print image["filename"]
 			imres = iraf.imhead(image["filename"])
-			print imres
+			print "imres is " + imres + "so there"
 			dims = imres.split("[")[-2][:-1].split(",")
 			print dims
 			image["width"], image["height"] = dims
