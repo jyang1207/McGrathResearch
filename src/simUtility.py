@@ -1396,8 +1396,8 @@ def main(args, pb=None):
 		# separate out the log file results from the directories returned
 		logResults = []
 		destDirectories = []
-		print allResults
 		for result in allResults:
+			print result
 			logResults.append(result[0])
 			destDirectories.append(result[1])
 		destDirectories = set(destDirectories)
