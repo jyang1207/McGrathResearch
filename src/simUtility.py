@@ -1195,20 +1195,20 @@ def runModelGeneratorParallel(parameterList):
 		pb = parameterList[5]
 	else:
 		pb = None
-	
+	print "parameters unpacked"
 	# holds methods for analyzing simulations
 	modelGen = ModelGenerator(callingDirectory=callingDirectory)
 	modelGen.parallel = True
-	
+	print "made modelGen"
 	# parse the command line options
 	modelGen.parseGalfitOptions(parser, options)
 	modelGen.parseSextractorOptions(parser, options.realSextractor,
 									sextractorKeywordOptions)
-	
+	print "parsed options"
 	# write the sextractor config file, which will be used for all images
 	modelGen.write_sextractor_config_file(modelGen.sextractorConfigFilename)
 	modelGen.write_sextractor_config_file(modelGen.sextractorReduceComponentConfigFilename)
-		
+	print "wrote config files"
 	# run modeling method and return the resulting line in the log
 	logResult = modelGen.modelImage(imageFilename.strip())
 	print logResult
