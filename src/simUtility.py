@@ -766,11 +766,8 @@ class ModelGenerator:
 		'''
 		
 		if allowParallel:
-			print image["filename"]
 			imres = iraf.imheader(image["filename"], Stdout=1)
-			print imres
-			dims = imres.split("[")[-2][:-1].split(",")
-			print dims
+			dims = imres[0].split("[")[-2][:-1].split(",")
 			image["width"], image["height"] = dims
 		else:
 			with fits.open(image["filename"]) as imfile:
