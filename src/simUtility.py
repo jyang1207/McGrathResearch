@@ -768,12 +768,12 @@ class ModelGenerator:
 		if allowParallel:
 			imres = iraf.imheader(image["filename"], Stdout=1)
 			dims = imres[0].split("[")[-2][:-1].split(",")
-			image["width"], image["height"] = dims
+			image["width"] = float(dims[0])
+			image["height"] = float(dims[1])
 		else:
 			with fits.open(image["filename"]) as imfile:
 				image["width"], image["height"] = imfile[0].data.shape
 		image["models"] = []
-		
 		return True
 	
 		
