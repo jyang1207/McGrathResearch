@@ -793,7 +793,7 @@ class ModelGenerator:
 			self.sigmaImage = sigmaImage
 		else:
 			self.sigmaImage = "none"
-			print("ERROR: Could not find sigma image "+sigmaImage)
+	
 	
 	def write_galfit_parameter(self, image, paramFile, ouputFilename):
 		'''
@@ -812,8 +812,12 @@ class ModelGenerator:
 			"						#Input data image block\n")
 		paramFile.write("B) " + ouputFilename + 
 			"						#Output data image block\n")
-		paramFile.write("C) " + self.sigmaImage + 
-			"						#Sigma image name (made from data if blank or 'none')\n")
+		if self.realSextractor:
+			paramFile.write("C) " + self.sigmaImage + 
+				"						#Sigma image name (made from data if blank or 'none')\n")
+		else:
+			paramFile.write("C) none" + 
+				"						#Sigma image name (made from data if blank or 'none')\n")
 		paramFile.write("D) " + self.psf + 
 			"						#Input PSF image and (optional) diffusion kernel\n")
 		paramFile.write("E)" + " 1" + 
@@ -822,8 +826,8 @@ class ModelGenerator:
 			"						#Bad pixel mask (FITS file or ASCIIcoord list)\n")
 		paramFile.write("G) none" + 
 			"						#File with parameter constraints (ASCII file)\n")
-		paramFile.write("H) " + "1" + " " + str(image["width"]) + " " + 
-											"1" + " " + str(image["height"]) + 
+		paramFile.write("H) " + "1" + " " + str(int(image["width"])) + " " + 
+											"1" + " " + str(int(image["height"])) + 
 			"						#Image region to fit (xmin xmax ymin ymax)\n")
 		paramFile.write("I)" + " 200 200" + 
 			"						#Size of the convolution box (x y)\n")
@@ -1048,6 +1052,12 @@ class ModelGenerator:
 			return
 
 		os.system(" ".join(["mv", "galfit.01", self.galfit_single_result_filename]))
+		
+		if os.path.isfile("sigma.fits"):
+			print("simsigma found")
+			os.system(" ".join(["mv", "sigma.fits", self.sigmaImage]))
+		else:
+			print("no simsigma found")
 		
 		# done unless command line specified that a second galfit run
 		# should be done by adding a bulge component to the result of the first run
