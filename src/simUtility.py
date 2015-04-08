@@ -32,7 +32,6 @@ class ModelGenerator:
 		
 	def __init__(self, callingDirectory=""):
 		'''constructor sets some initial field defaults'''
-		print "making model generator " + str(os.getpid())
 		self.outputCatFilename = "generic.cat"  # -CATALOG_NAME <filename>
 		self.segmentationMapFilename = "check.fits"  # -CHECKIMAGE_NAME <filename>
 		self.sextractorOptionsList = []
@@ -767,9 +766,11 @@ class ModelGenerator:
 		'''
 		
 		if allowParallel:
+			print image["filename"]
 			imres = iraf.imhead(image["filename"])
 			print imres
 			dims = imres.split("[")[-2][:-1].split(",")
+			print dims
 			image["width"], image["height"] = dims
 		else:
 			with fits.open(image["filename"]) as imfile:
