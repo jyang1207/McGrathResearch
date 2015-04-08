@@ -32,6 +32,7 @@ class ModelGenerator:
 		
 	def __init__(self, callingDirectory=""):
 		'''constructor sets some initial field defaults'''
+		print "making model generator " + str(os.getpid())
 		self.outputCatFilename = "generic.cat"  # -CATALOG_NAME <filename>
 		self.segmentationMapFilename = "check.fits"  # -CHECKIMAGE_NAME <filename>
 		self.sextractorOptionsList = []
@@ -1185,7 +1186,6 @@ def runModelGeneratorParallel(parameterList):
 	'''
 	
 	# handle parameters this way to enable parallelism
-	print parameterList
 	parser = parameterList[0]
 	options = parameterList[1]
 	sextractorKeywordOptions = parameterList[2]
@@ -1396,6 +1396,7 @@ def main(args, pb=None):
 		# separate out the log file results from the directories returned
 		logResults = []
 		destDirectories = []
+		print allResults
 		for result in allResults:
 			logResults.append(result[0])
 			destDirectories.append(result[1])
