@@ -1184,7 +1184,7 @@ def runModelGeneratorParallel(parameterList):
 		the elements are parser, options, sextractorKeywordOptions, 
 		callingDirectory, and the image filename to model, respectively
 	'''
-	
+	print "unpacking parameters"
 	# handle parameters this way to enable parallelism
 	parser = parameterList[0]
 	options = parameterList[1]
@@ -1211,6 +1211,7 @@ def runModelGeneratorParallel(parameterList):
 		
 	# run modeling method and return the resulting line in the log
 	logResult = modelGen.modelImage(imageFilename.strip())
+	print logResult
 	if pb:
 		pb.set(pb.get()+1) #pb.step(1)
 	return [logResult, modelGen.destDirectory]
