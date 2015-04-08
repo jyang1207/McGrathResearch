@@ -1036,7 +1036,7 @@ class ModelGenerator:
 	
 		print(os.getcwd())
 		# run galfit on paramter file
-		os.system('galfit ' + self.galfit_single_parameter_filename)
+		os.system(" ".join(['galfit', self.galfit_single_parameter_filename, '-outsig']))
 
 		print(os.getcwd())
 		# detects atomic galfit error
