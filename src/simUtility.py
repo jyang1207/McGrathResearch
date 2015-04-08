@@ -767,7 +767,7 @@ class ModelGenerator:
 		
 		if allowParallel:
 			print image["filename"]
-			imres = iraf.imhead(image["filename"])
+			imres = iraf.imheader(image["filename"], Stdout=1)
 			print "imres is " + imres + "so there"
 			dims = imres.split("[")[-2][:-1].split(",")
 			print dims
