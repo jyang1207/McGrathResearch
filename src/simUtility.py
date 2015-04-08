@@ -1184,34 +1184,34 @@ def runModelGeneratorParallel(parameterList):
 		the elements are parser, options, sextractorKeywordOptions, 
 		callingDirectory, and the image filename to model, respectively
 	'''
-	print "unpacking parameters"
+	#print "unpacking parameters"
 	# handle parameters this way to enable parallelism
 	parser = parameterList[0]
 	options = parameterList[1]
 	sextractorKeywordOptions = parameterList[2]
 	callingDirectory = parameterList[3]
 	imageFilename = parameterList[4]
-	if len(parameterList > 5):
+	if len(parameterList) > 5:
 		pb = parameterList[5]
 	else:
 		pb = None
-	print "parameters unpacked"
+	#print "parameters unpacked"
 	# holds methods for analyzing simulations
 	modelGen = ModelGenerator(callingDirectory=callingDirectory)
 	modelGen.parallel = True
-	print "made modelGen"
+	#print "made modelGen"
 	# parse the command line options
 	modelGen.parseGalfitOptions(parser, options)
 	modelGen.parseSextractorOptions(parser, options.realSextractor,
 									sextractorKeywordOptions)
-	print "parsed options"
+	#print "parsed options"
 	# write the sextractor config file, which will be used for all images
 	modelGen.write_sextractor_config_file(modelGen.sextractorConfigFilename)
 	modelGen.write_sextractor_config_file(modelGen.sextractorReduceComponentConfigFilename)
 	print "wrote config files"
 	# run modeling method and return the resulting line in the log
 	logResult = modelGen.modelImage(imageFilename.strip())
-	print logResult
+	#print logResult
 	if pb:
 		pb.set(pb.get()+1) #pb.step(1)
 	return [logResult, modelGen.destDirectory]
