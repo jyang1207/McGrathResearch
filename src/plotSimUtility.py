@@ -410,11 +410,11 @@ if __name__ == "__main__":
 	fieldDescriptions['emag'] = 	['f4', 'Error in magnitude', -error, error]
 	fieldDescriptions['rpix'] = 	['f4', r"$R_{eff}$ (pixels)", 0.5, 50]
 	fieldDescriptions['erpix'] = 	['f4', 'Error in radius (pixels)', -error, error]
-	fieldDescriptions['rad'] = 		['f4', r"$R_{eff}$ (kpc)", 0.0, 10]
+	fieldDescriptions['rad'] = 		['f4', r"$R_{eff}$ (kpc)", 0.0, 10.5]
 	fieldDescriptions['erad'] = 	['f4', 'Error in radius (kpc)', -error, error]
 	fieldDescriptions['ser'] = 		['f4', 'Sersic (n)', 0.05, 8.5]
 	fieldDescriptions['eser'] = 	['f4', 'Error in sersic index', -error, error]
-	fieldDescriptions['ba'] = 		['f4', 'Axis Ratio (q)', 0.0, 1.0]
+	fieldDescriptions['ba'] = 		['f4', 'Axis Ratio (q)', 0.0, 1.2]
 	fieldDescriptions['eba'] = 		['f4', 'Error in axis ratio', -error, error]
 	fieldDescriptions['pa'] = 		['f4', 'Position Angle (deg)', -180, 180]
 	fieldDescriptions['epa'] = 		['f4', 'Error in position angle (deg)', -error, error]
@@ -746,7 +746,6 @@ if __name__ == "__main__":
 		rows = len(options.galaxyNames)
 		cols = len(redShifts)
 		fig, subs = plt.subplots(rows, cols, sharex=True, sharey=True)
-		print(subs)
 		for i in range(rows):
 			for j in range(cols):
 				#plt.subplot(rows, cols, cols*i + j + 1)
