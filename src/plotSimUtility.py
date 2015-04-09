@@ -280,14 +280,14 @@ def barroPlot(data):
 	plt.ylabel("$log(sSFR)[Gyr^{-1}]$")
 	return
 
-def vivianPlot(data, keys, galaxyName, redLow, redHigh):
+def vivianPlot(data, fieldDescriptions, xKey, yKey, galaxyName, redLow, redHigh):
 	'''
 	create barro plot of log(ssfr) against log(mass/rad^1.5)
 	'''
 	
 	plt.title(galaxyName + " & " + galaxyName + "MRP " + str(redLow) + "<z<" + str(redHigh))
-	rpData = getGalaxies(keys, data, "central", galaxyName +"MRP")
-	norpData = getGalaxies(keys, data, "central", galaxyName)
+	rpData = getGalaxies(fieldDescriptions.keys(), data, "central", galaxyName +"MRP")
+	norpData = getGalaxies(fieldDescriptions.keys(), data, "central", galaxyName)
 	
 	rpCondition = np.ones_like(rpData["red"], bool)
 	#rpCondition &= rpData["mass"] > 0
@@ -297,34 +297,34 @@ def vivianPlot(data, keys, galaxyName, redLow, redHigh):
 	norpCondition &= (norpData["red"] > redLow) & (norpData["red"] < redHigh) 
 	
 	s=5
-	xdata = rpData["rad"][rpCondition&(rpData["cam"]!=0)&(rpData["cam"]!=1)]
-	ydata = rpData["ba"][rpCondition&(rpData["cam"]!=0)&(rpData["cam"]!=1)]
+	xdata = rpData[xKey][rpCondition&(rpData["cam"]!=0)&(rpData["cam"]!=1)]
+	ydata = rpData[yKey][rpCondition&(rpData["cam"]!=0)&(rpData["cam"]!=1)]
 	plt.plot(xdata, ydata, "c*", ms=s, label="RP Random N=%d"%len(xdata))
 	
-	xdata = rpData["rad"][rpCondition&(rpData["cam"]==0)]
-	ydata = rpData["ba"][rpCondition&(rpData["cam"]==0)]
+	xdata = rpData[xKey][rpCondition&(rpData["cam"]==0)]
+	ydata = rpData[yKey][rpCondition&(rpData["cam"]==0)]
 	plt.plot(xdata, ydata, "bs", ms=s, label="RP Face-on N=%d"%len(xdata))
 	
-	xdata = rpData["rad"][rpCondition&(rpData["cam"]==1)]
-	ydata = rpData["ba"][rpCondition&(rpData["cam"]==1)]
+	xdata = rpData[xKey][rpCondition&(rpData["cam"]==1)]
+	ydata = rpData[yKey][rpCondition&(rpData["cam"]==1)]
 	plt.plot(xdata, ydata, "g^", ms=s, label="RP Edge-on N=%d"%len(xdata))
 	
-	xdata = norpData["rad"][norpCondition&(norpData["cam"]!=0)&(norpData["cam"]!=1)]
-	ydata = norpData["ba"][norpCondition&(norpData["cam"]!=0)&(norpData["cam"]!=1)]
+	xdata = norpData[xKey][norpCondition&(norpData["cam"]!=0)&(norpData["cam"]!=1)]
+	ydata = norpData[yKey][norpCondition&(norpData["cam"]!=0)&(norpData["cam"]!=1)]
 	plt.plot(xdata, ydata, "m*", ms=s, label="No RP Random N=%d"%len(xdata))
 	
-	xdata = norpData["rad"][norpCondition&(norpData["cam"]==0)]
-	ydata = norpData["ba"][norpCondition&(norpData["cam"]==0)]
+	xdata = norpData[xKey][norpCondition&(norpData["cam"]==0)]
+	ydata = norpData[yKey][norpCondition&(norpData["cam"]==0)]
 	plt.plot(xdata, ydata, "ys", ms=s, label="No RP Face-on N=%d"%len(xdata))
 	
-	xdata = norpData["rad"][norpCondition&(norpData["cam"]==1)]
-	ydata = norpData["ba"][norpCondition&(norpData["cam"]==1)]
+	xdata = norpData[xKey][norpCondition&(norpData["cam"]==1)]
+	ydata = norpData[yKey][norpCondition&(norpData["cam"]==1)]
 	plt.plot(xdata, ydata, "r^", ms=s, label="No RP Edge-on N=%d"%len(xdata))
 	
-	plt.xlim(0, 10)
-	plt.ylim([0, 1])
-	plt.xlabel("Semi-major Axis [Kpc]")
-	plt.ylabel("Axis Ratio")
+	plt.xlim(fieldDescriptions[xKey][2], fieldDescriptions[xKey][3])
+	plt.ylim(fieldDescriptions[yKey][2], fieldDescriptions[yKey][3])
+	plt.xlabel(fieldDescriptions[xKey][1])
+	plt.ylabel(fieldDescriptions[yKey][1])
 	plt.legend(numpoints=1, prop={'size':6})
 	return
 
@@ -416,11 +416,11 @@ if __name__ == "__main__":
 	fieldDescriptions['emag'] = 	['f4', 'Error in magnitude', -error, error]
 	fieldDescriptions['rpix'] = 	['f4', r"$R_{eff}$ (pixels)", 0.5, 50]
 	fieldDescriptions['erpix'] = 	['f4', 'Error in radius (pixels)', -error, error]
-	fieldDescriptions['rad'] = 		['f4', r"$R_{eff}$ (kpc)", 0.5, 15]
+	fieldDescriptions['rad'] = 		['f4', r"$R_{eff}$ (kpc)", 0.0, 10]
 	fieldDescriptions['erad'] = 	['f4', 'Error in radius (kpc)', -error, error]
 	fieldDescriptions['ser'] = 		['f4', 'Sersic (n)', 0.05, 8.5]
 	fieldDescriptions['eser'] = 	['f4', 'Error in sersic index', -error, error]
-	fieldDescriptions['ba'] = 		['f4', 'Axis Ratio (q)', 0.05, 1.0]
+	fieldDescriptions['ba'] = 		['f4', 'Axis Ratio (q)', 0.0, 1.0]
 	fieldDescriptions['eba'] = 		['f4', 'Error in axis ratio', -error, error]
 	fieldDescriptions['pa'] = 		['f4', 'Position Angle (deg)', -180, 180]
 	fieldDescriptions['epa'] = 		['f4', 'Error in position angle (deg)', -error, error]
@@ -756,7 +756,7 @@ if __name__ == "__main__":
 		for i in range(rows):
 			for j in range(cols):
 				plt.subplot(rows, cols, cols*i + j + 1)
-				vivianPlot(data, fieldDescriptions.keys(), galaxyNames[i], redShifts[j][0], redShifts[j][1])
+				vivianPlot(data, fieldDescriptions, "rad", "ser", galaxyNames[i], redShifts[j][0], redShifts[j][1])
 		plt.subplots_adjust(left=0.03, bottom=0.04, right=0.97, top=0.97, wspace=0.2, hspace=0.5)
 		
 	else:
