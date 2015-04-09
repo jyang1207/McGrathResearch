@@ -1055,9 +1055,12 @@ class ModelGenerator:
 		
 		if os.path.isfile("sigma.fits"):
 			print("simsigma found")
-			os.system(" ".join(["mv", "sigma.fits", self.sigmaImage]))
+			os.system(" ".join(["mv", "sigma.fits", 
+							os.path.join(self.destDirectory, self.sigmaImage.split("/")[-1])]))
 		else:
 			print("no simsigma found")
+			os.system(" ".join(["ln", "-s", self.sigmaImage, 
+							os.path.join(self.destDirectory, self.sigmaImage.split("/")[-1])]))
 		
 		# done unless command line specified that a second galfit run
 		# should be done by adding a bulge component to the result of the first run

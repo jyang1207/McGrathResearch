@@ -139,6 +139,8 @@ def run_pyfits(multiFitsFilename):
 	'''
 	# use pyfits to gather info from output of galfit
 	multiCubeSlices = fits.open(multiFitsFilename)
+	sigmaImageName = ".".join(multiFitsFilename.split("_")[:-2]) + "_sigma.fits"
+	sigmaSlices = fits.open(multiFitsFilename) # only works if the sigma image is in the same directory
 	
 	# get the dictionary mapping header keywords to their values
 	try:
@@ -146,11 +148,14 @@ def run_pyfits(multiFitsFilename):
 		imageHeader = multiCubeSlices[1].header
 		imageData = multiCubeSlices[1].data
 		modelHeader = multiCubeSlices[2].header
+		modelData = multiCubeSlices[2].data
 		residualData = multiCubeSlices[3].data
+		sigmaData = sigmaSlices[0].data
 		# open a file for writing the pixels included in elliptical sum
 		ellipImageName = multiFitsFilename[:-5] + "_ellip.png"
 		ellipImage = Image.new("RGB", imageData.shape)
 		multiCubeSlices.close()
+		sigmaSlices.close()
 	except KeyError:
 		print("Result file " + 	multiFitsFilename + 
 			" must be a .fits multi-extension cube with four slices")
@@ -266,19 +271,28 @@ def run_pyfits(multiFitsFilename):
 		AhkB = 2 * A * h + k * B
 		CkBh = 2 * C * k + B * h
 		AhhBhkCkk = A * h * h + B * h * k + C * k * k - 1
-		imageSum = 0
 		residualSum = 0
+		sigmaSum = 0
+		modelSum = 0
 		pix = ellipImage.load()
+		# http://mnras.oxfordjournals.org/content/419/3/2703.full.pdf for definition of rff
 		for [y, x], imageVal in numpy.ndenumerate(imageData):
 			if (# ((x>=xlow and x<=xhigh) and (y>=ylow and y<=yhigh)) and
 				((A * x * x + B * x * y + C * y * y - AhkB * x - CkBh * y + AhhBhkCkk) < 0)):
-				residualSum = residualSum + abs(residualData[y, x])
-				imageSum = imageSum + imageVal;  # Data[y,x]
+				
+				residualVal = residualData[y, x] # y, x because y is row and x is col
+				modelVal = modelData[y, x]
+				sigmaVal = sigmaData[y, x]
+				
+				residualSum += abs(imageVal-modelVal);  # or abs(residualVal)
+				modelSum += modelVal
+				sigmaSum += sigmaVal
+				
 				pix[x, imageHeight - y - 1] = 255  # flip so origin in bottom left
 
 		# compute rff and store in model dictionary
 		if imageSum:
-			model["rff"] = str(residualSum / imageSum)
+			model["rff"] = str((residualSum - 0.8*sigmaSum) / modelSum)
 		else:
 			model["rff"] = "0"
 			
