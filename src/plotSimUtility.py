@@ -285,7 +285,6 @@ def vivianPlot(data, fieldDescriptions, xKey, yKey, galaxyName, redLow, redHigh)
 	create barro plot of log(ssfr) against log(mass/rad^1.5)
 	'''
 	
-	plt.title(galaxyName + " & " + galaxyName + "MRP " + str(redLow) + "<z<" + str(redHigh))
 	rpData = getGalaxies(fieldDescriptions.keys(), data, "central", galaxyName +"MRP")
 	norpData = getGalaxies(fieldDescriptions.keys(), data, "central", galaxyName)
 	
@@ -324,7 +323,7 @@ def vivianPlot(data, fieldDescriptions, xKey, yKey, galaxyName, redLow, redHigh)
 	plt.xlim(fieldDescriptions[xKey][2], fieldDescriptions[xKey][3])
 	plt.ylim(fieldDescriptions[yKey][2], fieldDescriptions[yKey][3])
 	plt.xlabel(fieldDescriptions[xKey][1])
-	plt.ylabel(fieldDescriptions[yKey][1])
+	plt.ylabel("\n".join([galaxyName, fieldDescriptions[yKey][1]]))
 	plt.legend(numpoints=1, prop={'size':6})
 	return
 
@@ -747,17 +746,20 @@ if __name__ == "__main__":
 		
 	elif plotType == "vivian":
 		#print("plot type '" + plotType + "' not yet implemented")
-		#for galaxyName in options.galaxyNames:
 		
-		galaxyNames = ["VELA02", "VELA04", "VELA05", "VELA27", "VELA28"]
 		redShifts = [[1, 1.5], [1.5, 2], [2, 2.5]]
-		rows = len(galaxyNames)
+		rows = len(options.galaxyNames)
 		cols = len(redShifts)
+		plt.subplots(rows, cols, sharex=True, sharey=True)
 		for i in range(rows):
 			for j in range(cols):
 				plt.subplot(rows, cols, cols*i + j + 1)
-				vivianPlot(data, fieldDescriptions, xFieldName, yFields[0], galaxyNames[i], redShifts[j][0], redShifts[j][1])
-		plt.subplots_adjust(left=0.03, bottom=0.04, right=0.97, top=0.97, wspace=0.2, hspace=0.5)
+				if not i:
+					plt.title("%.2f<z<%.2f"%redShifts[j])
+				vivianPlot(data, fieldDescriptions, xFieldName, yFields[0], 
+						options.galaxyNames[i], redShifts[j][0], redShifts[j][1])
+		plt.subplots_adjust(left=0.03, bottom=0.04, right=0.97, 
+						top=0.97, wspace=0.2, hspace=0.5)
 		
 	else:
 		print("plot type '" + plotType + "' not yet implemented")
