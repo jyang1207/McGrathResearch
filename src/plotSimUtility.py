@@ -756,9 +756,9 @@ if __name__ == "__main__":
 						sub=subs[i][j])
 	
 		for j in range(cols):
-			subs[0, j].set_xlim(fieldDescriptions[xFieldName][2], 
+			subs[cols-1, j].set_xlim(fieldDescriptions[xFieldName][2], 
 						fieldDescriptions[xFieldName][3])
-			subs[0, j].set_xlabel(fieldDescriptions[xFieldName][1])
+			subs[cols-1, j].set_xlabel(fieldDescriptions[xFieldName][1])
 		for i in range(rows):
 			subs[i, 0].set_ylim(fieldDescriptions[yFieldName][2], 
 						fieldDescriptions[yFieldName][3])
