@@ -299,8 +299,8 @@ def vivianPlot(data, keys):
 	norpCondition &= (norpData["red"] > 1) & (norpData["red"] < 1.5) 
 	
 	s=5
-	xdata = rpData["rad"][rpCondition&(rpData["cam"]==5)]
-	ydata = rpData["ba"][rpCondition&(rpData["cam"]==5)]
+	xdata = rpData["rad"][rpCondition&(rpData["cam"]!=0)&(rpData["cam"]!=1)]
+	ydata = rpData["ba"][rpCondition&(rpData["cam"]!=0)&(rpData["cam"]!=1)]
 	plt.plot(xdata, ydata, "c*", ms=s, label="RP Random")
 	
 	xdata = rpData["rad"][rpCondition&(rpData["cam"]==0)]
@@ -311,8 +311,8 @@ def vivianPlot(data, keys):
 	ydata = rpData["ba"][rpCondition&(rpData["cam"]==1)]
 	plt.plot(xdata, ydata, "g^", ms=s, label="RP Edge-on")
 	
-	xdata = norpData["rad"][norpCondition&(norpData["cam"]==5)]
-	ydata = norpData["ba"][norpCondition&(norpData["cam"]==5)]
+	xdata = norpData["rad"][norpCondition&(norpData["cam"]!=0)&(norpData["cam"]!=1)]
+	ydata = norpData["ba"][norpCondition&(norpData["cam"]!=0)&(norpData["cam"]!=1)]
 	plt.plot(xdata, ydata, "m*", ms=s, label="No RP Random")
 	
 	xdata = norpData["rad"][norpCondition&(norpData["cam"]==0)]
