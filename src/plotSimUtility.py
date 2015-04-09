@@ -325,7 +325,7 @@ def vivianPlot(data, keys, galaxyName, redLow, redHigh):
 	plt.ylim([0, 1])
 	plt.xlabel("Semi-major Axis [Kpc]")
 	plt.ylabel("Axis Ratio")
-	plt.legend(numpoints=1)
+	plt.legend(numpoints=1, prop={'size':6})
 	return
 
 
