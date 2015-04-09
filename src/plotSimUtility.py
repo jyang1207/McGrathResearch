@@ -320,10 +320,10 @@ def vivianPlot(data, fieldDescriptions, xKey, yKey, galaxyName, redLow, redHigh,
 	ydata = norpData[yKey][norpCondition&(norpData["cam"]==1)]
 	sub.plot(xdata, ydata, "r^", ms=s, label="No RP Edge-on N=%d"%len(xdata))
 	
-	sub.xlim(fieldDescriptions[xKey][2], fieldDescriptions[xKey][3])
-	sub.ylim(fieldDescriptions[yKey][2], fieldDescriptions[yKey][3])
-	sub.xlabel(fieldDescriptions[xKey][1])
-	sub.ylabel("\n".join([galaxyName, fieldDescriptions[yKey][1]]))
+	sub.set_xlim(fieldDescriptions[xKey][2], fieldDescriptions[xKey][3])
+	sub.set_ylim(fieldDescriptions[yKey][2], fieldDescriptions[yKey][3])
+	sub.set_xlabel(fieldDescriptions[xKey][1])
+	sub.set_ylabel("\n".join([galaxyName, fieldDescriptions[yKey][1]]))
 	sub.legend(numpoints=1, prop={'size':6})
 	return
 
@@ -755,7 +755,7 @@ if __name__ == "__main__":
 		for i in range(rows):
 			for j in range(cols):
 				#plt.subplot(rows, cols, cols*i + j + 1)
-				if not i: subs[i][j].title("%.2f<z<%.2f"%redShifts[j])
+				if not i: subs[i][j].set_title("%.2f<z<%.2f"%redShifts[j])
 				vivianPlot(data, fieldDescriptions, xFieldName, yFields[0], 
 						options.galaxyNames[i], redShifts[j][0], redShifts[j][1],
 						sub=subs[i][j])
