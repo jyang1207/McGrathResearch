@@ -280,23 +280,21 @@ def barroPlot(data):
 	plt.ylabel("$log(sSFR)[Gyr^{-1}]$")
 	return
 
-def vivianPlot(data, keys):
+def vivianPlot(data, keys, galaxyName, redLow, redHigh):
 	'''
 	create barro plot of log(ssfr) against log(mass/rad^1.5)
 	'''
 	plt.figure()
-	plt.title("VELA02 & VELA02MRP 1<z<1.5")
-	galaxyName = "VELA02MRP"
-	rpData = getGalaxies(keys, data, "central", galaxyName)
-	galaxyName = "VELA02"
+	plt.title(galaxyName + " & " + galaxyName + "MRP " + str(redLow) + "<z<" + str(redHigh))
+	rpData = getGalaxies(keys, data, "central", galaxyName +"MRP")
 	norpData = getGalaxies(keys, data, "central", galaxyName)
 	
 	rpCondition = np.ones_like(rpData["red"], bool)
 	#rpCondition &= rpData["mass"] > 0
-	rpCondition &= (rpData["red"] > 1) & (rpData["red"] < 1.5) 
+	rpCondition &= (rpData["red"] > redLow) & (rpData["red"] < redHigh) 
 	norpCondition = np.ones_like(norpData["red"], bool)
 	#norpCondition &= norpData["mass"] > 0
-	norpCondition &= (norpData["red"] > 1) & (norpData["red"] < 1.5) 
+	norpCondition &= (norpData["red"] > redLow) & (norpData["red"] < redHigh) 
 	
 	s=5
 	xdata = rpData["rad"][rpCondition&(rpData["cam"]!=0)&(rpData["cam"]!=1)]
@@ -751,7 +749,7 @@ if __name__ == "__main__":
 		#print("plot type '" + plotType + "' not yet implemented")
 		#for galaxyName in options.galaxyNames:
 		
-		vivianPlot(data, fieldDescriptions.keys())
+		vivianPlot(data, fieldDescriptions.keys(), "VELA02", 1, 1.5)
 			
 	else:
 		print("plot type '" + plotType + "' not yet implemented")
