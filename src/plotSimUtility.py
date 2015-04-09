@@ -762,7 +762,8 @@ if __name__ == "__main__":
 		for i in range(rows):
 			subs[i, 0].set_ylim(fieldDescriptions[yFieldName][2], 
 						fieldDescriptions[yFieldName][3])
-			subs[i, 0].set_ylabel("\n".join([galaxyName, fieldDescriptions[yFieldName][1]]))
+			subs[i, 0].set_ylabel("\n".join([options.galaxyName[i], 
+											fieldDescriptions[yFieldName][1]]))
 		plt.subplots_adjust(left=0.03, bottom=0.04, right=0.97, 
 						top=0.97, wspace=0.2, hspace=0.5)
 		
