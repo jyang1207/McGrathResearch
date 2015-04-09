@@ -766,7 +766,8 @@ if __name__ == "__main__":
 											fieldDescriptions[yFieldName][1]]))
 			subs[i, 0].get_yticklabels()[0].set_visible(False)
 		fig.tight_layout(w_pad=0, h_pad=0)
-		plt.get_current_fig_manager().window.showMaximized() #frame.Maximize(True)
+		plt.switch_backend("TkAgg")
+		plt.get_current_fig_manager().window.state('zoomed') #frame.Maximize(True)
 		#plt.subplots_adjust(left=0.03, bottom=0.04, right=0.97, top=0.97, wspace=0.2, hspace=0.5)
 		
 	else:
