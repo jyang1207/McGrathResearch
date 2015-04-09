@@ -751,6 +751,7 @@ if __name__ == "__main__":
 		rows = len(options.galaxyNames)
 		cols = len(redShifts)
 		fig, subs = plt.subplots(rows, cols, sharex=True, sharey=True)
+		print(subs)
 		for i in range(rows):
 			for j in range(cols):
 				#plt.subplot(rows, cols, cols*i + j + 1)
