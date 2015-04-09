@@ -284,7 +284,7 @@ def vivianPlot(data, keys, galaxyName, redLow, redHigh):
 	'''
 	create barro plot of log(ssfr) against log(mass/rad^1.5)
 	'''
-	plt.figure()
+	
 	plt.title(galaxyName + " & " + galaxyName + "MRP " + str(redLow) + "<z<" + str(redHigh))
 	rpData = getGalaxies(keys, data, "central", galaxyName +"MRP")
 	norpData = getGalaxies(keys, data, "central", galaxyName)
@@ -749,7 +749,14 @@ if __name__ == "__main__":
 		#print("plot type '" + plotType + "' not yet implemented")
 		#for galaxyName in options.galaxyNames:
 		
-		vivianPlot(data, fieldDescriptions.keys(), "VELA02", 1, 1.5)
+		galaxyNames = ["VELA02", "VELA04", "VELA05", "VELA27", "VELA28"]
+		redShifts = [[1, 1.5], [1.5, 2], [2, 2.5]]
+		rows = len(galaxyNames)
+		cols = len(redShifts)
+		for i in range(rows):
+			for j in range(cols):
+				plt.subplot(rows, cols, cols*i + j + 1)
+				vivianPlot(data, fieldDescriptions.keys(), galaxyNames[i], redShifts[j][0], redShifts[j][1])
 			
 	else:
 		print("plot type '" + plotType + "' not yet implemented")
