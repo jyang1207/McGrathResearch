@@ -280,7 +280,7 @@ def barroPlot(data):
 	plt.ylabel("$log(sSFR)[Gyr^{-1}]$")
 	return
 
-def vivianPlot(data, fieldDescriptions, xKey, yKey, galaxyName, redLow, redHigh):
+def vivianPlot(data, fieldDescriptions, xKey, yKey, galaxyName, redLow, redHigh, sub=plt):
 	'''
 	create barro plot of log(ssfr) against log(mass/rad^1.5)
 	'''
@@ -298,33 +298,33 @@ def vivianPlot(data, fieldDescriptions, xKey, yKey, galaxyName, redLow, redHigh)
 	s=5
 	xdata = rpData[xKey][rpCondition&(rpData["cam"]!=0)&(rpData["cam"]!=1)]
 	ydata = rpData[yKey][rpCondition&(rpData["cam"]!=0)&(rpData["cam"]!=1)]
-	plt.plot(xdata, ydata, "c*", ms=s, label="RP Random N=%d"%len(xdata))
+	sub.plot(xdata, ydata, "c*", ms=s, label="RP Random N=%d"%len(xdata))
 	
 	xdata = rpData[xKey][rpCondition&(rpData["cam"]==0)]
 	ydata = rpData[yKey][rpCondition&(rpData["cam"]==0)]
-	plt.plot(xdata, ydata, "bs", ms=s, label="RP Face-on N=%d"%len(xdata))
+	sub.plot(xdata, ydata, "bs", ms=s, label="RP Face-on N=%d"%len(xdata))
 	
 	xdata = rpData[xKey][rpCondition&(rpData["cam"]==1)]
 	ydata = rpData[yKey][rpCondition&(rpData["cam"]==1)]
-	plt.plot(xdata, ydata, "g^", ms=s, label="RP Edge-on N=%d"%len(xdata))
+	sub.plot(xdata, ydata, "g^", ms=s, label="RP Edge-on N=%d"%len(xdata))
 	
 	xdata = norpData[xKey][norpCondition&(norpData["cam"]!=0)&(norpData["cam"]!=1)]
 	ydata = norpData[yKey][norpCondition&(norpData["cam"]!=0)&(norpData["cam"]!=1)]
-	plt.plot(xdata, ydata, "m*", ms=s, label="No RP Random N=%d"%len(xdata))
+	sub.plot(xdata, ydata, "m*", ms=s, label="No RP Random N=%d"%len(xdata))
 	
 	xdata = norpData[xKey][norpCondition&(norpData["cam"]==0)]
 	ydata = norpData[yKey][norpCondition&(norpData["cam"]==0)]
-	plt.plot(xdata, ydata, "ys", ms=s, label="No RP Face-on N=%d"%len(xdata))
+	sub.plot(xdata, ydata, "ys", ms=s, label="No RP Face-on N=%d"%len(xdata))
 	
 	xdata = norpData[xKey][norpCondition&(norpData["cam"]==1)]
 	ydata = norpData[yKey][norpCondition&(norpData["cam"]==1)]
-	plt.plot(xdata, ydata, "r^", ms=s, label="No RP Edge-on N=%d"%len(xdata))
+	sub.plot(xdata, ydata, "r^", ms=s, label="No RP Edge-on N=%d"%len(xdata))
 	
-	plt.xlim(fieldDescriptions[xKey][2], fieldDescriptions[xKey][3])
-	plt.ylim(fieldDescriptions[yKey][2], fieldDescriptions[yKey][3])
-	plt.xlabel(fieldDescriptions[xKey][1])
-	plt.ylabel("\n".join([galaxyName, fieldDescriptions[yKey][1]]))
-	plt.legend(numpoints=1, prop={'size':6})
+	sub.xlim(fieldDescriptions[xKey][2], fieldDescriptions[xKey][3])
+	sub.ylim(fieldDescriptions[yKey][2], fieldDescriptions[yKey][3])
+	sub.xlabel(fieldDescriptions[xKey][1])
+	sub.ylabel("\n".join([galaxyName, fieldDescriptions[yKey][1]]))
+	sub.legend(numpoints=1, prop={'size':6})
 	return
 
 
@@ -750,14 +750,14 @@ if __name__ == "__main__":
 		redShifts = [(1, 1.5), (1.5, 2), (2, 2.5)]
 		rows = len(options.galaxyNames)
 		cols = len(redShifts)
-		plt.subplots(rows, cols, sharex=True, sharey=True)
+		fig, subs = plt.subplots(rows, cols, sharex=True, sharey=True)
 		for i in range(rows):
 			for j in range(cols):
-				plt.subplot(rows, cols, cols*i + j + 1)
-				if not i:
-					plt.title("%.2f<z<%.2f"%redShifts[j])
+				#plt.subplot(rows, cols, cols*i + j + 1)
+				if not i: subs[i][j].title("%.2f<z<%.2f"%redShifts[j])
 				vivianPlot(data, fieldDescriptions, xFieldName, yFields[0], 
-						options.galaxyNames[i], redShifts[j][0], redShifts[j][1])
+						options.galaxyNames[i], redShifts[j][0], redShifts[j][1],
+						sub=subs[i][j])
 		plt.subplots_adjust(left=0.03, bottom=0.04, right=0.97, 
 						top=0.97, wspace=0.2, hspace=0.5)
 		
