@@ -756,7 +756,7 @@ if __name__ == "__main__":
 		for i in range(rows):
 			for j in range(cols):
 				plt.subplot(rows, cols, cols*i + j + 1)
-				vivianPlot(data, fieldDescriptions, "ba", "ser", galaxyNames[i], redShifts[j][0], redShifts[j][1])
+				vivianPlot(data, fieldDescriptions, xFieldName, yFields[0], galaxyNames[i], redShifts[j][0], redShifts[j][1])
 		plt.subplots_adjust(left=0.03, bottom=0.04, right=0.97, top=0.97, wspace=0.2, hspace=0.5)
 		
 	else:
