@@ -747,7 +747,7 @@ if __name__ == "__main__":
 	elif plotType == "vivian":
 		#print("plot type '" + plotType + "' not yet implemented")
 		
-		redShifts = [[1, 1.5], [1.5, 2], [2, 2.5]]
+		redShifts = [(1, 1.5), (1.5, 2), (2, 2.5)]
 		rows = len(options.galaxyNames)
 		cols = len(redShifts)
 		plt.subplots(rows, cols, sharex=True, sharey=True)
