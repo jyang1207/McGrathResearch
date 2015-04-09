@@ -301,7 +301,7 @@ def vivianPlot(data, keys):
 	s=5
 	xdata = rpData["rad"][rpCondition&(rpData["cam"]!=0)&(rpData["cam"]!=1)]
 	ydata = rpData["ba"][rpCondition&(rpData["cam"]!=0)&(rpData["cam"]!=1)]
-	plt.plot(xdata, ydata, "c*", ms=s, label="RP Random")
+	plt.plot(xdata, ydata, "c*", ms=s, label="RP Random n=%d"%len(xdata))
 	
 	xdata = rpData["rad"][rpCondition&(rpData["cam"]==0)]
 	ydata = rpData["ba"][rpCondition&(rpData["cam"]==0)]
