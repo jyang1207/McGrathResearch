@@ -319,11 +319,6 @@ def vivianPlot(data, fieldDescriptions, xKey, yKey, galaxyName, redLow, redHigh,
 	xdata = norpData[xKey][norpCondition&(norpData["cam"]==1)]
 	ydata = norpData[yKey][norpCondition&(norpData["cam"]==1)]
 	sub.plot(xdata, ydata, "r^", ms=s, label="No RP Edge-on N=%d"%len(xdata))
-	
-	sub.set_xlim(fieldDescriptions[xKey][2], fieldDescriptions[xKey][3])
-	sub.set_ylim(fieldDescriptions[yKey][2], fieldDescriptions[yKey][3])
-	sub.set_xlabel(fieldDescriptions[xKey][1])
-	sub.set_ylabel("\n".join([galaxyName, fieldDescriptions[yKey][1]]))
 	sub.legend(numpoints=1, prop={'size':6})
 	return
 
@@ -746,7 +741,7 @@ if __name__ == "__main__":
 		
 	elif plotType == "vivian":
 		#print("plot type '" + plotType + "' not yet implemented")
-		
+		yFieldName = yFields[0]
 		redShifts = [(1, 1.5), (1.5, 2), (2, 2.5)]
 		rows = len(options.galaxyNames)
 		cols = len(redShifts)
@@ -756,9 +751,18 @@ if __name__ == "__main__":
 			for j in range(cols):
 				#plt.subplot(rows, cols, cols*i + j + 1)
 				if not i: subs[i][j].set_title("%.2f<z<%.2f"%redShifts[j])
-				vivianPlot(data, fieldDescriptions, xFieldName, yFields[0], 
+				vivianPlot(data, fieldDescriptions, xFieldName, yFieldName, 
 						options.galaxyNames[i], redShifts[j][0], redShifts[j][1],
 						sub=subs[i][j])
+	
+		for j in range(cols):
+			subs[0, j].set_xlim(fieldDescriptions[xFieldName][2], 
+						fieldDescriptions[xFieldName][3])
+			subs[0, j].set_xlabel(fieldDescriptions[xFieldName][1])
+		for i in range(rows):
+			subs[i, 0].set_ylim(fieldDescriptions[yFieldName][2], 
+						fieldDescriptions[yFieldName][3])
+			subs[i, 0].set_ylabel("\n".join([galaxyName, fieldDescriptions[yFieldName][1]]))
 		plt.subplots_adjust(left=0.03, bottom=0.04, right=0.97, 
 						top=0.97, wspace=0.2, hspace=0.5)
 		
