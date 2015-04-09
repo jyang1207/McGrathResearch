@@ -764,7 +764,7 @@ if __name__ == "__main__":
 						fieldDescriptions[yFieldName][3])
 			subs[i, 0].set_ylabel("\n".join([options.galaxyNames[i], 
 											fieldDescriptions[yFieldName][1]]))
-		fig.tight_layout()
+		fig.tight_layout(w_pad=0, h_pad=0)
 		#plt.subplots_adjust(left=0.03, bottom=0.04, right=0.97, top=0.97, wspace=0.2, hspace=0.5)
 		
 	else:
