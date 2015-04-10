@@ -786,7 +786,7 @@ if __name__ == "__main__":
 		yFieldName = yFields[0]
 		redShifts = [(1, 1.5), (1.5, 2), (2, 2.5)]
 		rows = len(options.galaxyNames)
-		cols = len(redShifts)
+		cols = len(redShifts) if not tbool else 1
 		fig, subs = plt.subplots(rows, cols, sharex=True, sharey=True, figsize=(12,12))
 		for i in range(rows):
 			if tbool:
