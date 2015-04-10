@@ -784,20 +784,18 @@ if __name__ == "__main__":
 	elif plotType == "vivian":
 		tbool = xFieldName in ["red", "age", "ts"]
 		yFieldName = yFields[0]
-		redShifts = [(1, 1.5), (1.5, 2), (2, 2.5)]
+		redShifts = [(1, 1.5), (1.5, 2), (2, 2.5)] if not tbool else [(None, None)]
 		rows = len(options.galaxyNames)
-		cols = len(redShifts) if not tbool else 1
+		cols = len(redShifts)
 		fig, subs = plt.subplots(rows, cols, sharex=True, sharey=True, figsize=(12,12))
+		if cols == 1: np.reshape(subs, (1,-1))
 		for i in range(rows):
-			if tbool:
-				vivianPlot(data, fieldDescriptions, xFieldName, yFieldName, 
-						options.galaxyNames[i], sub=subs[i])
-				continue
 			for j in range(cols):
-				if not i: subs[i][j].set_title("%.2f<z<%.2f"%redShifts[j])
+				title = "%.2f<z<%.2f"%redShifts[j] if not tbool else ""
+				if not i: subs[i][j].set_title(title)
 				vivianPlot(data, fieldDescriptions, xFieldName, yFieldName, 
 						options.galaxyNames[i], redShifts[j][0], redShifts[j][1],
-						sub=subs[i][j])
+						sub=subs[i, j])
 	
 		for j in range(cols):
 			subs[rows-1, j].set_xlim(fieldDescriptions[xFieldName][2], 
