@@ -803,15 +803,17 @@ if __name__ == "__main__":
 			subs[rows-1, j].set_xlabel(fieldDescriptions[xFieldName][1])
 			if not tbool:
 				subs[rows-1, j].get_xticklabels()[0].set_visible(False)
+				
 		for i in range(rows):
 			subs[i, 0].set_ylim(fieldDescriptions[yFieldName][2], 
 						fieldDescriptions[yFieldName][3])
 			subs[i, 0].set_ylabel(fieldDescriptions[yFieldName][1])
 			subs[i, 0].get_yticklabels()[0].set_visible(False)
 			rightAxis = subs[i, cols-1].twinx()
-			rightAxis.set_ylabel(options.galaxyNames[i], rotation=180)
+			rightAxis.set_ylabel(options.galaxyNames[i], rotation=90)
 			rightAxis.get_yaxis().set_ticks([])
 			if tbool: # TODO: make the top the other age
+				subs[i, 0].set_xlabel(fieldDescriptions[xFieldName][1])
 				otherAge = "red" if xFieldName == "age" else "age"
 				topAxis = subs[i, 0].twiny()
 				topAxis.set_xlim(fieldDescriptions[otherAge][2], 
