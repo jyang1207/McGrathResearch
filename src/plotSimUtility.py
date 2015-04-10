@@ -810,7 +810,7 @@ if __name__ == "__main__":
 			subs[i, 0].get_yticklabels()[0].set_visible(False)
 			rightAxis = subs[i, cols-1]
 			rightAxis.twinx().set_ylabel(options.galaxyNames[i])
-			plt.setp(rightAxis.get_yticklabels(), visible=False)
+			rightAxis.xaxis.set_major_formatter(ticker.NullLocator())
 		if tbool: # TODO: make the top the other age
 			otherAge = "red" if xFieldName == "age" else "age"
 			topAxis = subs[0, 0].twiny()
