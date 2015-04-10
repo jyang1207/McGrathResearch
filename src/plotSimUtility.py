@@ -13,12 +13,121 @@ from matplotlib import ticker
 # import matplotlib.ticker as ticker
 import numpy as np
 import os
+import math
 # import itertools
 from optparse import OptionParser
 from pprint import pprint
 from collections import OrderedDict
 
 	
+def ned_wright_cosmology_calculator(z):
+	'''
+	http://www.astro.ucla.edu/~wright/CC.python 
+	
+	parameter z - the redshift from which to calculate age in GYR and kpc per arcsec
+	returns [zage_Gyr, kpc_DA]
+	'''
+	H0 = 69.6  # Hubble constant
+	WM = 0.286  # Omega(matter)
+	WV = 0.714  # Omega(vacuum) or lambda
+	
+	# initialize constants
+	
+	WR = 0.  # Omega(radiation)
+	WK = 0.  # Omega curvaturve = 1-Omega(total)
+	c = 299792.458  # velocity of light in km/sec
+	Tyr = 977.8  # coefficent for converting 1/H into Gyr
+	DTT = 0.5  # time from z to now in units of 1/H0
+	DTT_Gyr = 0.0  # value of DTT in Gyr
+	age = 0.5  # age of Universe in units of 1/H0
+	age_Gyr = 0.0  # value of age in Gyr
+	zage = 0.1  # age of Universe at redshift z in units of 1/H0
+	zage_Gyr = 0.0  # value of zage in Gyr
+	DCMR = 0.0  # comoving radial distance in units of c/H0
+	DCMR_Mpc = 0.0 
+	DCMR_Gyr = 0.0
+	DA = 0.0  # angular size distance
+	DA_Mpc = 0.0
+	DA_Gyr = 0.0
+	kpc_DA = 0.0
+	DL = 0.0  # luminosity distance
+	DL_Mpc = 0.0
+	DL_Gyr = 0.0  # DL in units of billions of light years
+	V_Gpc = 0.0
+	a = 1.0  # 1/(1+z), the scale factor of the Universe
+	az = 0.5  # 1/(1+z(object))
+	
+	h = H0 / 100.
+	WR = 4.165E-5 / (h * h)  # includes 3 massless neutrino species, T0 = 2.72528
+	WK = 1 - WM - WR - WV
+	az = 1.0 / (1 + 1.0 * z)
+	age = 0.
+	n = 1000  # number of points in integrals
+	for i in range(n):
+		a = az * (i + 0.5) / n
+		adot = math.sqrt(WK + (WM / a) + (WR / (a * a)) + (WV * a * a))
+		age = age + 1. / adot
+	
+	zage = az * age / n
+	zage_Gyr = (Tyr / H0) * zage
+	DTT = 0.0
+	DCMR = 0.0
+	
+	# do integral over a=1/(1+z) from az to 1 in n steps, midpoint rule
+	for i in range(n):
+		a = az + (1 - az) * (i + 0.5) / n
+		adot = math.sqrt(WK + (WM / a) + (WR / (a * a)) + (WV * a * a))
+		DTT = DTT + 1. / adot
+		DCMR = DCMR + 1. / (a * adot)
+	
+	DTT = (1. - az) * DTT / n
+	DCMR = (1. - az) * DCMR / n
+	age = DTT + zage
+	age_Gyr = age * (Tyr / H0)
+	DTT_Gyr = (Tyr / H0) * DTT
+	DCMR_Gyr = (Tyr / H0) * DCMR
+	DCMR_Mpc = (c / H0) * DCMR
+	
+	# tangential comoving distance
+	
+	ratio = 1.00
+	x = math.sqrt(abs(WK)) * DCMR
+	if x > 0.1:
+		if WK > 0:
+			ratio = 	 0.5 * (math.exp(x) - math.exp(-x)) / x 
+		else:
+			ratio = math.sin(x) / x
+	else:
+		y = x * x
+		if WK < 0: y = -y
+		ratio = 1. + y / 6. + y * y / 120.
+	DCMT = ratio * DCMR
+	DA = az * DCMT
+	DA_Mpc = (c / H0) * DA
+	kpc_DA = DA_Mpc / 206.264806
+	DA_Gyr = (Tyr / H0) * DA
+	DL = DA / (az * az)
+	DL_Mpc = (c / H0) * DL
+	DL_Gyr = (Tyr / H0) * DL
+	
+	# comoving volume computation
+	
+	ratio = 1.00
+	x = math.sqrt(abs(WK)) * DCMR
+	if x > 0.1:
+		if WK > 0:
+			ratio = (0.125 * (math.exp(2.*x) - math.exp(-2.*x)) - x / 2.) / (x * x * x / 3.)
+		else:
+			ratio = (x / 2. - math.sin(2.*x) / 4.) / (x * x * x / 3.)
+	else:
+		y = x * x
+		if WK < 0: y = -y
+		ratio = 1. + y / 5. + (2. / 105.) * y * y
+	VCM = ratio * DCMR * DCMR * DCMR / 3.
+	V_Gpc = 4.*math.pi * ((0.001 * c / H0) ** 3) * VCM
+	
+	return [zage_Gyr, kpc_DA]
+
 def vararg_callback(option, opt_str, value, parser):
 	'''
 	allows for galaxy names to be given as an arbitrary list spearated by spaces
@@ -440,8 +549,8 @@ if __name__ == "__main__":
 	fieldDescriptions['typ'] = 		['a10', 'Galaxy Type']
 	fieldDescriptions['id'] = 		['a10', 'Galaxy ID']
 	fieldDescriptions['ts'] = 		['a10', 'Time Step (a)']
-	fieldDescriptions['age'] = 		['f4', 'Time (Gyr)', 0, 8]
-	fieldDescriptions['red'] = 		['f4', 'Redshift (z)', 5, 0]
+	fieldDescriptions['age'] = 		['f4', 'Time (Gyr)', 1.186, 8.628] # match to redshift
+	fieldDescriptions['red'] = 		['f4', 'Redshift (z)', 5, 0.6]
 	fieldDescriptions['cam'] = 		['i4', 'Camera Number']
 	fieldDescriptions['fil'] = 		['a10', 'Filter']
 	fieldDescriptions['px'] = 		['f4', 'X Position (pixels)', poslow, poshigh]
@@ -814,12 +923,16 @@ if __name__ == "__main__":
 			rightAxis.get_yaxis().set_ticks([])
 			if tbool: # TODO: make the top the other age
 				subs[i, 0].set_xlabel(fieldDescriptions[xFieldName][1])
+				subs[i, 0].set_xlim(fieldDescriptions[xFieldName][2], 
+							fieldDescriptions[xFieldName][3])
+				'''
 				otherAge = "red" if xFieldName == "age" else "age"
 				topAxis = subs[i, 0].twiny()
 				topAxis.set_xlim(fieldDescriptions[otherAge][2], 
 								fieldDescriptions[otherAge][3])
 				topAxis.set_xlabel(fieldDescriptions[otherAge][1])
-		fig.tight_layout(w_pad=0, h_pad=0) if not tbool else fig.tight_layout(w_pad=0) 
+				'''
+		fig.tight_layout(w_pad=0, h_pad=0)# if not tbool else fig.tight_layout(w_pad=0) 
 		#plt.subplots_adjust(left=0.03, bottom=0.04, right=0.97, top=0.97, wspace=0.2, hspace=0.5)
 		
 	else:

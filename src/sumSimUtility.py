@@ -11,7 +11,7 @@ import os
 import sys
 import time
 from optparse import OptionParser
-from math import sqrt, exp, sin, cos, pi, pow  # , tan, atan2
+from math import *
 import pprint
 try:
 	import pyfits as fits
@@ -26,7 +26,7 @@ def ned_wright_cosmology_calculator(z):
 	http://www.astro.ucla.edu/~wright/CC.python 
 	
 	parameter z - the redshift from which to calculate age in GYR and kpc per arcsec
-	returns ['%1.3f' % zage_Gyr, kpc_DA]
+	returns [zage_Gyr, kpc_DA]
 	'''
 	H0 = 69.6  # Hubble constant
 	WM = 0.286  # Omega(matter)
@@ -127,7 +127,7 @@ def ned_wright_cosmology_calculator(z):
 	VCM = ratio * DCMR * DCMR * DCMR / 3.
 	V_Gpc = 4.*pi * ((0.001 * c / H0) ** 3) * VCM
 	
-	return ['%1.3f' % zage_Gyr, kpc_DA]
+	return [zage_Gyr, kpc_DA]
 
 									
 def run_pyfits(multiFitsFilename):
@@ -435,7 +435,7 @@ def sum_galfit(resultFilename, models, kpcPerPixel, timeZ, delim, centerIDs, opt
 		timeZ = 1.0 / timeA - 1.0
 		
 	[age_gyr, kpcPerArcsec] = ned_wright_cosmology_calculator(timeZ)
-	age_gyr = str(age_gyr)
+	age_gyr = '%1.3f' % age_gyr
 	
 	# for candelized images, use ned wright and constant scale factor for kpc
 	if options.candelized:
