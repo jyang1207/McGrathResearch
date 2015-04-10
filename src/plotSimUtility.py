@@ -809,7 +809,7 @@ if __name__ == "__main__":
 			subs[i, 0].set_ylabel(fieldDescriptions[yFieldName][1])
 			subs[i, 0].get_yticklabels()[0].set_visible(False)
 			rightAxis = subs[i, cols-1].twinx()
-			rightAxis.set_ylabel(options.galaxyNames[i], orientation="horizontal")
+			rightAxis.set_ylabel(options.galaxyNames[i], rotation=180)
 			rightAxis.get_yaxis().set_ticks([])
 			if tbool: # TODO: make the top the other age
 				otherAge = "red" if xFieldName == "age" else "age"
