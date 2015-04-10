@@ -788,7 +788,9 @@ if __name__ == "__main__":
 		rows = len(options.galaxyNames)
 		cols = len(redShifts)
 		fig, subs = plt.subplots(rows, cols, sharex=True, sharey=True, figsize=(12,12))
+		print subs.shape
 		if cols == 1: np.reshape(subs, (1,-1))
+		print subs.shape
 		for i in range(rows):
 			for j in range(cols):
 				title = "%.2f<z<%.2f"%redShifts[j] if not tbool else ""
