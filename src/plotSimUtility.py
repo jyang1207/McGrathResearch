@@ -789,7 +789,7 @@ if __name__ == "__main__":
 		cols = len(redShifts)
 		fig, subs = plt.subplots(rows, cols, sharex=True, sharey=True, figsize=(12,12))
 		print subs.shape
-		if cols == 1: np.reshape(subs, (1,-1))
+		np.reshape(subs, (rows, cols))
 		print subs.shape
 		for i in range(rows):
 			for j in range(cols):
