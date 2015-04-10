@@ -280,20 +280,62 @@ def barroPlot(data):
 	plt.ylabel("$log(sSFR)[Gyr^{-1}]$")
 	return
 
-def vivianPlot(data, fieldDescriptions, xKey, yKey, galaxyName, redLow, redHigh, sub=plt):
+def vivianPlot(data, fieldDescriptions, xKey, yKey, galaxyName, redLow=None, redHigh=None, sub=plt):
 	'''
 	create barro plot of log(ssfr) against log(mass/rad^1.5)
 	'''
+	
+	# dictionary of lower bounds to galaxy redshifts
+	gname2redlow = {"VELA01":1.0,
+				"VELA02":1.0,
+				"VELA03":1.0,
+				"VELA04":1.0,
+				"VELA05":1.0,
+				"VELA06":1.7,
+				"VELA07":0.85,
+				"VELA08":0.8,
+				"VELA09":1.5,
+				"VELA10":0.8,
+				"VELA11":1.2,
+				"VELA12":1.5,
+				"VELA13":1.5,
+				"VELA14":1.8,
+				"VELA15":0.8,
+				"VELA16":3.2,
+				"VELA17":2.2,
+				"VELA18":15.0,
+				"VELA19":2.4,
+				"VELA20":1.3,
+				"VELA21":1.0,
+				"VELA22":1.0,
+				"VELA23":1.0,
+				"VELA24":1.1,
+				"VELA25":1.0,
+				"VELA26":1.0,
+				"VELA27":1.0,
+				"VELA28":1.0,
+				"VELA29":1.0,
+				"VELA30":1.9,
+				"VELA31":4.3,
+				"VELA32":2.0,
+				"VELA33":1.6,
+				"VELA34":1.8,
+				"VELA35":3.5}
 	
 	rpData = getGalaxies(fieldDescriptions.keys(), data, "central", galaxyName +"MRP")
 	norpData = getGalaxies(fieldDescriptions.keys(), data, "central", galaxyName)
 	
 	rpCondition = np.ones_like(rpData["red"], bool)
-	#rpCondition &= rpData["mass"] > 0
-	rpCondition &= (rpData["red"] > redLow) & (rpData["red"] < redHigh) 
 	norpCondition = np.ones_like(norpData["red"], bool)
-	#norpCondition &= norpData["mass"] > 0
-	norpCondition &= (norpData["red"] > redLow) & (norpData["red"] < redHigh) 
+	if redLow != None and redHigh != None:
+		rpCondition &= (rpData["red"] > redLow) & (rpData["red"] < redHigh) 
+		norpCondition &= (norpData["red"] > redLow) & (norpData["red"] < redHigh) 
+	try:
+		rpCondition &= rpData["red"] > gname2redlow[galaxyName]
+		norpCondition &= norpData["red"] > gname2redlow[galaxyName]
+	except:
+		print("%s has no known lower redshift bound")
+		pass
 	
 	s=5
 	xdata = rpData[xKey][rpCondition&(rpData["cam"]!=0)&(rpData["cam"]!=1)]
@@ -740,16 +782,16 @@ if __name__ == "__main__":
 		barroPlot(curData)
 		
 	elif plotType == "vivian":
-		#print("plot type '" + plotType + "' not yet implemented")
+		tbool = xFieldName in ["red", "age", "ts"]
 		yFieldName = yFields[0]
-		redShifts = [(1, 1.5), (1.5, 2), (2, 2.5)]
+		redShifts = [(1, 1.5), (1.5, 2), (2, 2.5)] if tbool else [(None, None)]
 		rows = len(options.galaxyNames)
 		cols = len(redShifts)
 		fig, subs = plt.subplots(rows, cols, sharex=True, sharey=True, figsize=(12,12))
 		for i in range(rows):
 			for j in range(cols):
-				#plt.subplot(rows, cols, cols*i + j + 1)
-				if not i: subs[i][j].set_title("%.2f<z<%.2f"%redShifts[j])
+				title = "%.2f<z<%.2f"%redShifts[j] if tbool else ""
+				if not i: subs[i][j].set_title(title)
 				vivianPlot(data, fieldDescriptions, xFieldName, yFieldName, 
 						options.galaxyNames[i], redShifts[j][0], redShifts[j][1],
 						sub=subs[i][j])
