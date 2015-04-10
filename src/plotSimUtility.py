@@ -810,7 +810,7 @@ if __name__ == "__main__":
 			subs[i, 0].set_ylabel(fieldDescriptions[yFieldName][1])
 			subs[i, 0].get_yticklabels()[0].set_visible(False)
 			rightAxis = subs[i, cols-1].twinx()
-			rightAxis.set_ylabel(options.galaxyNames[i], rotation=90)
+			rightAxis.set_ylabel(options.galaxyNames[i], rotation=270)
 			rightAxis.get_yaxis().set_ticks([])
 			if tbool: # TODO: make the top the other age
 				subs[i, 0].set_xlabel(fieldDescriptions[xFieldName][1])
@@ -819,7 +819,7 @@ if __name__ == "__main__":
 				topAxis.set_xlim(fieldDescriptions[otherAge][2], 
 								fieldDescriptions[otherAge][3])
 				topAxis.set_xlabel(fieldDescriptions[otherAge][1])
-		fig.tight_layout(w_pad=0, h_pad=0)
+		fig.tight_layout(w_pad=0, h_pad=0) if not tbool else fig.tight_layout(w_pad=0) 
 		#plt.subplots_adjust(left=0.03, bottom=0.04, right=0.97, top=0.97, wspace=0.2, hspace=0.5)
 		
 	else:
