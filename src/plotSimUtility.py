@@ -440,7 +440,7 @@ if __name__ == "__main__":
 	fieldDescriptions['typ'] = 		['a10', 'Galaxy Type']
 	fieldDescriptions['id'] = 		['a10', 'Galaxy ID']
 	fieldDescriptions['ts'] = 		['a10', 'Time Step (a)']
-	fieldDescriptions['age'] = 		['f4', 'Age (Gyr)', 0, 8]
+	fieldDescriptions['age'] = 		['f4', 'Time (Gyr)', 0, 8]
 	fieldDescriptions['red'] = 		['f4', 'Redshift (z)', 5, 0]
 	fieldDescriptions['cam'] = 		['i4', 'Camera Number']
 	fieldDescriptions['fil'] = 		['a10', 'Filter']
