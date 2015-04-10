@@ -792,6 +792,7 @@ if __name__ == "__main__":
 			if tbool:
 				vivianPlot(data, fieldDescriptions, xFieldName, yFieldName, 
 						options.galaxyNames[i], sub=subs[i])
+				continue
 			for j in range(cols):
 				if not i: subs[i][j].set_title("%.2f<z<%.2f"%redShifts[j])
 				vivianPlot(data, fieldDescriptions, xFieldName, yFieldName, 
