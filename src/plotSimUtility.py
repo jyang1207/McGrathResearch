@@ -788,13 +788,11 @@ if __name__ == "__main__":
 		rows = len(options.galaxyNames)
 		cols = len(redShifts)
 		fig, subs = plt.subplots(rows, cols, sharex=True, sharey=True, figsize=(12,12))
-		print subs.shape
-		np.asmatrix(subs)
-		print subs.shape
+		subs = np.reshape(subs, (rows, cols))#TODO: to give 1 column 2 dimensions
 		for i in range(rows):
 			for j in range(cols):
 				title = "%.2f<z<%.2f"%redShifts[j] if not tbool else ""
-				if not i: subs[i][j].set_title(title)
+				if not i: subs[i, j].set_title(title)
 				vivianPlot(data, fieldDescriptions, xFieldName, yFieldName, 
 						options.galaxyNames[i], redShifts[j][0], redShifts[j][1],
 						sub=subs[i, j])
