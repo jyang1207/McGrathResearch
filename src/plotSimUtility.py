@@ -782,7 +782,7 @@ if __name__ == "__main__":
 		barroPlot(curData)
 		
 	elif plotType == "vivian":
-		tbool = xFieldName in ["red", "age", "ts"]
+		tbool = xFieldName in ["red", "age"]
 		yFieldName = yFields[0]
 		redShifts = [(1, 1.5), (1.5, 2), (2, 2.5)] if not tbool else [(None, None)]
 		rows = len(options.galaxyNames)
@@ -801,13 +801,20 @@ if __name__ == "__main__":
 			subs[rows-1, j].set_xlim(fieldDescriptions[xFieldName][2], 
 						fieldDescriptions[xFieldName][3])
 			subs[rows-1, j].set_xlabel(fieldDescriptions[xFieldName][1])
-			subs[rows-1, j].get_xticklabels()[0].set_visible(False)
+			if not tbool:
+				subs[rows-1, j].get_xticklabels()[0].set_visible(False)
 		for i in range(rows):
 			subs[i, 0].set_ylim(fieldDescriptions[yFieldName][2], 
 						fieldDescriptions[yFieldName][3])
-			subs[i, 0].set_ylabel("\n".join([options.galaxyNames[i], 
-											fieldDescriptions[yFieldName][1]]))
+			subs[i, 0].set_ylabel(fieldDescriptions[yFieldName][1])
+			subs[i, cols-1].twinx().set_ylabel(options.galaxyNames[i])
 			subs[i, 0].get_yticklabels()[0].set_visible(False)
+			if tbool: # TODO: make the top the other age
+				otherAge = "red" if xFieldName == "age" else "age"
+				topAxis = subs[i, 0].twiny()
+				topAxis.set_xlim(fieldDescriptions[otherAge][2], 
+								fieldDescriptions[otherAge][3])
+				topAxis.set_xlabel(fieldDescriptions[otherAge][1])
 		fig.tight_layout(w_pad=0, h_pad=0)
 		#plt.subplots_adjust(left=0.03, bottom=0.04, right=0.97, top=0.97, wspace=0.2, hspace=0.5)
 		
