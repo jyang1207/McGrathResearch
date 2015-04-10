@@ -807,14 +807,16 @@ if __name__ == "__main__":
 			subs[i, 0].set_ylim(fieldDescriptions[yFieldName][2], 
 						fieldDescriptions[yFieldName][3])
 			subs[i, 0].set_ylabel(fieldDescriptions[yFieldName][1])
-			subs[i, cols-1].twinx().set_ylabel(options.galaxyNames[i])
 			subs[i, 0].get_yticklabels()[0].set_visible(False)
-			if tbool: # TODO: make the top the other age
-				otherAge = "red" if xFieldName == "age" else "age"
-				topAxis = subs[i, 0].twiny()
-				topAxis.set_xlim(fieldDescriptions[otherAge][2], 
-								fieldDescriptions[otherAge][3])
-				topAxis.set_xlabel(fieldDescriptions[otherAge][1])
+			rightAxis = subs[i, cols-1]
+			rightAxis.twinx().set_ylabel(options.galaxyNames[i])
+			rightAxis.get_yticklabels().set_visible(False)
+		if tbool: # TODO: make the top the other age
+			otherAge = "red" if xFieldName == "age" else "age"
+			topAxis = subs[0, 0].twiny()
+			topAxis.set_xlim(fieldDescriptions[otherAge][2], 
+							fieldDescriptions[otherAge][3])
+			topAxis.set_xlabel(fieldDescriptions[otherAge][1])
 		fig.tight_layout(w_pad=0, h_pad=0)
 		#plt.subplots_adjust(left=0.03, bottom=0.04, right=0.97, top=0.97, wspace=0.2, hspace=0.5)
 		
