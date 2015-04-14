@@ -35,7 +35,9 @@ generate sigma images
 Modeling
 =======================
 make lists of images
+  - using ``echo`` and piping into ``xargs ls`` (below) prevents the overflow that can occur when using ``ls`` alone.
   - ``echo /diskarrays/astro_array1/hydroartMod/VELA[01][2345]*/*.[^01]*/images/*F160W*_noise.fits | xargs ls > 160noiseImages.txt``
+  - if regular expressions become too much work, the ``>>`` (below) can be used to repeatedly append convenient chunks of images.
   - ``echo /diskarrays/astro_array1/hydroartMod/VELA2[678]*/*.[^01]*/images/*F160W*_noise.fits | xargs ls >> 160noiseImages.txt``
 run simUtility_
   - Navigate to the directory containing the ``requiredFiles`` directory, eg. ``cd /diskarrays/astro_array1/imtibbet/run/``
@@ -116,3 +118,4 @@ run plotSimUtility_
 .. _sumSimUtility: https://github.com/imtibbet/McGrathResearch/blob/master/src/simUtility.py/
 .. _plotSimUtility: https://github.com/imtibbet/McGrathResearch/blob/master/src/simUtility.py/
 .. _updateHeader: https://github.com/imtibbet/McGrathResearch/blob/master/src/updateHeader.py/
+.. _genSigmaImages: https://github.com/imtibbet/McGrathResearch/blob/master/src/genSigmaImages.py/
