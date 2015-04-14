@@ -1,5 +1,10 @@
 RST reference: https://github.com/ralsina/rst-cheatsheet/blob/master/rst-cheatsheet.rst
 
+TODO
+  - Save sigma image in destination directory in simUtility_
+  - RFF in sumSimUtility_
+  - Barro plot in plotSimUtility_
+
 Instructions for Modeling Pipeline
 =================
 :Authors:
@@ -8,11 +13,26 @@ Instructions for Modeling Pipeline
   | Elizabeth McGrath
 :Version:
   1.0 as of 4/14/2015
-This is a procedure for modeling galaxies using Source Extractor and GALFIT automatically using the 
-simUtility_ pipeline of this repository, after which the data can be summarized using sumSimUtility_
-and then plotted using plotSimUtility_.
+This is a procedure for analyzing real and simulated galaxies using Source Extractor and GALFIT automatically.
+The pipeline involves `Preprocessing`_, `Modeling`_, `Summarizing`_, then `Plotting`_.
 
-Command Line Examples
+Preprocessing
+=======================
+This is only necessary to do when starting to analyze new data, for example a set of images in a folder called 
+``/diskarrays/astro_array1/hydroart/``. Be sure to modify the code of the files referenced here to correctly work
+for the file naming scheme of your data, or modify the filenames to conform to the expectations of this code.
+
+duplicate data before modifying
+  - if you have enough disk space it is a good idea to first make a new directory and duplicate your data
+  - ``mkdir /diskarrays/astro_array1/hydroartMod/``
+  - ``cp -r /diskarrays/astro_array1/hydroart/* /diskarrays/astro_array1/hydroartMod/``
+update the fits headers
+  - check the run_pyfits method of sumSimUtility_ to determine what info is needed in the fits header
+  - modify updateHeader_ to populate any missing fields (clobber=True to overrwrite)
+generate sigma images
+  - use genSigmaImages_ to create sigma images for each of the images in your data
+
+Modeling
 =======================
 make lists of images
   - ``echo /diskarrays/astro_array1/hydroartMod/VELA[01][2345]*/*.[^01]*/images/*F160W*_noise.fits | xargs ls > 160noiseImages.txt``
@@ -39,6 +59,9 @@ run simUtility_
                         use [default: 26.23]
   --plate=Plate         set the plate scale for GALFIT to use[default: 0.06]
   --psf=PSF             set the file for GALFIT to use as a PSF
+
+Summarizing
+=======================
 make lists of results
   - ``echo /diskarrays/astro_array1/imtibbet/results/results_04-02-2015/results/*single*multi* | xargs ls > results.txt``
 run sumSimUtility_
@@ -54,6 +77,9 @@ run sumSimUtility_
                         set the filename to write the output summary file
                         [default: summary_04-14-2015.csv]
   -v                    to enable command line printouts of state
+
+Plotting
+=======================
 run plotSimUtility_
   - ``python plotSimUtility ../summaries/summaryNoise.csv -d , -r -p vivian -x age -y ser``
   -h                    show this help message and exit
@@ -89,3 +115,4 @@ run plotSimUtility_
 .. _simUtility: https://github.com/imtibbet/McGrathResearch/blob/master/src/simUtility.py/
 .. _sumSimUtility: https://github.com/imtibbet/McGrathResearch/blob/master/src/simUtility.py/
 .. _plotSimUtility: https://github.com/imtibbet/McGrathResearch/blob/master/src/simUtility.py/
+.. _updateHeader: https://github.com/imtibbet/McGrathResearch/blob/master/src/updateHeader.py/
