@@ -1,0 +1,13 @@
+RST reference: https://github.com/ralsina/rst-cheatsheet/blob/master/rst-cheatsheet.rst
+
+Instructions for Modeling Pipeline
+=================
+:Authors:
+  | Ian Tibbetts
+  | Jianing Yang
+  | Elizabeth McGrath
+:Version:
+  1.0 as of 4/14/2015
+This is a procedure for modeling galaxies using Source Extractor and GALFIT automatically using the 
+`simUtility  <https://github.com/imtibbet/McGrathResearch/blob/master/src/simUtility.py/>`_
+pipeline of this repository. 
