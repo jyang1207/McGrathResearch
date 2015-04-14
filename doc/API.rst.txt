@@ -9,5 +9,82 @@ Instructions for Modeling Pipeline
 :Version:
   1.0 as of 4/14/2015
 This is a procedure for modeling galaxies using Source Extractor and GALFIT automatically using the 
-`simUtility  <https://github.com/imtibbet/McGrathResearch/blob/master/src/simUtility.py/>`_
-pipeline of this repository. 
+simUtility_ pipeline of this repository. 
+
+Command Line Examples
+=======================
+make lists of images
+  - ``echo /diskarrays/astro_array1/hydroartMod/VELA[01][2345]*/*.[^01]*/images/*F160W*_noise.fits | xargs ls > 160noiseImages.txt``
+  - ``echo /diskarrays/astro_array1/hydroartMod/VELA2[678]*/*.[^01]*/images/*F160W*_noise.fits | xargs ls >> 160noiseImages.txt``
+run simUtility_
+  - Navigate to the directory containing the ``requiredFiles`` directory, eg. ``cd /diskarrays/astro_array1/imtibbet/run/``
+  - use the ``screen`` command to make a new terminal session that can later be sent to the background
+  - run using ``python /diskarrays/astro_array1/imtibbet/McGrathResearch/src/simUtility.py 160noiseImages.txt -r > stdout.txt``, 
+    which sends the command line output to stdout.txt so it can be searched later (e.g. ``grep -i warning stdout.txt``)
+    
+    - For high resolution and/or many images, the ``-p`` flag is recommended to reduce runtime 
+      but causes multithreading that is hard to cancel/abort and requires manual cleanup using the ``kill`` command
+  - Ctrl a, d to detatch from screen, ``screen -r`` to resume
+  - To see progress, either use ``top`` or ``ps -ef`` (running processes) or ``ls _*/*single*param* | wc -l`` (number of images processed so far)
+  -h                    show this help message and exit
+  -b                    include to run a GALFIT bulge fit after the initial galaxy fit
+  -g                    include to suppress running galfit after Source-Extractor
+  -p                    include to run images in parallel, otherwise series
+  -r                    include to run Source-Extractor for real images, otherwise sim images assumed
+  -s SIGMAIMAGE
+                        set the file defining the GALFIT sigma image
+  --mpz=MPZ
+                        set the magnitude photometric zeropoint for GALFIT to
+                        use [default: 26.23]
+  --plate=Plate         set the plate scale for GALFIT to use[default: 0.06]
+  --psf=PSF             set the file for GALFIT to use as a PSF
+make lists of results
+  - ``echo /diskarrays/astro_array1/imtibbet/results/results_04-02-2015/results/*single*multi* | xargs ls > results.txt``
+run sumSimUtility_
+  - ``python sumSimUtility.py results.txt -d , -r -o ../summaries/summaryNoise.csv``
+  -h                    show this help message and exit
+  -b                   if running on results of GALFIT bulge (two component)
+                        fit
+  -d DELIM
+                        set the delimiter to separate the fields of the
+                        summary file [default:  ]
+  -r                    if running on candelized images
+  -o OUTPUT
+                        set the filename to write the output summary file
+                        [default: summary_04-14-2015.csv]
+  -v                    to enable command line printouts of state
+run plotSimUtility_
+  - ``python plotSimUtility ../summaries/summaryNoise.csv -d , -r -p vivian -x age -y ser``
+  -h                    show this help message and exit
+  -m                    to plot MRP counterparts adjacent
+  -r                    to indicate candelized results are being plotted
+  -n                    the space separated list of galaxy names to be plotted
+                        (must exist in summary file). The default is all
+                        unique galaxy ids plotted separately
+  -y YFIELDNAMES        the space separated list of y field names to be
+                        plotted, available options are: ['age', 'red', 'px',
+                        'epx', 'py', 'epy', 'mag', 'emag', 'rpix', 'erpix',
+                        'rad', 'erad', 'ser', 'eser', 'ba', 'eba', 'pa',
+                        'epa', 'rff'], default: ser
+  -x XFIELDNAME
+                        the field name of the x values, available options are:
+                        ['age', 'red', 'px', 'epx', 'py', 'epy', 'mag',
+                        'emag', 'rpix', 'erpix', 'rad', 'erad', 'ser', 'eser',
+                        'ba', 'eba', 'pa', 'epa', 'rff'], default: red
+  -t COMPTYPE
+                        the type of component to be plotted (central, bulge,
+                        disk), default: central
+  -p PLOTTYPE
+                        the type of plot, available options are: ['default',
+                        'allGalaxies', 'allFields', 'bulgeToTotal', 'mozena',
+                        'barro', 'special', 'vivian'], default: default
+  -c CAMERAS
+                        specify specific cameras (e.g. 0 or 1 or... or all)
+  -d DELIMITER
+                        specify delimiter of data summary file, default
+                        whitespace
+
+
+.. _simUtility: https://github.com/imtibbet/McGrathResearch/blob/master/src/simUtility.py/
+.. _sumSimUtility: https://github.com/imtibbet/McGrathResearch/blob/master/src/simUtility.py/
+.. _plotSimUtility: https://github.com/imtibbet/McGrathResearch/blob/master/src/simUtility.py/
