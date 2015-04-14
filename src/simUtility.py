@@ -1052,7 +1052,7 @@ class ModelGenerator:
 			return
 
 		os.system(" ".join(["mv", "galfit.01", self.galfit_single_result_filename]))
-		
+		# TODO: untested 4/15/2015
 		if os.path.isfile("sigma.fits"):
 			print("simsigma found")
 			os.system(" ".join(["mv", "sigma.fits", 
