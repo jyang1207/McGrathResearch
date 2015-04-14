@@ -20,7 +20,7 @@ except ImportError:
 from PIL import Image
 import numpy
 
-	
+# TODO: use this to make plots with age on the bottom x axis and z on the top
 def ned_wright_cosmology_calculator(z):
 	'''
 	http://www.astro.ucla.edu/~wright/CC.python 
@@ -140,7 +140,7 @@ def run_pyfits(multiFitsFilename):
 	# use pyfits to gather info from output of galfit
 	multiCubeSlices = fits.open(multiFitsFilename)
 	sigmaImageName = ".".join(multiFitsFilename.split("_")[:-2]) + "_sigma.fits"
-	sigmaSlices = fits.open(multiFitsFilename) # only works if the sigma image is in the same directory
+	sigmaSlices = fits.open(sigmaImageName) # only works if the sigma image is in the same directory
 	
 	# get the dictionary mapping header keywords to their values
 	try:
@@ -276,11 +276,11 @@ def run_pyfits(multiFitsFilename):
 		modelSum = 0
 		pix = ellipImage.load()
 		# http://mnras.oxfordjournals.org/content/419/3/2703.full.pdf for definition of rff
-		for [y, x], imageVal in numpy.ndenumerate(imageData):
+		for [y, x], imageVal in numpy.ndenumerate(imageData): # y, x because y is row and x is col
 			if (# ((x>=xlow and x<=xhigh) and (y>=ylow and y<=yhigh)) and
 				((A * x * x + B * x * y + C * y * y - AhkB * x - CkBh * y + AhhBhkCkk) < 0)):
 				
-				residualVal = residualData[y, x] # y, x because y is row and x is col
+				residualVal = residualData[y, x]
 				modelVal = modelData[y, x]
 				sigmaVal = sigmaData[y, x]
 				
@@ -291,7 +291,7 @@ def run_pyfits(multiFitsFilename):
 				pix[x, imageHeight - y - 1] = 255  # flip so origin in bottom left
 
 		# compute rff and store in model dictionary
-		if imageSum:
+		if modelSum:
 			model["rff"] = str((residualSum - 0.8*sigmaSum) / modelSum)
 		else:
 			model["rff"] = "0"
@@ -304,6 +304,7 @@ def run_pyfits(multiFitsFilename):
 	if "SCALESIM" in imageHeader:
 		kpcPerPixel = imageHeader["SCALESIM"]
 	else:
+		print("no SCALESIM in header")
 		kpcPerPixel = 1.0
 		
 	# get redshift if it is in the image header
@@ -444,8 +445,8 @@ def sum_galfit(resultFilename, models, kpcPerPixel, timeZ, delim, centerIDs, opt
 	# initialize record with invariant fields
 	componentList = [galaxyID, timeStep, age_gyr, str(timeZ), camera, filt]
 	
-	# initialize the string that will be populated with records and returned
-	componentResults = ""
+	# the list of component lists
+	componentLists = []
 	
 	# default sky value
 	sky = "0.0"
@@ -513,17 +514,15 @@ def sum_galfit(resultFilename, models, kpcPerPixel, timeZ, delim, centerIDs, opt
 			galaxyType = "other"
 				
 		# add this completed component as a line to the string of results
-		componentResults += delim.join([galaxyType] + componentList) + "\n"
+		componentLists.append([galaxyType] + componentList)
 		
 		# reset component list for any remaining components in this file
 		componentList = [galaxyID, timeStep, age_gyr, str(timeZ), camera, filt]
 		
 	# add in the invariant fields after all components are done
 	results = ""
-	for component in componentResults.split("\n")[:-1]:
-		results = (results + outputFilename + delim + component + delim + sky + 
-					# delim + str(wholeRFF) + delim + str(partialRFF) + 
-					"\n")
+	for component in componentLists:
+		results += delim.join([outputFilename] + component + [sky]) + "\n"
 		
 	# return resulting string
 	return results
@@ -604,7 +603,7 @@ def main(args, pb=None):
 							"sersicIndex(n)", "errsersicIndex(n)",
 							"b/a", "errb/a",
 							"angle(deg)", "errangle(deg)",
-							"rff", "sky"  # , "wholeRFF", "partialRFF"
+							"rff", "sky", "sfr", "ssfr", "mass"
 							]) + "\n" + 
 				delim.join(["string", "enum", "enum", "numeric", "numeric",
 						"numeric", "enum", "enum"]) + "\n")
@@ -622,9 +621,12 @@ def main(args, pb=None):
 						" must be an existing file with result filenames")
 	
 		# collect info from result file header using pyfits
-		[models, imageWidth, imageHeight, kpcPerPixel, timeZ] = run_pyfits(resultFilename)	
+		resultInfo = run_pyfits(resultFilename)	
 		
-		# get the id of the centermost galaxy
+		# unpack the result into separate variables
+		models, imageWidth, imageHeight, kpcPerPixel, timeZ = resultInfo
+		
+		# get the id of the centermost galaxy or galaxies if a bulge is included
 		centerID = getCentermostID(imageWidth, imageHeight, models)
 		nextCenterID = getNextCentermostID(imageWidth, imageHeight, models, centerID)
 		if options.bulge:
@@ -635,7 +637,7 @@ def main(args, pb=None):
 		# summarize galfit and write to output
 		outFile.write(sum_galfit(resultFilename, models, kpcPerPixel,
 									timeZ, delim, centerIDs, options))
-		if pb:
+		if pb: # progress bar in dashboard GUI increment
 			pb.set(pb.get()+1)
 		
 	outFile.close()

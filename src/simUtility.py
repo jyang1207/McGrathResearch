@@ -1181,7 +1181,7 @@ def runModelGeneratorSerial(parser, options, sextractorKeywordOptions,
 			
 		# run modeling method
 		logResults.append(modelGen.modelImage(imageFilename.strip()))
-		if pb:
+		if pb: # progress bar in dashboard GUI increment
 			pb.set(pb.get()+1) #pb.step(1)
 
 	return [logResults, modelGen.destDirectory]
@@ -1225,7 +1225,7 @@ def runModelGeneratorParallel(parameterList):
 	# run modeling method and return the resulting line in the log
 	logResult = modelGen.modelImage(imageFilename.strip())
 	#print logResult
-	if pb:
+	if pb: # progress bar in dashboard GUI increment
 		pb.set(pb.get()+1) #pb.step(1)
 	return [logResult, modelGen.destDirectory]
 

@@ -896,7 +896,7 @@ if __name__ == "__main__":
 		redShifts = [(1, 1.5), (1.5, 2), (2, 2.5)] if not tbool else [(None, None)]
 		rows = len(options.galaxyNames)
 		cols = len(redShifts)
-		fig, subs = plt.subplots(rows, cols, sharex=(not tbool), sharey=True, figsize=(12,12))
+		fig, subs = plt.subplots(rows, cols, sharex=True, sharey=True, figsize=(12,12))
 		subs = np.reshape(subs, (rows, cols))#TODO: to give 1 column 2 dimensions
 		for i in range(rows):
 			for j in range(cols):
@@ -906,12 +906,14 @@ if __name__ == "__main__":
 						options.galaxyNames[i], redShifts[j][0], redShifts[j][1],
 						sub=subs[i, j])
 	
+		# set the x limits and labels
 		for j in range(cols):
 			subs[rows-1, j].set_xlim(fieldDescriptions[xFieldName][2], 
 						fieldDescriptions[xFieldName][3])
 			subs[rows-1, j].set_xlabel(fieldDescriptions[xFieldName][1])
 			if not tbool: subs[rows-1, j].get_xticklabels()[0].set_visible(False)
 				
+		# set the y limits and labels
 		for i in range(rows):
 			subs[i, 0].set_ylim(fieldDescriptions[yFieldName][2], 
 						fieldDescriptions[yFieldName][3])
@@ -931,6 +933,8 @@ if __name__ == "__main__":
 								fieldDescriptions[otherAge][3])
 				topAxis.set_xlabel(fieldDescriptions[otherAge][1])
 			'''
+		
+		# encourage subplots to be close to each other
 		fig.tight_layout(w_pad=0, h_pad=0)# if not tbool else fig.tight_layout(w_pad=0) 
 		#plt.subplots_adjust(left=0.03, bottom=0.04, right=0.97, top=0.97, wspace=0.2, hspace=0.5)
 		
