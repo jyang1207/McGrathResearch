@@ -578,13 +578,8 @@ def main(args, pb=None):
 		inputFilename = args[0]
 		
 	# this will be the file that will contain the images
-	r = open(inputFilename, 'r')
-	
-	# the lines of file containing results
-	resultFilenames = r.readlines()
-	
-	# close the file now that it has been read
-	r.close()
+	with open(inputFilename, 'r') as r:
+		resultFilenames = r.readlines()
 	
 	# open the specified filename for writing
 	outFile = open(options.output, 'w')
