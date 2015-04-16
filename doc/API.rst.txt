@@ -43,7 +43,7 @@ Update the fits headers
 Generate sigma images
   - Use genSigmaImages_ to create sigma images for each of the images in your data
   - If the GALFIT generated data is good enough, skip this and GALFIT will output the generated sigma images
-    and include each of them in the results of sumUtility_
+    and include each of them in the results of simUtility_
 
 Modeling
 =======================
