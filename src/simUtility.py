@@ -84,23 +84,6 @@ class ModelGenerator:
 		self.includeBulgeComponent = options.bulge
 		self.galfitOff = options.galfitOff
 
-		# galfit sigma image default none unless one is given on command line
-		if not options.sigmaImage:
-			self.sigmaImage = "none"
-		else:
-			# adjust relative path or make full path
-			if options.sigmaImage[:2] == "..":
-				sigmaImage = os.path.join("..", options.sigmaImage)
-			else:
-				sigmaImage = os.path.join(self.callingDirectory, options.sigmaImage)
-				
-			# verify that file exists
-			if not os.path.isfile(sigmaImage):
-				parser.error("sigmaImage " + sigmaImage + 
-							" either does not exist or is not accessible")
-			else:
-				self.sigmaImage = sigmaImage
-
 		# galfit psf default none unless one is given on command line
 		if not options.psf:
 			self.psf = "none"
@@ -1263,10 +1246,6 @@ def main(args, pb=None):
 	parser.add_option("-r", "--realSextractor",
 				help="include to run Source-Extractor for real images, otherwise sim images assumed",
 				action="store_true")
-	
-	# the GALFIT sigma image
-	parser.add_option("-s", "--sigmaImage",
-				help="set the file defining the GALFIT sigma image")
 			
 	# Magnitude photometric zeropoint	
 	parser.add_option("--mpz", metavar="MagnitudePhotometricZeropoint",
