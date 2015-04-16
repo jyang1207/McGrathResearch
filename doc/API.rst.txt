@@ -13,7 +13,7 @@ Instructions for Modeling Pipeline
   | Greg Snyder
 This is a procedure for analyzing real and simulated galaxies using Source Extractor and GALFIT automatically.
 The pipeline involves `Preprocessing`_, `Modeling`_, `Summarizing`_, then `Plotting`_. There is also a list of
-`TODO`_s at the end, as well as some links on how to edit this document using `reStructuredText`_.
+`TODO`_ at the end, as well as some links on how to edit this document using `reStructuredText`_.
 
 Preprocessing
 =======================
@@ -125,43 +125,43 @@ Run plotSimUtility_
 
 reStructuredText
 ======================
-  - https://github.com/ralsina/rst-cheatsheet/blob/master/rst-cheatsheet.rst
-  - https://gist.github.com/dupuy/1855764
+- https://github.com/ralsina/rst-cheatsheet/blob/master/rst-cheatsheet.rst
+- https://gist.github.com/dupuy/1855764
 
 TODO
 =======================
-  - Test RFF in sumSimUtility_
-    
-    - Summing over GALFIT, what about Source Extractor radius? What if the sex.param doesn't have FLUX_RADIUS?
-      Should we make that required like X_IMAGE and Y_IMAGE?
-  - Sigma Images for simUtility_
+- Test RFF in sumSimUtility_
   
-    - High resolution, using sqrt now, should be same as GALFIT generated, could be ones.fits?
-  - Required Files Directory for simUtility_
-  
-    - Do we need to have a user populated folder at all?
-    - sex.conv and default.nnw can be generated, where to save them?
-    - sex.param can be generated or specified on the command line
-    - config.sex can be generated or specified on the command line
-    - one or the other, not both because the config.sex points to the sex.param (PARAMETERS_NAME)
-  - Source Extractor in simUtility_
-  
-    - values for candelized and high resolution: min area, 
-      threshold (detect, deblend, and analysis), min contrast, clean bool and param
-    - number of galaxies, identifying clumps as separate
-    - dynamically changing values to work for different time periods/clumpyness/brightness?
-  - Barro plot in plotSimUtility_
-  - High Res Vivian plots in plotSimUtility_
-  - Bulge/Total in plotSimUtility_
-  
-    - Can we make this a column of the csv in sumSimUtility_ (-99)
-  - Pyfits in simUtility_
-  
-    - currently using IRAF to get image size because Pyfits freezes the processes in parallel
-  - Dashboard
-  
-    - GUI for running the pipeline, finicky/need to be able to close easily
-    - How could screen work with this?
+  - Summing over GALFIT, what about Source Extractor radius? What if the sex.param doesn't have FLUX_RADIUS?
+    Should we make that required like X_IMAGE and Y_IMAGE?
+- Sigma Images for simUtility_
+
+  - High resolution, using sqrt now, should be same as GALFIT generated, could be ones.fits?
+- Required Files Directory for simUtility_
+
+  - Do we need to have a user populated folder at all?
+  - sex.conv and default.nnw can be generated, where to save them?
+  - sex.param can be generated or specified on the command line
+  - config.sex can be generated or specified on the command line
+  - one or the other, not both because the config.sex points to the sex.param (PARAMETERS_NAME)
+- Source Extractor in simUtility_
+
+  - values for candelized and high resolution: min area, 
+    threshold (detect, deblend, and analysis), min contrast, clean bool and param
+  - number of galaxies, identifying clumps as separate
+  - dynamically changing values to work for different time periods/clumpyness/brightness?
+- Barro plot in plotSimUtility_
+- High Res Vivian plots in plotSimUtility_
+- Bulge/Total in plotSimUtility_
+
+  - Can we make this a column of the csv in sumSimUtility_ (-99)
+- Pyfits in simUtility_
+
+  - currently using IRAF to get image size because Pyfits freezes the processes in parallel
+- Dashboard
+
+  - GUI for running the pipeline, finicky/need to be able to close easily
+  - How could screen work with this?
 
 .. _simUtility: https://github.com/imtibbet/McGrathResearch/blob/master/src/simUtility.py/
 .. _sumSimUtility: https://github.com/imtibbet/McGrathResearch/blob/master/src/simUtility.py/
