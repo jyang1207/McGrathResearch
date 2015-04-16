@@ -139,7 +139,7 @@ def run_pyfits(multiFitsFilename):
 	'''
 	# use pyfits to gather info from output of galfit
 	multiCubeSlices = fits.open(multiFitsFilename)
-	sigmaImageName = ".".join(multiFitsFilename.split("_")[:-2]) + "_sigma.fits"
+	sigmaImageName = "_".join(multiFitsFilename.split("_")[:-2]) + "_sigma.fits"
 	sigmaSlices = fits.open(sigmaImageName) # only works if the sigma image is in the same directory
 	
 	# get the dictionary mapping header keywords to their values
