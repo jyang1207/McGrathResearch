@@ -9,8 +9,9 @@ TODO
 Instructions for Modeling Pipeline
 =================
 :Authors:
-  | Ian Tibbetts
-  | Jianing Yang
+  | Ian Tibbetts '15
+  | Jianing Yang '18
+  | Ryan Cole '15
   | Elizabeth McGrath
 :Version: 
   1.0 as of 4/14/2015
@@ -41,6 +42,7 @@ make lists of images
   - if regular expressions become too much work, the ``>>`` (below) can be used to repeatedly append convenient chunks of images.
   - ``echo /diskarrays/astro_array1/hydroartMod/VELA2[678]*/*.[^01]*/images/*F160W*_noise.fits | xargs ls >> 160noiseImages.txt``
 run simUtility_
+  - create a directory ``requiredFiles`` and put in the files ``default.nnw``, ``ones.fits``, ``sex.conv``, and ``sex.param`` inside
   - Navigate to the directory containing the ``requiredFiles`` directory, eg. ``cd /diskarrays/astro_array1/imtibbet/run/``
   - use the ``screen`` command to make a new terminal session that can later be sent to the background
   - run using ``python /diskarrays/astro_array1/imtibbet/McGrathResearch/src/simUtility.py 160noiseImages.txt -r --psf psf/gs_wide_f160w_v0.5_psf.fits > stdout.txt``, 
