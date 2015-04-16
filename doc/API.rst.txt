@@ -74,8 +74,6 @@ Run simUtility_
   -g                    include to suppress running galfit after Source-Extractor
   -p                    include to run images in parallel, otherwise series
   -r                    include to run Source-Extractor for real images, otherwise sim images assumed
-  -s SIGMAIMAGE
-                        set the file defining the GALFIT sigma image
   --mpz=MPZ
                         set the magnitude photometric zeropoint for GALFIT to
                         use [default: 26.23]
