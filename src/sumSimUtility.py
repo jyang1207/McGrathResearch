@@ -144,7 +144,6 @@ def run_pyfits(multiFitsFilename):
 	
 	# get the dictionary mapping header keywords to their values
 	try:
-		zeroHeader = multiCubeSlices[0].header
 		imageHeader = multiCubeSlices[1].header
 		imageData = multiCubeSlices[1].data
 		modelHeader = multiCubeSlices[2].header
@@ -163,8 +162,7 @@ def run_pyfits(multiFitsFilename):
 		exit()
 		
 	# get image dimensions
-	imageWidth = zeroHeader["NAXIS1"]
-	imageHeight = zeroHeader["NAXIS2"]
+	imageWidth, imageHeight = imageData.shape
 					
 	# create list of dictionaries representing component models
 	resultModels = []
@@ -300,24 +298,11 @@ def run_pyfits(multiFitsFilename):
 		resultModels.append(model)
 		compNum = compNum + 1
 			
-	# get the kpc conversion value if it is in the image header
-	if "SCALESIM" in imageHeader:
-		kpcPerPixel = imageHeader["SCALESIM"]
-	else:
-		print("no SCALESIM in header")
-		kpcPerPixel = 1.0
-		
-	# get redshift if it is in the image header
-	if "REDSHIFT" in imageHeader:
-		timeZ = imageHeader["REDSHIFT"]
-	else:
-		timeZ = 0.0
-	
 	# compute the rff from the residual and image data
 	ellipImage.save(ellipImageName)
 	
 	# return all extracted pyfits data 
-	return [resultModels, imageWidth, imageHeight, kpcPerPixel, timeZ]
+	return [resultModels, imageWidth, imageHeight, imageHeader]
 
 
 def getCentermostID(imageHeight, imageWidth, models):
@@ -395,55 +380,87 @@ def removeGalfitChars(resultString):
 									).replace('{', '').replace('}', '')
 											
 
-def sum_galfit(resultFilename, models, kpcPerPixel, timeZ, delim, centerIDs, options):
+def sum_galfit(resultFilename, models, imageHeader, delim, centerIDs, options):
 	'''
 	returns a string summary of the results in the given result filename, using remaining parameters
 	to decorate the values given by GALFIT and as additional fields in each record
 	
 	parameter resultFilename - the result filename from running galfit to be summarized
 	parameter models - 		a dictionary of components from galfit for a single image
-	parameter kpcPerPixel - the kpc per pixel for simulation images, read from image header
-	parameter timeZ - 		the redshift of the result, read from image header
-	parameter wholeRFF - 	the rff computed using the whole residual/whole input images
-	parameter partialRFF - 	the rff computed using the partial residual/partial input images
+	parameter imageHeader -	info gathered from the pyfits header
 	parameter delim - 		the character(s) that delimit the fields in a single record (e.g. " ")
 	parameter centerIDs - 	the list of ids of centermost and optionally next centermost galaxies
 	parameter options - 	the dictionary of command line options specified at runtime
 	returns a string of the results delimited by new lines, one line per component
 	'''
-		
 	outputFilename = resultFilename.split("/")[-1].strip()
 	# VELA02MRP_0.201015_0002949__skipir_CAMERA0-BROADBAND_F160W_simulation_bulge_multi.fits
-
-	# TODO: this is dependent on the particular structure of the filename
-	# 		the below code works for VELA simulations
-	galaxyID = outputFilename.split("_")[0]
+	
+	# variables to be parsed from the image header, default is zero
+	kpcPerPixel = timeZ = mass = sfr = ssfr = 0.0
+	if "SCALESIM" in imageHeader:
+		kpcPerPixel = imageHeader["SCALESIM"]
+	if "REDSHIFT" in imageHeader:
+		timeZ = imageHeader["REDSHIFT"]
+	if "MASS" in imageHeader:
+		mass = imageHeader["MASS"]
+	if "SFR" in imageHeader:
+		sfr = imageHeader["SFR"]
+	if "SSFR" in imageHeader:
+		ssfr = imageHeader["SSFR"]
+	if "ID" in imageHeader:
+		galaxyID = imageHeader["ID"]
+	else:
+		try:
+			galaxyID = outputFilename.split("_")[0]
+		except:
+			galaxyID = ""
 	# "VELA01"
-	
-	filt = outputFilename.split("_")[6]
+	if "FILTER" in imageHeader:
+		filt = imageHeader["FILTER"]
+	else:
+		try:
+			filt = outputFilename.split("_")[6]
+		except:
+			filt = ""
 	# "F125W"	
-	
-	timeStep = outputFilename.split("_")[1].split(".")[1]
-	# "110"
-	
-	camera = outputFilename.split("_")[5].split("-")[0].replace("CAMERA", "")
+	if "AVAL" in imageHeader:
+		timeStep = imageHeader["AVAL"]
+	else:
+		try:
+			timeStep = "0."+outputFilename.split("_")[1].split(".")[1]
+		except:
+			timeStep = ""
+	# "0.110"
+	if "CAMERA" in imageHeader:
+		camera = imageHeader["CAMERA"]
+	else:
+		try:
+			camera = outputFilename.split("_")[5].split("-")[0].replace("CAMERA", "")
+		except:
+			camera = ""
 	# "CAMERA0"
 	
-	if not timeZ:
-		# a = 1/(1+z)
-		timeA = float("0." + timeStep)
-		# z = 1/a - 1
-		timeZ = 1.0 / timeA - 1.0
-		
-	[age_gyr, kpcPerArcsec] = ned_wright_cosmology_calculator(timeZ)
-	age_gyr = '%1.3f' % age_gyr
+	# try to compute redshift from aval
+	if timeStep and not timeZ:
+		# a = 1/(1+z), z = 1/a - 1
+		timeZ = 1.0 / float(timeStep) - 1.0
+	
+	# if the redshift is greater than zero, compute age gyr
+	if timeZ:
+		[age_gyr, kpcPerArcsec] = ned_wright_cosmology_calculator(timeZ)
+		age_gyr = '%1.3f' % age_gyr
+	else: # default values
+		kpcPerArcsec = 0.0
+		age_gyr = "0.0"
+	timeZ = str(timeZ)
 	
 	# for candelized images, use ned wright and constant scale factor for kpc
 	if options.candelized:
 		kpcPerPixel = kpcPerArcsec * 0.06
 		
-	# initialize record with invariant fields
-	componentList = [galaxyID, timeStep, age_gyr, str(timeZ), camera, filt]
+	# the individual component properties
+	componentList = []
 	
 	# the list of component lists
 	componentLists = []
@@ -517,12 +534,14 @@ def sum_galfit(resultFilename, models, kpcPerPixel, timeZ, delim, centerIDs, opt
 		componentLists.append([galaxyType] + componentList)
 		
 		# reset component list for any remaining components in this file
-		componentList = [galaxyID, timeStep, age_gyr, str(timeZ), camera, filt]
+		componentList = []
 		
 	# add in the invariant fields after all components are done
 	results = ""
 	for component in componentLists:
-		results += delim.join([outputFilename] + component + [sky]) + "\n"
+		results += delim.join([outputFilename, galaxyID, timeStep, age_gyr, 
+								str(timeZ), camera, filt] + 
+							component + [sky, sfr, ssfr, mass]) + "\n"
 		
 	# return resulting string
 	return results
@@ -619,7 +638,7 @@ def main(args, pb=None):
 		resultInfo = run_pyfits(resultFilename)	
 		
 		# unpack the result into separate variables
-		models, imageWidth, imageHeight, kpcPerPixel, timeZ = resultInfo
+		models, imageWidth, imageHeight, imageHeader = resultInfo
 		
 		# get the id of the centermost galaxy or galaxies if a bulge is included
 		centerID = getCentermostID(imageWidth, imageHeight, models)
@@ -630,8 +649,7 @@ def main(args, pb=None):
 			centerIDs = [centerID]
 			
 		# summarize galfit and write to output
-		outFile.write(sum_galfit(resultFilename, models, kpcPerPixel,
-									timeZ, delim, centerIDs, options))
+		outFile.write(sum_galfit(resultFilename, models, imageHeader, delim, centerIDs, options))
 		if pb: # progress bar in dashboard GUI increment
 			pb.set(pb.get()+1)
 		
