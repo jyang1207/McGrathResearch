@@ -175,6 +175,7 @@ TODO
 - Interactive Plotting using display_
 
   - Tune the logarithmic scaling of cube images (right double click)
+  - Button on image display dialog for displaying the fits header
 
 .. _simUtility: https://github.com/imtibbet/McGrathResearch/blob/master/src/simUtility.py/
 .. _sumSimUtility: https://github.com/imtibbet/McGrathResearch/blob/master/src/simUtility.py/
