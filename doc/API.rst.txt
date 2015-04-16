@@ -2,8 +2,7 @@ RST references
   - https://github.com/ralsina/rst-cheatsheet/blob/master/rst-cheatsheet.rst
   - https://gist.github.com/dupuy/1855764
 TODO
-  - Save sigma image in destination directory in simUtility_
-  - RFF in sumSimUtility_
+  - Test RFF in sumSimUtility_
   - Barro plot in plotSimUtility_
   - High Res Vivian plots in plotSimUtility_
   - Bulge/Total in plotSimUtility_
@@ -43,9 +42,9 @@ Generate sigma images
 Modeling
 =======================
 Make lists of images
-  - using ``echo`` and piping into ``xargs ls`` (below) prevents the overflow that can occur when using ``ls`` alone.
+  - Using ``echo`` and piping into ``xargs ls`` (below) prevents the overflow that can occur when using ``ls`` alone.
   - ``echo /diskarrays/astro_array1/hydroartMod/VELA[01][2345]*/*.[^01]*/images/*F160W*_noise.fits | xargs ls > 160noiseImages.txt``
-  - if regular expressions become too much work, the ``>>`` (below) can be used to repeatedly append convenient chunks of images.
+  - If regular expressions become too much work, the ``>>`` (below) can be used to repeatedly append convenient chunks of images.
   - ``echo /diskarrays/astro_array1/hydroartMod/VELA2[678]*/*.[^01]*/images/*F160W*_noise.fits | xargs ls >> 160noiseImages.txt``
 Run simUtility_
   - Create a directory ``requiredFiles`` and put in the files ``default.nnw``, ``ones.fits``, ``sex.conv``, and ``sex.param`` inside
