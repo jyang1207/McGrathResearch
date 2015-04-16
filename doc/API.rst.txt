@@ -63,7 +63,7 @@ Run simUtility_
         ``python /diskarrays/astro_array1/imtibbet/McGrathResearch/src/simUtility.py 160noiseImages.txt -r -p --psf psf/gs_wide_f160w_v0.5_psf.fits``
     - Simulation
         ``python /diskarrays/astro_array1/imtibbet/McGrathResearch/src/simUtility.py 160simImages.txt -b -p`` 
-    - Send the command line output to stdout.txt by adding `` > stdout.txt`` to the end of either 
+    - Send the command line output to stdout.txt by adding ``> stdout.txt`` to the end of either 
       so it can be searched later (e.g. ``grep -i warning stdout.txt``)
     - For high resolution and/or many images, the ``-p`` flag is recommended to reduce runtime 
       but causes multithreading that is hard to cancel/abort and requires manual cleanup using the ``kill`` command
