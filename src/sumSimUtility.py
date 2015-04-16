@@ -400,7 +400,8 @@ def sum_galfit(resultFilename, models, imageHeader, delim, centerIDs, options):
 	#     0           1        2    3    4              5          6         7        8          9
 	
 	# variables to be parsed from the image header, default is zero
-	kpcPerPixel = timeZ = mass = sfr = ssfr = 0.0
+	kpcPerPixel = 0.0
+	timeZ = mass = sfr = ssfr = -99.0
 	if "SCALESIM" in imageHeader:
 		kpcPerPixel = imageHeader["SCALESIM"]
 	if "REDSHIFT" in imageHeader:
@@ -417,15 +418,15 @@ def sum_galfit(resultFilename, models, imageHeader, delim, centerIDs, options):
 		try:
 			galaxyID = outputFilenameSplit[0]
 		except:
-			galaxyID = ""
+			galaxyID = "-99.0"
 	# "VELA01"
 	if "AVAL" in imageHeader:
-		timeStep = imageHeader["AVAL"]
+		timeA = imageHeader["AVAL"]
 	else:
 		try:
-			timeStep = "0."+outputFilenameSplit[1].split(".")[1] #could have a0.#, so split
+			timeA = "0."+outputFilenameSplit[1].split(".")[1] #could have a0.#, so split
 		except:
-			timeStep = ""
+			timeA = "-99.0"
 	# "0.110"
 	if "HALOID" in imageHeader:
 		haloID = imageHeader["HALOID"]
@@ -433,7 +434,7 @@ def sum_galfit(resultFilename, models, imageHeader, delim, centerIDs, options):
 		try:
 			haloID = outputFilenameSplit[2]
 		except:
-			haloID = ""
+			haloID = "-99.0"
 	# "0002949"
 	if "CAMERA" in imageHeader:
 		camera = imageHeader["CAMERA"]
@@ -441,7 +442,7 @@ def sum_galfit(resultFilename, models, imageHeader, delim, centerIDs, options):
 		try:
 			camera = outputFilenameSplit[5].split("-")[0].replace("CAMERA", "")
 		except:
-			camera = ""
+			camera = "-99.0"
 	# "0"
 	if "FILTER" in imageHeader:
 		filt = imageHeader["FILTER"]
@@ -449,7 +450,7 @@ def sum_galfit(resultFilename, models, imageHeader, delim, centerIDs, options):
 		try:
 			filt = outputFilenameSplit[6]
 		except:
-			filt = ""
+			filt = "-99.0"
 	# "F125W"	
 	
 	# try to compute redshift from aval
@@ -457,17 +458,20 @@ def sum_galfit(resultFilename, models, imageHeader, delim, centerIDs, options):
 		timeZ = float(timeZ)
 	except:
 		pass
-	if timeStep and not timeZ:
-		# a = 1/(1+z), z = 1/a - 1
-		timeZ = 1.0 / float(timeStep) - 1.0
+	if timeA != "-99.0" and timeZ == -99.0:
+		# z = 1/a - 1
+		timeZ = 1.0 / float(timeA) - 1.0
+	elif timeZ != -99.0:
+		# a = 1/(1+z)
+		timeA = str(1.0/(1.0+timeZ))
 	
 	# if the redshift is greater than zero, compute age gyr
-	if timeZ:
+	if timeZ != -99.0:
 		[age_gyr, kpcPerArcsec] = ned_wright_cosmology_calculator(timeZ)
 		age_gyr = '%1.3f' % age_gyr
 	else: # default values
 		kpcPerArcsec = 0.0
-		age_gyr = "0.0"
+		age_gyr = "-99.0"
 	timeZ = str(timeZ)
 	
 	# for computing the radius in kpc from the radius in pixels
@@ -513,8 +517,12 @@ def sum_galfit(resultFilename, models, imageHeader, delim, centerIDs, options):
 		componentList.append(model["rad"][1])  # error
 		
 		# radius (kpc)
-		componentList.append(str(float(model["rad"][0]) * kpcPerPixel))  # value
-		componentList.append(str(float(model["rad"][1]) * kpcPerPixel))  # error
+		if kpcPerPixel:
+			componentList.append(str(float(model["rad"][0]) * kpcPerPixel))  # value
+			componentList.append(str(float(model["rad"][1]) * kpcPerPixel))  # error
+		else:
+			componentList.append("-99.0") # value
+			componentList.append("-99.0") # error
 			
 		# sersic index
 		componentList.append(model["ser"][0])  # value
@@ -560,7 +568,7 @@ def sum_galfit(resultFilename, models, imageHeader, delim, centerIDs, options):
 	results = ""
 	for component in componentLists:
 		results += delim.join([outputFilename, galaxyID, haloID,
-								timeStep, age_gyr, timeZ, camera, filt] + 
+								timeA, age_gyr, timeZ, camera, filt] + 
 							component + [sky, sfr, ssfr, mass]) + "\n"
 		
 	# return resulting string
