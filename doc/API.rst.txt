@@ -1,5 +1,6 @@
-RST reference: https://github.com/ralsina/rst-cheatsheet/blob/master/rst-cheatsheet.rst
-
+RST references
+  - https://github.com/ralsina/rst-cheatsheet/blob/master/rst-cheatsheet.rst
+  - https://gist.github.com/dupuy/1855764
 TODO
   - Save sigma image in destination directory in simUtility_
   - RFF in sumSimUtility_
@@ -11,7 +12,7 @@ Instructions for Modeling Pipeline
   | Ian Tibbetts
   | Jianing Yang
   | Elizabeth McGrath
-:Version:
+:Version: 
   1.0 as of 4/14/2015
 This is a procedure for analyzing real and simulated galaxies using Source Extractor and GALFIT automatically.
 The pipeline involves `Preprocessing`_, `Modeling`_, `Summarizing`_, then `Plotting`_.
@@ -65,9 +66,9 @@ run simUtility_
 Summarizing
 =======================
 make lists of results
-  - ``echo /diskarrays/astro_array1/imtibbet/results/results_04-02-2015/results/*single*multi* | xargs ls > results.txt``
+  - ``echo /diskarrays/astro_array1/imtibbet/results/resultsNoiseMRP/results/*single*multi* | xargs ls > singleMultiFits.txt``
 run sumSimUtility_
-  - ``python sumSimUtility.py results.txt -d , -r -o ../summaries/summaryNoise.csv``
+  - ``python McGrathResearch/src/sumSimUtility.py results/resultsNoiseMRP/singleMultiFits.txt -d , -r -o summaries/summaryNoise.csv``
   -h                    show this help message and exit
   -b                   if running on results of GALFIT bulge (two component)
                         fit
