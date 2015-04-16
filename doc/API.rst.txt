@@ -34,7 +34,7 @@ Duplicate data before modifying
   - ``mkdir /diskarrays/astro_array1/hydroartMod/``
   - ``cp -r /diskarrays/astro_array1/hydroart/* /diskarrays/astro_array1/hydroartMod/``
 Update the fits headers
-  - Check the run_pyfits method of sumSimUtility_ to determine what info is expected in the fits header
+  - Check the sum_galfit method of sumSimUtility_ to determine what info is expected in the fits header
   
     - SCALESIM is only for converting distances in high resolution images to kpc
     - REDSHIFT, MASS, SFR, and SSFR will be set to 0 in summary if not present in header
