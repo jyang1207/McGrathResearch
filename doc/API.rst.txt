@@ -5,6 +5,8 @@ TODO
   - Save sigma image in destination directory in simUtility_
   - RFF in sumSimUtility_
   - Barro plot in plotSimUtility_
+  - High Res Vivian plots in plotSimUtility_
+  - Bulge/Total in plotSimUtility_
 
 Instructions for Modeling Pipeline
 =================
@@ -15,6 +17,10 @@ Instructions for Modeling Pipeline
   | Elizabeth McGrath
 :Version: 
   1.0 as of 4/14/2015
+:Acknowledgments:
+  | Colby College Astrophysics
+  | Joel Primack
+  | Greg Snyder
 This is a procedure for analyzing real and simulated galaxies using Source Extractor and GALFIT automatically.
 The pipeline involves `Preprocessing`_, `Modeling`_, `Summarizing`_, then `Plotting`_.
 
@@ -24,30 +30,35 @@ This is only necessary to do when starting to analyze new data, for example a se
 ``/diskarrays/astro_array1/hydroart/``. Be sure to modify the code of the files referenced here to correctly work
 for the file naming scheme of your data, or modify the filenames to conform to the expectations of this code.
 
-duplicate data before modifying
-  - if you have enough disk space it is a good idea to first make a new directory and duplicate your data
+Duplicate data before modifying
+  - If you have enough disk space it is a good idea to first make a new directory and duplicate your data
   - ``mkdir /diskarrays/astro_array1/hydroartMod/``
   - ``cp -r /diskarrays/astro_array1/hydroart/* /diskarrays/astro_array1/hydroartMod/``
-update the fits headers
-  - check the run_pyfits method of sumSimUtility_ to determine what info is needed in the fits header
-  - modify updateHeader_ to populate any missing fields (clobber=True to overrwrite)
-generate sigma images
-  - use genSigmaImages_ to create sigma images for each of the images in your data
+Update the fits headers
+  - Check the run_pyfits method of sumSimUtility_ to determine what info is needed in the fits header
+  - Modify updateHeader_ to populate any missing fields (clobber=True to overrwrite)
+Generate sigma images
+  - Use genSigmaImages_ to create sigma images for each of the images in your data
 
 Modeling
 =======================
-make lists of images
+Make lists of images
   - using ``echo`` and piping into ``xargs ls`` (below) prevents the overflow that can occur when using ``ls`` alone.
   - ``echo /diskarrays/astro_array1/hydroartMod/VELA[01][2345]*/*.[^01]*/images/*F160W*_noise.fits | xargs ls > 160noiseImages.txt``
   - if regular expressions become too much work, the ``>>`` (below) can be used to repeatedly append convenient chunks of images.
   - ``echo /diskarrays/astro_array1/hydroartMod/VELA2[678]*/*.[^01]*/images/*F160W*_noise.fits | xargs ls >> 160noiseImages.txt``
-run simUtility_
-  - create a directory ``requiredFiles`` and put in the files ``default.nnw``, ``ones.fits``, ``sex.conv``, and ``sex.param`` inside
+Run simUtility_
+  - Create a directory ``requiredFiles`` and put in the files ``default.nnw``, ``ones.fits``, ``sex.conv``, and ``sex.param`` inside
   - Navigate to the directory containing the ``requiredFiles`` directory, eg. ``cd /diskarrays/astro_array1/imtibbet/run/``
-  - use the ``screen`` command to make a new terminal session that can later be sent to the background
-  - run using ``python /diskarrays/astro_array1/imtibbet/McGrathResearch/src/simUtility.py 160noiseImages.txt -r --psf psf/gs_wide_f160w_v0.5_psf.fits > stdout.txt``, 
-    which sends the command line output to stdout.txt so it can be searched later (e.g. ``grep -i warning stdout.txt``)
-    
+  - Use the ``screen`` command to make a new terminal session that can later be sent to the background
+  - Run the modeling program
+  
+    - Candelized
+      ``python /diskarrays/astro_array1/imtibbet/McGrathResearch/src/simUtility.py 160noiseImages.txt -r -p --psf psf/gs_wide_f160w_v0.5_psf.fits``
+    - Simulation
+      ``python /diskarrays/astro_array1/imtibbet/McGrathResearch/src/simUtility.py 160simImages.txt -b -p`` 
+    - Send the command line output to stdout.txt by adding `` > stdout.txt`` to the end of either 
+      so it can be searched later (e.g. ``grep -i warning stdout.txt``)
     - For high resolution and/or many images, the ``-p`` flag is recommended to reduce runtime 
       but causes multithreading that is hard to cancel/abort and requires manual cleanup using the ``kill`` command
   - Ctrl a, d to detatch from screen, ``screen -r`` to resume
@@ -67,9 +78,9 @@ run simUtility_
 
 Summarizing
 =======================
-make lists of results
+Make lists of results
   - ``echo /diskarrays/astro_array1/imtibbet/results/resultsNoiseMRP/results/*single*multi* | xargs ls > singleMultiFits.txt``
-run sumSimUtility_
+Run sumSimUtility_
   - ``python McGrathResearch/src/sumSimUtility.py results/resultsNoiseMRP/singleMultiFits.txt -d , -r -o summaries/summaryNoise.csv``
   -h                    show this help message and exit
   -b                   if running on results of GALFIT bulge (two component)
@@ -85,7 +96,7 @@ run sumSimUtility_
 
 Plotting
 =======================
-run plotSimUtility_
+Run plotSimUtility_
   - ``python plotSimUtility ../summaries/summaryNoise.csv -d , -r -p vivian -x age -y ser``
   -h                    show this help message and exit
   -m                    to plot MRP counterparts adjacent
