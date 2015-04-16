@@ -34,7 +34,7 @@ def genSigmaImages(simFilename):
 		simHDUList = fits.open(simFilename)
 		simData = simHDUList[0].data
 		# for simulations, sigma is sqrt(simData)
-		data = np.power(simData, 0.5)
+		data = np.sqrt(simData)
 		fits.writeto(sigmaFilename, data, clobber=True)
 		simHDUList.close()
 		result.append(sigmaFilename + " written")
@@ -55,7 +55,7 @@ def genSigmaImages(simFilename):
 		rms = candelNoiseData - candelNoNoiseData
 		expTime = 3000.0 # TODO: adjust for your data
 		data = np.sqrt(np.square(rms) + 
-					np.square(np.sqrt(np.abs(candelNoiseData * expTime)) / expTime))
+				np.square(np.sqrt(np.abs(candelNoiseData * expTime)) / expTime))
 		fits.writeto(sigmaNoiseFilename, data, clobber=True)
 		data = np.sqrt(candelNoNoiseData) / expTime
 		fits.writeto(sigmaNoNoiseFilename, data, clobber=True)

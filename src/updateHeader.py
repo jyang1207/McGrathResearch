@@ -48,7 +48,8 @@ def updateHeaderNoise(simFilename):
 		return False
 	
 	try:
-		simHeader.set("SCALESIM", candelHeader["SCALESIM"], "pc per pixel of SUNRISE img")
+		simHeader.set("SCALESIM", candelHeader["SCALESIM"], 
+					"pc per pixel of SUNRISE img")
 	except:
 		print("failed to write to sim header " + simFilename + 
 				" from candel header " + candelFilename + 

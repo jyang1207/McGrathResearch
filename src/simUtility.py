@@ -788,11 +788,13 @@ class ModelGenerator:
 		self.galfit_bulge_parameter_filename = 		filename + "_bulge_param.txt"
 		self.galfit_bulge_output_filename = 			filename + "_bulge_multi.fits"
 		self.galfit_bulge_result_filename = 			filename + "_bulge_result.txt"
+		
 		sigmaImage = ".".join(image["filename"].split(".")[:-1]) + "_sigma.fits"
 		if os.path.isfile(sigmaImage):
 			self.sigmaImage = sigmaImage
 		else:
 			self.sigmaImage = "none"
+		self.sigmaImageFilename = sigmaImage.split("/")[-1]
 	
 	
 	def write_galfit_parameter(self, image, paramFile, ouputFilename):
@@ -812,12 +814,8 @@ class ModelGenerator:
 			"						#Input data image block\n")
 		paramFile.write("B) " + ouputFilename + 
 			"						#Output data image block\n")
-		if self.realSextractor:
-			paramFile.write("C) " + self.sigmaImage + 
-				"						#Sigma image name (made from data if blank or 'none')\n")
-		else:
-			paramFile.write("C) none" + 
-				"						#Sigma image name (made from data if blank or 'none')\n")
+		paramFile.write("C) " + self.sigmaImage + 
+			"						#Sigma image name (made from data if blank or 'none')\n")
 		paramFile.write("D) " + self.psf + 
 			"						#Input PSF image and (optional) diffusion kernel\n")
 		paramFile.write("E)" + " 1" + 
@@ -1056,11 +1054,11 @@ class ModelGenerator:
 		if os.path.isfile("sigma.fits"):
 			print("simsigma found")
 			os.system(" ".join(["mv", "sigma.fits", 
-							os.path.join(self.destDirectory, self.sigmaImage.split("/")[-1])]))
+							os.path.join(self.destDirectory, self.sigmaImageFilename)]))
 		else:
 			print("no simsigma found")
 			os.system(" ".join(["ln", "-s", self.sigmaImage, 
-							os.path.join(self.destDirectory, self.sigmaImage.split("/")[-1])]))
+							os.path.join(self.destDirectory, self.sigmaImageFilename)]))
 		
 		# done unless command line specified that a second galfit run
 		# should be done by adding a bulge component to the result of the first run
