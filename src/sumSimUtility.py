@@ -395,6 +395,9 @@ def sum_galfit(resultFilename, models, imageHeader, delim, centerIDs, options):
 	'''
 	outputFilename = resultFilename.split("/")[-1].strip()
 	# VELA02MRP_0.201015_0002949__skipir_CAMERA0-BROADBAND_F160W_simulation_bulge_multi.fits
+	outputFilenameSplit = outputFilename.split("_")
+	# [VELA02MRP, 0.201015, 0002949, , skipir, CAMERA0-BROADBAND, F160W, simulation, bulge, multi.fits
+	#     0           1        2    3    4              5          6         7        8          9
 	
 	# variables to be parsed from the image header, default is zero
 	kpcPerPixel = timeZ = mass = sfr = ssfr = 0.0
@@ -408,40 +411,52 @@ def sum_galfit(resultFilename, models, imageHeader, delim, centerIDs, options):
 		sfr = imageHeader["SFR"]
 	if "SSFR" in imageHeader:
 		ssfr = imageHeader["SSFR"]
-	if "ID" in imageHeader:
-		galaxyID = imageHeader["ID"]
+	if "GALAXYID" in imageHeader:
+		galaxyID = imageHeader["GALAXYID"]
 	else:
 		try:
-			galaxyID = outputFilename.split("_")[0]
+			galaxyID = outputFilenameSplit[0]
 		except:
 			galaxyID = ""
 	# "VELA01"
-	if "FILTER" in imageHeader:
-		filt = imageHeader["FILTER"]
-	else:
-		try:
-			filt = outputFilename.split("_")[6]
-		except:
-			filt = ""
-	# "F125W"	
 	if "AVAL" in imageHeader:
 		timeStep = imageHeader["AVAL"]
 	else:
 		try:
-			timeStep = "0."+outputFilename.split("_")[1].split(".")[1]
+			timeStep = "0."+outputFilenameSplit[1].split(".")[1] #could have a0.#, so split
 		except:
 			timeStep = ""
 	# "0.110"
+	if "HALOID" in imageHeader:
+		haloID = imageHeader["HALOID"]
+	else:
+		try:
+			haloID = outputFilenameSplit[2]
+		except:
+			haloID = ""
+	# "0002949"
 	if "CAMERA" in imageHeader:
 		camera = imageHeader["CAMERA"]
 	else:
 		try:
-			camera = outputFilename.split("_")[5].split("-")[0].replace("CAMERA", "")
+			camera = outputFilenameSplit[5].split("-")[0].replace("CAMERA", "")
 		except:
 			camera = ""
-	# "CAMERA0"
+	# "0"
+	if "FILTER" in imageHeader:
+		filt = imageHeader["FILTER"]
+	else:
+		try:
+			filt = outputFilenameSplit[6]
+		except:
+			filt = ""
+	# "F125W"	
 	
 	# try to compute redshift from aval
+	try:
+		timeZ = float(timeZ)
+	except:
+		pass
 	if timeStep and not timeZ:
 		# a = 1/(1+z), z = 1/a - 1
 		timeZ = 1.0 / float(timeStep) - 1.0
@@ -455,6 +470,11 @@ def sum_galfit(resultFilename, models, imageHeader, delim, centerIDs, options):
 		age_gyr = "0.0"
 	timeZ = str(timeZ)
 	
+	# for computing the radius in kpc from the radius in pixels
+	try:
+		kpcPerPixel = float(kpcPerPixel)
+	except:
+		kpcPerPixel = 0.0
 	# for candelized images, use ned wright and constant scale factor for kpc
 	if options.candelized:
 		kpcPerPixel = kpcPerArcsec * 0.06
@@ -539,8 +559,8 @@ def sum_galfit(resultFilename, models, imageHeader, delim, centerIDs, options):
 	# add in the invariant fields after all components are done
 	results = ""
 	for component in componentLists:
-		results += delim.join([outputFilename, galaxyID, timeStep, age_gyr, 
-								str(timeZ), camera, filt] + 
+		results += delim.join([outputFilename, galaxyID, haloID,
+								timeStep, age_gyr, timeZ, camera, filt] + 
 							component + [sky, sfr, ssfr, mass]) + "\n"
 		
 	# return resulting string
@@ -607,8 +627,9 @@ def main(args, pb=None):
 	delim = options.delim
 	
 	# the summary file header
-	outFile.write(delim.join(["filename", "type", "galaxyID", "timeStep", "age(GYr)",
-							"redshift(z)", "camera", "filter",
+	outFile.write(delim.join(["filename", "type", "galaxyID", "haloID"
+							"timeStep", "age(GYr)", "redshift(z)", 
+							"camera", "filter",
 							"px(pixels)", "errpx(pixels)",
 							"py(pixels)", "errpy(pixels)",
 							"mag", "errmag",
