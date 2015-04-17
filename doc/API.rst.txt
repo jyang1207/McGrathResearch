@@ -1,4 +1,4 @@
-Instructions for Modeling Pipeline
+Instructions for the GALFIT-SExtractor Modeling Pipeline
 =================
 :Authors:
   | Ian Tibbetts '15
@@ -9,8 +9,8 @@ Instructions for Modeling Pipeline
   1.0 as of 4/14/2015
 :Acknowledgments:
   | Colby College Astrophysics
-  | Joel Primack
-  | Greg Snyder
+  | Joel Primack (uCSC)
+  | Greg Snyder (STScI)
 This is a procedure for analyzing real and simulated galaxies using Source Extractor and GALFIT automatically.
 The pipeline involves `Preprocessing`_, `Modeling`_, `Summarizing`_, then `Plotting`_. There is also a list of
 `TODO`_ at the end, as well as some links on how to edit this document using `reStructuredText`_.
@@ -28,10 +28,10 @@ Duplicate data before modifying
 Update the fits headers
   - Check the sum_galfit method of sumSimUtility_ to determine what info is expected in the fits header
   
-    - SCALESIM is only for converting distances in high resolution images to kpc
-    - REDSHIFT, MASS, SFR, and SSFR will be set to 0 in summary if not present in header
     - GALAXYID, HALOID, AVAL, FILTER, and CAMERA will be parsed from the filename if not present in header
-    - If the filename is not in the expected format, these will be either 0.0 or empty string in the summary
+    - If the filename is not in the expected format, these will be set to -99.0 in the summary
+    - SCALESIM is only for converting distances in high resolution images to kpc
+    - REDSHIFT, MASS, SFR, and SSFR will be set to -99.0 in the summary if not present in header
   
   - Modify updateHeader_ to populate any missing fields (clobber=True to overrwrite)
 Generate sigma images
