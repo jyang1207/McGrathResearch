@@ -9,7 +9,7 @@ Instructions for the GALFIT-SExtractor Modeling Pipeline
   1.0 as of 4/14/2015
 :Acknowledgments:
   | Colby College Astrophysics
-  | Joel Primack (uCSC)
+  | Joel Primack (UCSC)
   | Greg Snyder (STScI)
 This is a procedure for analyzing real and simulated galaxies using Source Extractor and GALFIT automatically.
 The pipeline involves `Preprocessing`_, `Modeling`_, `Summarizing`_, then `Plotting`_. There is also a list of
