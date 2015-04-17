@@ -1362,9 +1362,13 @@ def main(args, pb=None):
 															args[1:],
 															os.getcwd(),
 															imageFilenames, pb)
+		os.mkdir(os.path.join(collectiveDestDirectory, "results"))
 		os.system(" ".join(["echo", os.path.join(destDirectory, "*"), "|", 
 						"xargs", "mv", "-t", collectiveDestDirectory]))
 		os.system(" ".join(["rm -r", destDirectory]))
+		os.system(" ".join(["echo", os.path.join(collectiveDestDirectory, "V*"), "|", 
+						"xargs", "mv", "-t", 
+						os.path.join(collectiveDestDirectory, "results")]))
 	
 	# run the parallel version
 	else:
@@ -1394,10 +1398,14 @@ def main(args, pb=None):
 		destDirectories = set(destDirectories)
 		
 		# move all individual logResults into the new collective logResults folder
+		os.mkdir(os.path.join(collectiveDestDirectory, "results"))
 		for destDirectory in destDirectories:
 			os.system(" ".join(["echo", os.path.join(destDirectory, "*"), "|", 
 							"xargs", "mv", "-t", collectiveDestDirectory]))
-			os.system(" ".join(["rmdir", destDirectory]))
+			os.system(" ".join(["rm -r", destDirectory]))
+		os.system(" ".join(["echo", os.path.join(collectiveDestDirectory, "V*"), "|", 
+						"xargs", "mv", "-t", 
+						os.path.join(collectiveDestDirectory, "results")]))
 		
 	# end program run time, print total
 	elapsed = time.time() - startTime
