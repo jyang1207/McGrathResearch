@@ -1035,11 +1035,11 @@ class ModelGenerator:
 		os.system(" ".join(["mv", "galfit.01", self.galfit_single_result_filename]))
 		# TODO: untested 4/15/2015
 		if os.path.isfile("sigma.fits"):
-			print("simsigma found")
+			print("galfitsigma found, moving to "+self.sigmaImageFilename)
 			os.system(" ".join(["mv", "sigma.fits", 
 							os.path.join(self.destDirectory, self.sigmaImageFilename)]))
 		else:
-			print("no simsigma found")
+			print("no galfitsigma found, linking to "+self.sigmaImageFilename)
 			os.system(" ".join(["ln", "-s", self.sigmaImage, 
 							os.path.join(self.destDirectory, self.sigmaImageFilename)]))
 		
