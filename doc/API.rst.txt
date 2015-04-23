@@ -95,7 +95,7 @@ Run sumSimUtility_
 Plotting
 =======================
 Run plotSimUtility_
-  - ``python McGrathResearch/plotSimUtility.py summaries/summaryNoise.csv -d , -r -p vivian -x age -y ser``
+  - ``python McGrathResearch/src/plotSimUtility.py summaries/summaryNoise.csv -d , -r -p vivian -x age -y ser``
   -h                    show this help message and exit
   -m                    to plot MRP counterparts adjacent
   -r                    to indicate candelized results are being plotted
