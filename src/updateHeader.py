@@ -103,27 +103,25 @@ def updateHeaderSummary(simFilenames, sumLines, delim=","):
 					simHDUList = fits.open(simFilename)
 					simHeader = simHDUList[0].header
 					found = True
-					break
 				except:
 					print("failed to open sim file " + simFilename + 
 							" with fits")
-					break
-		if found:
-			print("found key "+key)
-		else:
-			print("no key " + key)
-			continue
-		try:
-			simHeader.set("MASS", mass, "mass of stars in units of stellar masses")
-			simHeader.set("SSFR", ssfr, "specific star formation rate per Gyr")
-			simHeader.set("SFR", sfr, "star formation rate per year")
-		except:
-			print("failed to write to sim header " + simFilename)
-			simHDUList.close()
-			continue
-			
-		simHDUList.writeto(simFilename, clobber=True)
-		simHDUList.close()
+					continue
+				try:
+					simHeader.set("MASS", mass, "mass of stars in units of stellar masses")
+					simHeader.set("SSFR", ssfr, "specific star formation rate per Gyr")
+					simHeader.set("SFR", sfr, "star formation rate per year")
+				except:
+					print("failed to write to sim header " + simFilename)
+					simHDUList.close()
+					continue
+					
+				simHDUList.writeto(simFilename, clobber=True)
+				simHDUList.close()
+			if found:
+				print("found key "+key)
+			else:
+				print("no key " + key)
 
 if __name__ == "__main__":
 
