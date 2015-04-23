@@ -567,8 +567,8 @@ def sum_galfit(resultFilename, models, imageHeader, delim, centerIDs, options):
 	# add in the invariant fields after all components are done
 	results = ""
 	for component in componentLists:
-		line = [outputFilename, component[0], galaxyID, haloID, timeA, age_gyr, timeZ, 
-			camera, filt] + component[1:] + [sky, sfr, ssfr, mass]
+		line = [outputFilename, component[0], galaxyID, haloID, timeA, age_gyr, 
+			timeZ, camera, filt] + component[1:] + [sky, sfr, ssfr, mass]
 		line = [str(x) for x in line]
 		results += delim.join(line) + "\n"
 		

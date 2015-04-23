@@ -549,7 +549,7 @@ if __name__ == "__main__":
 	fieldDescriptions['typ'] = 		['a10', 'Galaxy Type']
 	fieldDescriptions['id'] = 		['a10', 'Galaxy ID']
 	fieldDescriptions['hid'] = 		['a10', 'Halo ID']
-	fieldDescriptions['ts'] = 		['a10', 'Time Step (a)']
+	fieldDescriptions['ts'] = 		['f4', 'Time Step (a)']
 	fieldDescriptions['age'] = 		['f4', 'Time (Gyr)', 1.186, 8.628] # match to redshift
 	fieldDescriptions['red'] = 		['f4', 'Redshift (z)', 5, 0.6]
 	fieldDescriptions['cam'] = 		['i4', 'Camera Number']
