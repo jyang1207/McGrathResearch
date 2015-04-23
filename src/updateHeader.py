@@ -118,10 +118,10 @@ def updateHeaderSummary(simFilenames, sumLines, delim=","):
 					
 				simHDUList.writeto(simFilename, clobber=True)
 				simHDUList.close()
-			if found:
-				print("found key "+key)
-			else:
-				print("no key " + key)
+		if found:
+			print("found key "+key)
+		else:
+			print("no key " + key)
 
 if __name__ == "__main__":
 
