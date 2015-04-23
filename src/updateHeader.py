@@ -101,7 +101,7 @@ def updateHeaderSummary(simFilenames, sumLines, delim=","):
 				# attempt to open the sim file using fits and get the header dictionary
 				try:
 					simHDUList = fits.open(simFilename)
-					simHeader = simHDUList[0].header
+					simHeader = simHDUList[1].header
 					found = True
 				except:
 					print("failed to open sim file " + simFilename + 

@@ -399,10 +399,9 @@ def sum_galfit(resultFilename, models, imageHeader, delim, centerIDs, options):
 	# [VELA02MRP, 0.201015, 0002949, , skipir, CAMERA0-BROADBAND, F160W, simulation, bulge, multi.fits
 	#     0           1        2    3    4              5          6         7        8          9
 	
-	# variables to be parsed from the image header, default is zero
+	# variables to be parsed from the image header, default is zero or -99
 	kpcPerPixel = kpcPerPixelCandle = arcsecPerPixel = 0.0
 	timeZ = mass = sfr = ssfr = -99.0
-	print outputFilename + ": " + str("MASS" in imageHeader)
 	if "SCALESIM" in imageHeader:
 		kpcPerPixel = float(imageHeader["SCALESIM"])
 	if "PIX_NEW" in imageHeader:
@@ -417,6 +416,9 @@ def sum_galfit(resultFilename, models, imageHeader, delim, centerIDs, options):
 		sfr = float(imageHeader["SFR"])
 	if "SSFR" in imageHeader:
 		ssfr = float(imageHeader["SSFR"])
+		
+	# variables obtained from header, filename, or default in that order
+	# e.g. "VELA01"
 	if "GALAXYID" in imageHeader:
 		galaxyID = imageHeader["GALAXYID"]
 	else:
@@ -424,7 +426,7 @@ def sum_galfit(resultFilename, models, imageHeader, delim, centerIDs, options):
 			galaxyID = outputFilenameSplit[0]
 		except:
 			galaxyID = "-99.0"
-	# "VELA01"
+	# e.g. "0.110"
 	if "AVAL" in imageHeader:
 		timeA = imageHeader["AVAL"]
 	else:
@@ -432,7 +434,7 @@ def sum_galfit(resultFilename, models, imageHeader, delim, centerIDs, options):
 			timeA = "0."+outputFilenameSplit[1].split(".")[1] #could have a0.#, so split
 		except:
 			timeA = "-99.0"
-	# "0.110"
+	# e.g. "0002949"
 	if "HALOID" in imageHeader:
 		haloID = imageHeader["HALOID"]
 	else:
@@ -440,7 +442,7 @@ def sum_galfit(resultFilename, models, imageHeader, delim, centerIDs, options):
 			haloID = outputFilenameSplit[2]
 		except:
 			haloID = "-99.0"
-	# "0002949"
+	# e.g. "0"
 	if "CAMERA" in imageHeader:
 		camera = imageHeader["CAMERA"]
 	else:
@@ -448,10 +450,9 @@ def sum_galfit(resultFilename, models, imageHeader, delim, centerIDs, options):
 			camera = outputFilenameSplit[5]
 		except:
 			camera = "-99.0"
-	#reduce camera to just the number
+	# reduce camera to just the numeric characters
 	camera = "".join([c if c.isdigit() else "" for c in camera])
-	
-	# "0"
+	# e.g. "F125W"	
 	if "FILTER" in imageHeader:
 		filt = imageHeader["FILTER"]
 	else:
@@ -459,7 +460,6 @@ def sum_galfit(resultFilename, models, imageHeader, delim, centerIDs, options):
 			filt = outputFilenameSplit[6]
 		except:
 			filt = "-99.0"
-	# "F125W"	
 	
 	# try to compute redshift from aval
 	try:
