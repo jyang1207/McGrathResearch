@@ -403,15 +403,15 @@ def sum_galfit(resultFilename, models, imageHeader, delim, centerIDs, options):
 	kpcPerPixel = 0.0
 	timeZ = mass = sfr = ssfr = -99.0
 	if "SCALESIM" in imageHeader:
-		kpcPerPixel = imageHeader["SCALESIM"]
+		kpcPerPixel = float(imageHeader["SCALESIM"])
 	if "REDSHIFT" in imageHeader:
-		timeZ = imageHeader["REDSHIFT"]
+		timeZ = float(imageHeader["REDSHIFT"])
 	if "MASS" in imageHeader:
-		mass = imageHeader["MASS"]
+		mass = float(imageHeader["MASS"])
 	if "SFR" in imageHeader:
-		sfr = imageHeader["SFR"]
+		sfr = float(imageHeader["SFR"])
 	if "SSFR" in imageHeader:
-		ssfr = imageHeader["SSFR"]
+		ssfr = float(imageHeader["SSFR"])
 	if "GALAXYID" in imageHeader:
 		galaxyID = imageHeader["GALAXYID"]
 	else:
@@ -482,7 +482,7 @@ def sum_galfit(resultFilename, models, imageHeader, delim, centerIDs, options):
 	# for candelized images, use ned wright and constant scale factor for kpc
 	if options.candelized:
 		kpcPerPixel = kpcPerArcsec * 0.06
-		
+	print kpcPerPixel
 	# the individual component properties
 	componentList = []
 	

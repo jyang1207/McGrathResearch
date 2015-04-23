@@ -443,7 +443,7 @@ def vivianPlot(data, fieldDescriptions, xKey, yKey, galaxyName, redLow=None, red
 		rpCondition &= rpData["red"] > gname2redlow[galaxyName]
 		norpCondition &= norpData["red"] > gname2redlow[galaxyName]
 	except:
-		print("%s has no known lower redshift bound")
+		print("%s has no known lower redshift bound"%galaxyName)
 		pass
 	
 	s=5
@@ -901,7 +901,7 @@ if __name__ == "__main__":
 		subs = np.reshape(subs, (rows, cols))#TODO: to give 1 column 2 dimensions
 		for i in range(rows):
 			for j in range(cols):
-				title = "%.2f<z<%.2f"%redShifts[j] if not tbool else ""
+				title = "%.1f<z<%.1f"%redShifts[j] if not tbool else ""
 				if not i: subs[i, j].set_title(title)
 				vivianPlot(data, fieldDescriptions, xFieldName, yFieldName, 
 						options.galaxyNames[i], redShifts[j][0], redShifts[j][1],
