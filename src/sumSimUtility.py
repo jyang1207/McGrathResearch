@@ -290,13 +290,13 @@ def run_pyfits(multiFitsFilename):
 
 		# compute rff and store in model dictionary
 		if modelSum:
-			model["rff"] = str((residualSum - 0.8*sigmaSum) / modelSum)
+			model["rff"] = (residualSum - 0.8*sigmaSum) / modelSum
 		else:
-			model["rff"] = "0"
+			model["rff"] = 0
 			
 		# append completed model to list of model dictionaries and advance loop
 		resultModels.append(model)
-		compNum = compNum + 1
+		compNum += 1
 			
 	# compute the rff from the residual and image data
 	ellipImage.save(ellipImageName)
@@ -567,9 +567,10 @@ def sum_galfit(resultFilename, models, imageHeader, delim, centerIDs, options):
 	# add in the invariant fields after all components are done
 	results = ""
 	for component in componentLists:
-		results += delim.join([outputFilename, galaxyID, haloID,
-								timeA, age_gyr, timeZ, camera, filt] + 
-							component + [sky, sfr, ssfr, mass]) + "\n"
+		line = [outputFilename, galaxyID, haloID, timeA, age_gyr, timeZ, 
+			camera, filt] + component + [sky, sfr, ssfr, mass]
+		line = [str(x) for x in line]
+		results += delim.join(line) + "\n"
 		
 	# return resulting string
 	return results
