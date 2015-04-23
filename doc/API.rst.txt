@@ -61,6 +61,7 @@ Run simUtility_
       so it can be searched later (e.g. ``grep -i warning stdout.txt``)
     - For high resolution and/or many images, the ``-p`` flag is recommended to reduce runtime 
       but causes multithreading that is hard to cancel/abort and requires manual cleanup using the ``kill`` command
+      on the top level python process, after which all child processes should die as GALFIT finishes
   - Ctrl a, d to detatch from screen, ``screen -r`` to resume
   - To see progress, either use ``top`` or ``ps -ef`` (running processes) or ``ls _*/*single*param* | wc -l`` (number of images processed so far)
   -h                    show this help message and exit
