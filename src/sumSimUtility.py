@@ -567,8 +567,8 @@ def sum_galfit(resultFilename, models, imageHeader, delim, centerIDs, options):
 	# add in the invariant fields after all components are done
 	results = ""
 	for component in componentLists:
-		line = [outputFilename, galaxyID, haloID, timeA, age_gyr, timeZ, 
-			camera, filt] + component + [sky, sfr, ssfr, mass]
+		line = [outputFilename, component[0], galaxyID, haloID, timeA, age_gyr, timeZ, 
+			camera, filt] + component[1:] + [sky, sfr, ssfr, mass]
 		line = [str(x) for x in line]
 		results += delim.join(line) + "\n"
 		
@@ -636,7 +636,7 @@ def main(args, pb=None):
 	delim = options.delim
 	
 	# the summary file header
-	outFile.write(delim.join(["filename", "type", "galaxyID", "haloID"
+	outFile.write(delim.join(["filename", "type", "galaxyID", "haloID",
 							"timeStep", "age(GYr)", "redshift(z)", 
 							"camera", "filter",
 							"px(pixels)", "errpx(pixels)",
@@ -649,8 +649,9 @@ def main(args, pb=None):
 							"angle(deg)", "errangle(deg)",
 							"rff", "sky", "sfr", "ssfr", "mass"
 							]) + "\n" + 
-				delim.join(["string", "enum", "enum", "numeric", "numeric",
-						"numeric", "enum", "enum"]) + "\n")
+				delim.join(["string", "enum", "enum", "enum", 
+						"numeric", "numeric", "numeric", 
+						"enum", "enum"]) + "\n")
 	
 	# this loops through every result, writing summary to output
 	for resultFilename in resultFilenames:
