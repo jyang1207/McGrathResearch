@@ -440,9 +440,12 @@ def sum_galfit(resultFilename, models, imageHeader, delim, centerIDs, options):
 		camera = imageHeader["CAMERA"]
 	else:
 		try:
-			camera = outputFilenameSplit[5].split("-")[0].replace("CAMERA", "")
+			camera = outputFilenameSplit[5]
 		except:
 			camera = "-99.0"
+	#reduce camera to just the number
+	camera = "".join([c if c.isdigit() else "" for c in camera])
+	
 	# "0"
 	if "FILTER" in imageHeader:
 		filt = imageHeader["FILTER"]
@@ -482,7 +485,7 @@ def sum_galfit(resultFilename, models, imageHeader, delim, centerIDs, options):
 	# for candelized images, use ned wright and constant scale factor for kpc
 	if options.candelized:
 		kpcPerPixel = kpcPerArcsec * 0.06
-	print kpcPerPixel
+
 	# the individual component properties
 	componentList = []
 	
