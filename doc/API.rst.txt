@@ -78,6 +78,7 @@ Summarizing
 Make lists of results
   - ``echo /diskarrays/astro_array1/imtibbet/results/resultsNoiseMRP/results/*single*multi* | xargs ls > singleMultiFits.txt``
 Run sumSimUtility_
+  - Note that this takes a while depending on the number of images and if you want to see the progress include ``-v`` on the command line 
   - ``python McGrathResearch/src/sumSimUtility.py results/resultsNoiseMRP/singleMultiFits.txt -d , -r -o summaries/summaryNoise.csv``
   -h                    show this help message and exit
   -b                   if running on results of GALFIT bulge (two component)
