@@ -400,10 +400,15 @@ def sum_galfit(resultFilename, models, imageHeader, delim, centerIDs, options):
 	#     0           1        2    3    4              5          6         7        8          9
 	
 	# variables to be parsed from the image header, default is zero
-	kpcPerPixel = 0.0
+	kpcPerPixel = kpcPerPixelCandle = arcsecPerPixel = 0.0
 	timeZ = mass = sfr = ssfr = -99.0
+	print imageHeader
 	if "SCALESIM" in imageHeader:
 		kpcPerPixel = float(imageHeader["SCALESIM"])
+	if "PIX_NEW" in imageHeader:
+		arcsecPerPixel = float(imageHeader["PIX_NEW"])
+	if "SCALENEW" in imageHeader:
+		kpcPerPixelCandle = 0.001*float(imageHeader["SCALENEW"])
 	if "REDSHIFT" in imageHeader:
 		timeZ = float(imageHeader["REDSHIFT"])
 	if "MASS" in imageHeader:
@@ -482,9 +487,12 @@ def sum_galfit(resultFilename, models, imageHeader, delim, centerIDs, options):
 		kpcPerPixel = float(kpcPerPixel)
 	except:
 		kpcPerPixel = 0.0
+		
 	# for candelized images, use ned wright and constant scale factor for kpc
-	if options.candelized:
-		kpcPerPixel = kpcPerArcsec * 0.06
+	if options.candelized and not kpcPerPixelCandle:
+		kpcPerPixel = kpcPerArcsec * arcsecPerPixel
+	elif options.candelized:
+		kpcPerPixel = kpcPerPixelCandle
 
 	# the individual component properties
 	componentList = []
