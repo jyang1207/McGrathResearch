@@ -402,7 +402,7 @@ def sum_galfit(resultFilename, models, imageHeader, delim, centerIDs, options):
 	# variables to be parsed from the image header, default is zero
 	kpcPerPixel = kpcPerPixelCandle = arcsecPerPixel = 0.0
 	timeZ = mass = sfr = ssfr = -99.0
-	print "MASS" in imageHeader
+	print outputFilename + ": " + str("MASS" in imageHeader)
 	if "SCALESIM" in imageHeader:
 		kpcPerPixel = float(imageHeader["SCALESIM"])
 	if "PIX_NEW" in imageHeader:
