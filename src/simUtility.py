@@ -797,7 +797,7 @@ class ModelGenerator:
 			"						#Input data image block\n")
 		paramFile.write("B) " + ouputFilename + 
 			"						#Output data image block\n")
-		paramFile.write("C) " + self.sigmaImage + 
+		paramFile.write("C) none " + #self.sigmaImage + 
 			"						#Sigma image name (made from data if blank or 'none')\n")
 		paramFile.write("D) " + self.psf + 
 			"						#Input PSF image and (optional) diffusion kernel\n")
