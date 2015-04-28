@@ -382,7 +382,7 @@ def barroPlot(data):
 	xdata = np.log10(data["mass"][condition]/(data["rad"][condition]**(1.5)))
 	ydata = np.log10(data["ssfr"][condition])
 	plt.plot(xdata, ydata, "bs", ms=1)
-	#plt.xlim(9, 11.75)
+	plt.xlim(9, 11.75)
 	plt.ylim([-2.5, 1.5])
 	plt.gca().invert_yaxis()
 	plt.xlabel("$log(\Sigma)[M_{\odot}kpc^{-1.5}]$")
