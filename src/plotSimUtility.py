@@ -573,7 +573,7 @@ if __name__ == "__main__":
 	fieldDescriptions['rff'] = 		['f4', 'RFF', 0, 1]
 	fieldDescriptions['sky'] = 		['f4', 'sky value']
 	fieldDescriptions['sfr'] = 		['f4', 'SFR']
-	fieldDescriptions['ssfr'] = 	['f4', 'sSFR']
+	fieldDescriptions['ssfr'] = 	['f4', 'sSFR', 1.5, -2.5]
 	fieldDescriptions['mass'] = 	['f4', 'Mass']	
 	
 	# all of the fields for which there are lower and upper bounds for plotting
