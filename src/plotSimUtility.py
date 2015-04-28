@@ -378,7 +378,7 @@ def barroPlot(data):
 	condition &= data["mass"] > 0
 	condition &= data["cam"] == 1
 	condition &= (data["red"] > 1) & (data["red"] < 3) 
-	#condition &= (data["mass"] > 10**10.6) & (data["mass"] < 10**10.8)
+	condition &= (data["mass"] > 10**10.6) & (data["mass"] < 10**10.8)
 	xdata = np.log10(data["mass"][condition]/(data["rad"][condition]**(1.5)))
 	ydata = np.log10(data["ssfr"][condition])
 	plt.plot(xdata, ydata, "bs", ms=1)
