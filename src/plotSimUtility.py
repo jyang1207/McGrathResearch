@@ -570,7 +570,7 @@ if __name__ == "__main__":
 	fieldDescriptions['eba'] = 		['f4', 'Error in axis ratio', -error, error]
 	fieldDescriptions['pa'] = 		['f4', 'Position Angle (deg)', -180, 180]
 	fieldDescriptions['epa'] = 		['f4', 'Error in position angle (deg)', -error, error]
-	fieldDescriptions['rff'] = 		['f4', 'RFF']#, 0, 1]
+	fieldDescriptions['rff'] = 		['f4', 'RFF', -1, 1]
 	fieldDescriptions['sky'] = 		['f4', 'sky value']
 	fieldDescriptions['sfr'] = 		['f4', 'SFR']
 	fieldDescriptions['ssfr'] = 	['f4', 'sSFR', 0, 30]
