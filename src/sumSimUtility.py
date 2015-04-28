@@ -493,6 +493,7 @@ def sum_galfit(resultFilename, models, imageHeader, delim, centerIDs, options):
 		kpcPerPixel = kpcPerArcsec * arcsecPerPixel
 	elif options.candelized:
 		kpcPerPixel = kpcPerPixelCandle
+	print kpcPerPixel
 
 	# the individual component properties
 	componentList = []
