@@ -378,7 +378,7 @@ def barroPlot(data):
 	condition &= data["mass"] > 0
 	condition &= data["cam"] == 1
 	condition &= (data["red"] > 1) & (data["red"] < 3) 
-	condition &= (data["mass"] > 10**10.6) & (data["mass"] < 10**10.8)
+	#condition &= (data["mass"] > 10**10.6) & (data["mass"] < 10**10.8)
 	xdata = np.log10(data["mass"][condition]/(data["rad"][condition]**(1.5)))
 	ydata = np.log10(data["ssfr"][condition])
 	plt.plot(xdata, ydata, "bs", ms=1)
@@ -562,7 +562,7 @@ if __name__ == "__main__":
 	fieldDescriptions['emag'] = 	['f4', 'Error in magnitude', -error, error]
 	fieldDescriptions['rpix'] = 	['f4', r"$R_{eff}$ (pixels)", 0.5, 50]
 	fieldDescriptions['erpix'] = 	['f4', 'Error in radius (pixels)', -error, error]
-	fieldDescriptions['rad'] = 		['f4', r"$R_{eff}$ (kpc)", 0.0, 10.5]
+	fieldDescriptions['rad'] = 		['f4', r"$R_{eff}$ (kpc)"],#, 0.0, 10.5]
 	fieldDescriptions['erad'] = 	['f4', 'Error in radius (kpc)', -error, error]
 	fieldDescriptions['ser'] = 		['f4', 'Sersic (n)', 0.05, 8.5]
 	fieldDescriptions['eser'] = 	['f4', 'Error in sersic index', -error, error]
