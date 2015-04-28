@@ -383,7 +383,7 @@ def barroPlot(data):
 	ydata = np.log10(data["ssfr"][condition])
 	plt.plot(xdata, ydata, "bs", ms=1)
 	#plt.xlim(9, 11.75)
-	#plt.ylim([-2.5, 1.5])
+	plt.ylim([-2.5, 1.5])
 	plt.gca().invert_yaxis()
 	plt.xlabel("$log(\Sigma)[M_{\odot}kpc^{-1.5}]$")
 	plt.ylabel("$log(sSFR)[Gyr^{-1}]$")
@@ -909,15 +909,21 @@ if __name__ == "__main__":
 	
 		# set the x limits and labels
 		for j in range(cols):
-			subs[rows-1, j].set_xlim(fieldDescriptions[xFieldName][2], 
-						fieldDescriptions[xFieldName][3])
+			try:
+				subs[rows-1, j].set_xlim(fieldDescriptions[xFieldName][2], 
+							fieldDescriptions[xFieldName][3])
+			except:
+				print("letting matplotlib set x axis range")
 			subs[rows-1, j].set_xlabel(fieldDescriptions[xFieldName][1])
 			if not tbool: subs[rows-1, j].get_xticklabels()[0].set_visible(False)
 				
 		# set the y limits and labels
 		for i in range(rows):
-			subs[i, 0].set_ylim(fieldDescriptions[yFieldName][2], 
-						fieldDescriptions[yFieldName][3])
+			try:
+				subs[i, 0].set_ylim(fieldDescriptions[yFieldName][2], 
+							fieldDescriptions[yFieldName][3])
+			except:
+				print("letting matplotlib set y axis range")
 			subs[i, 0].set_ylabel(fieldDescriptions[yFieldName][1])
 			subs[i, 0].get_yticklabels()[0].set_visible(False)
 			rightAxis = subs[i, cols-1].twinx()
