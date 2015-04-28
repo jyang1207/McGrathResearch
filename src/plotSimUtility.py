@@ -562,7 +562,7 @@ if __name__ == "__main__":
 	fieldDescriptions['emag'] = 	['f4', 'Error in magnitude', -error, error]
 	fieldDescriptions['rpix'] = 	['f4', r"$R_{eff}$ (pixels)", 0.5, 50]
 	fieldDescriptions['erpix'] = 	['f4', 'Error in radius (pixels)', -error, error]
-	fieldDescriptions['rad'] = 		['f4', r"$R_{eff}$ (kpc)"]#, 0.0, 10.5]
+	fieldDescriptions['rad'] = 		['f4', r"$R_{eff}$ (kpc)", 0.0, 10.5]
 	fieldDescriptions['erad'] = 	['f4', 'Error in radius (kpc)', -error, error]
 	fieldDescriptions['ser'] = 		['f4', 'Sersic (n)', 0.05, 8.5]
 	fieldDescriptions['eser'] = 	['f4', 'Error in sersic index', -error, error]
