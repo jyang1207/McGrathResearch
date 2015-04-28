@@ -579,7 +579,7 @@ if __name__ == "__main__":
 	# all of the fields for which there are lower and upper bounds for plotting
 	fieldOptions = []
 	for fieldName in fieldDescriptions:
-		if len(fieldDescriptions[fieldName]) > 3:
+		if True:#len(fieldDescriptions[fieldName]) > 3:
 			fieldOptions.append(fieldName)
 		
 	# define the command line interface with simUtility.py
