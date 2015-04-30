@@ -77,6 +77,9 @@ Run simUtility_
 
 Summarizing
 =======================
+This step aggregates all of GALFIT's multiple extension cube outputs into a csv summary file by parsing the pyfits header.
+This is also the step where any features not outputted by GALFIT (e.g. RFF, radius(kpc), type, etc.) are calculated.
+RFF is computed over an elliptical region, which can be shown in a picture outputted (``ellipImage``)
 Make lists of results
   - ``echo /diskarrays/astro_array1/imtibbet/results/resultsNoiseMRP/results/*single*multi* | xargs ls > singleMultiFits.txt``
 Run sumSimUtility_
