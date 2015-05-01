@@ -432,7 +432,17 @@ def vivianPlot(data, fieldDescriptions, xKey, yKey, galaxyName, redLow=None, red
 				"VELA35":3.5}
 	
 	rpData = getGalaxies(fieldDescriptions.keys(), data, "central", galaxyName +"MRP")
+	e = 0
+	for x in rpData[xKey]:
+		if x == -99.0:
+			e+=1
+	print("rpData errors: %d" % e)
 	norpData = getGalaxies(fieldDescriptions.keys(), data, "central", galaxyName)
+	e = 0
+	for x in rpData[xKey]:
+		if x == -99.0:
+			e+=1
+	print("norpData errors: %d" % e)
 	
 	rpCondition = np.ones_like(rpData["red"], bool)
 	norpCondition = np.ones_like(norpData["red"], bool)

@@ -483,7 +483,6 @@ def sum_galfit(resultFilename, models, imageHeader, delim, centerIDs, options):
 	timeZ = str(timeZ)
 	
 	# for computing the radius in kpc from the radius in pixels
-	print kpcPerPixel
 	try:
 		kpcPerPixel = float(kpcPerPixel)
 	except:
@@ -494,7 +493,6 @@ def sum_galfit(resultFilename, models, imageHeader, delim, centerIDs, options):
 		kpcPerPixel = kpcPerArcsec * arcsecPerPixel
 	elif options.candelized:
 		kpcPerPixel = kpcPerPixelCandle
-	print kpcPerPixel
 
 	# the individual component properties
 	componentList = []
