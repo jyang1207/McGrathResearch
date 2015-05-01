@@ -1,0 +1,62 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module plotSimUtility</title>
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong>plotSimUtility</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/home/imtibbet/Documents/McGrathResearch/src/plotSimUtility.py">/home/imtibbet/Documents/McGrathResearch/src/plotSimUtility.py</a></font></td></tr></table>
+    <p><tt>Author:&nbsp;Ian&nbsp;Tibbetts<br>
+Co-authors:&nbsp;Prof.&nbsp;Elizabeth&nbsp;McGrath<br>
+Last&nbsp;Edited:&nbsp;8/13/2104<br>
+Colby&nbsp;College&nbsp;Astrophysics&nbsp;Research</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="math.html">math</a><br>
+<a href="numpy.html">numpy</a><br>
+</td><td width="25%" valign=top><a href="os.html">os</a><br>
+<a href="matplotlib.pyplot.html">matplotlib.pyplot</a><br>
+</td><td width="25%" valign=top><a href="matplotlib.ticker.html">matplotlib.ticker</a><br>
+</td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#eeaa77">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Functions</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#eeaa77"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt><a name="-barroPlot"><strong>barroPlot</strong></a>(data)</dt><dd><tt>create&nbsp;barro&nbsp;plot&nbsp;of&nbsp;log(ssfr)&nbsp;against&nbsp;log(mass/rad^1.5)</tt></dd></dl>
+ <dl><dt><a name="-calcBulgeToTotal"><strong>calcBulgeToTotal</strong></a>(bulgeMag, diskMag)</dt><dd><tt>method&nbsp;comment</tt></dd></dl>
+ <dl><dt><a name="-getBulgeErrors"><strong>getBulgeErrors</strong></a>(data, galaxyName)</dt><dd><tt>used&nbsp;by&nbsp;getGalaxies&nbsp;to&nbsp;only&nbsp;include&nbsp;bulge&nbsp;with&nbsp;disks&nbsp;and&nbsp;visa&nbsp;versa,&nbsp;prints&nbsp;excluded</tt></dd></dl>
+ <dl><dt><a name="-getBulgeToTotalRatios"><strong>getBulgeToTotalRatios</strong></a>(allFieldNames, data, galaxyName<font color="#909090">=''</font>)</dt><dd><tt>method&nbsp;comment</tt></dd></dl>
+ <dl><dt><a name="-getData"><strong>getData</strong></a>(summaryFilename, fieldDescriptions, delimiter<font color="#909090">=''</font>)</dt><dd><tt>given&nbsp;a&nbsp;summary&nbsp;file,&nbsp;return&nbsp;a&nbsp;formatted&nbsp;dictionary&nbsp;of&nbsp;field&nbsp;name&nbsp;to&nbsp;values<br>
+&nbsp;<br>
+parameter&nbsp;summaryFilenames&nbsp;-&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;summary&nbsp;filename&nbsp;containing&nbsp;the&nbsp;data&nbsp;in&nbsp;space&nbsp;delimited&nbsp;columns<br>
+parameter&nbsp;fieldDescriptions&nbsp;-&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;a&nbsp;list&nbsp;of&nbsp;tuples&nbsp;containing&nbsp;field&nbsp;names&nbsp;and&nbsp;format&nbsp;strings<br>
+returns&nbsp;-&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dictionary&nbsp;with&nbsp;field&nbsp;names&nbsp;as&nbsp;keys&nbsp;and&nbsp;array&nbsp;of&nbsp;field&nbsp;values&nbsp;as&nbsp;value</tt></dd></dl>
+ <dl><dt><a name="-getFormats"><strong>getFormats</strong></a>()</dt><dd><tt>generates&nbsp;a&nbsp;list&nbsp;of&nbsp;formats&nbsp;for&nbsp;plot&nbsp;markers&nbsp;of&nbsp;various&nbsp;shape&nbsp;and&nbsp;color</tt></dd></dl>
+ <dl><dt><a name="-getGalaxies"><strong>getGalaxies</strong></a>(allFieldNames, data, galaxyType<font color="#909090">='central'</font>, galaxyName<font color="#909090">=''</font>)</dt><dd><tt>filters&nbsp;data&nbsp;by&nbsp;type&nbsp;and&nbsp;name&nbsp;of&nbsp;galaxy,&nbsp;returning&nbsp;matching&nbsp;galaxies</tt></dd></dl>
+ <dl><dt><a name="-mozenaPlot"><strong>mozenaPlot</strong></a>(data)</dt><dd><tt>create&nbsp;the&nbsp;plot&nbsp;from&nbsp;Mark&nbsp;Mozena's&nbsp;thesis&nbsp;with&nbsp;given&nbsp;data<br>
+Sersic&nbsp;vs&nbsp;Reff&nbsp;vs&nbsp;Axis&nbsp;Ratio</tt></dd></dl>
+ <dl><dt><a name="-ned_wright_cosmology_calculator"><strong>ned_wright_cosmology_calculator</strong></a>(z)</dt><dd><tt><a href="http://www.astro.ucla.edu/~wright/CC.python">http://www.astro.ucla.edu/~wright/CC.python</a>&nbsp;<br>
+&nbsp;<br>
+parameter&nbsp;z&nbsp;-&nbsp;the&nbsp;redshift&nbsp;from&nbsp;which&nbsp;to&nbsp;calculate&nbsp;age&nbsp;in&nbsp;GYR&nbsp;and&nbsp;kpc&nbsp;per&nbsp;arcsec<br>
+returns&nbsp;[zage_Gyr,&nbsp;kpc_DA]</tt></dd></dl>
+ <dl><dt><a name="-plotAllCamera"><strong>plotAllCamera</strong></a>(data, fieldDescriptions, xFieldName<font color="#909090">='age'</font>, yFieldName<font color="#909090">='ser'</font>, curSubPlot<font color="#909090">=&lt;module 'matplotlib.pyplot' from '/usr/lib64/python2.7/site-packages/matplotlib/pyplot.pyc'&gt;</font>, includeLegend<font color="#909090">=True</font>, cameras<font color="#909090">='all'</font>)</dt><dd><tt>plot&nbsp;specified&nbsp;cameras&nbsp;in&nbsp;plot&nbsp;components&nbsp;and&nbsp;optionally&nbsp;include&nbsp;legend<br>
+plots&nbsp;the&nbsp;components&nbsp;given&nbsp;on&nbsp;the&nbsp;plot&nbsp;given,&nbsp;using&nbsp;fieldDescriptions&nbsp;to&nbsp;set&nbsp;axis&nbsp;scales</tt></dd></dl>
+ <dl><dt><a name="-plotAvgCamera"><strong>plotAvgCamera</strong></a>(data, fieldDescriptions, xFieldName<font color="#909090">='age'</font>, yFieldName<font color="#909090">='ser'</font>, curSubPlot<font color="#909090">=&lt;module 'matplotlib.pyplot' from '/usr/lib64/python2.7/site-packages/matplotlib/pyplot.pyc'&gt;</font>)</dt><dd><tt>average&nbsp;cameras&nbsp;in&nbsp;plot&nbsp;components&nbsp;and&nbsp;plot&nbsp;errorbars<br>
+plots&nbsp;the&nbsp;components&nbsp;given&nbsp;on&nbsp;the&nbsp;plot&nbsp;given,&nbsp;using&nbsp;fieldDescriptions&nbsp;to&nbsp;set&nbsp;axis&nbsp;scales</tt></dd></dl>
+ <dl><dt><a name="-vararg_callback"><strong>vararg_callback</strong></a>(option, opt_str, value, parser)</dt><dd><tt>allows&nbsp;for&nbsp;galaxy&nbsp;names&nbsp;to&nbsp;be&nbsp;given&nbsp;as&nbsp;an&nbsp;arbitrary&nbsp;list&nbsp;spearated&nbsp;by&nbsp;spaces</tt></dd></dl>
+ <dl><dt><a name="-vivianPlot"><strong>vivianPlot</strong></a>(data, fieldDescriptions, xKey, yKey, galaxyName, redLow<font color="#909090">=None</font>, redHigh<font color="#909090">=None</font>, sub<font color="#909090">=&lt;module 'matplotlib.pyplot' from '/usr/lib64/python2.7/site-packages/matplotlib/pyplot.pyc'&gt;</font>)</dt><dd><tt>create&nbsp;barro&nbsp;plot&nbsp;of&nbsp;log(ssfr)&nbsp;against&nbsp;log(mass/rad^1.5)</tt></dd></dl>
+</td></tr></table>
+</body></html>

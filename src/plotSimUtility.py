@@ -175,27 +175,30 @@ def getFormats():
 def calcBulgeToTotal(bulgeMag, diskMag):
 	'''
 	method comment
-	
-	bulgeToTotal = 1 / (np.power([10], [0.4 * (bulgeMag - diskMag)]) + 1)
-	return bulgeToTotal
 	'''
+	#===========================================================================
+	# bulgeToTotal = 1 / (np.power([10], [0.4 * (bulgeMag - diskMag)]) + 1)
+	# return bulgeToTotal
+	#===========================================================================
 	return
 
 # TODO not implemented after revision
 def getBulgeToTotalRatios(allFieldNames, data, galaxyName=""):
 	'''
 	method comment
-	
-	exclusionList = getBulgeErrors(data, galaxyName)
-	bulgeGalaxies = getGalaxies(allFieldNames, data, "bulge", galaxyName, exclusionList)
-	diskGalaxies = getGalaxies(allFieldNames, data, "disk", galaxyName, exclusionList)
-	for componentNumber, bulgeMag in enumerate(bulgeGalaxies['mag']):
-		diskMag = diskGalaxies['mag'][componentNumber]
-		bulgeToTotal = calcBulgeToTotal(bulgeMag, diskMag)
-		diskGalaxies['mag'][componentNumber] = bulgeToTotal
-	
-	return diskGalaxies
 	'''
+	#===========================================================================
+	# exclusionList = getBulgeErrors(data, galaxyName)
+	# bulgeGalaxies = getGalaxies(allFieldNames, data, "bulge", galaxyName, exclusionList)
+	# diskGalaxies = getGalaxies(allFieldNames, data, "disk", galaxyName, exclusionList)
+	# for componentNumber, bulgeMag in enumerate(bulgeGalaxies['mag']):
+	# 	diskMag = diskGalaxies['mag'][componentNumber]
+	# 	bulgeToTotal = calcBulgeToTotal(bulgeMag, diskMag)
+	# 	diskGalaxies['mag'][componentNumber] = bulgeToTotal
+	# 
+	# return diskGalaxies
+	#===========================================================================
+	
 	return
 	
 def getBulgeErrors(data, galaxyName):
@@ -431,31 +434,34 @@ def vivianPlot(data, fieldDescriptions, xKey, yKey, galaxyName, redLow=None, red
 				"VELA34":1.8,
 				"VELA35":3.5}
 	
-	print(galaxyName)
 	rpData = getGalaxies(fieldDescriptions.keys(), data, "central", galaxyName +"MRP")
-	e = 0
-	for x in rpData[xKey]:
-		if x == -99.0:
-			e+=1
-	print("rpData x errors: %d" % e)
-	e = 0
-	for i, y in enumerate(rpData[yKey]):
-		if y == -99.0:
-			e+=1
-			print(rpData["ts"][i])
-			print(rpData["cam"][i])
-	print("rpData y errors: %d" % e)
 	norpData = getGalaxies(fieldDescriptions.keys(), data, "central", galaxyName)
-	e = 0
-	for x in norpData[xKey]:
-		if x == -99.0:
-			e+=1
-	print("norpData x errors: %d" % e)
-	e = 0
-	for y in norpData[yKey]:
-		if y == -99.0:
-			e+=1
-	print("norpData y errors: %d" % e)
+
+	#===========================================================================
+	# print(galaxyName)
+	# e = 0
+	# for x in rpData[xKey]:
+	# 	if x == -99.0:
+	# 		e+=1
+	# print("rpData x errors: %d" % e)
+	# e = 0
+	# for i, y in enumerate(rpData[yKey]):
+	# 	if y == -99.0:
+	# 		e+=1
+	# 		print(rpData["ts"][i])
+	# 		print(rpData["cam"][i])
+	# print("rpData y errors: %d" % e)
+	# e = 0
+	# for x in norpData[xKey]:
+	# 	if x == -99.0:
+	# 		e+=1
+	# print("norpData x errors: %d" % e)
+	# e = 0
+	# for y in norpData[yKey]:
+	# 	if y == -99.0:
+	# 		e+=1
+	# print("norpData y errors: %d" % e)
+	#===========================================================================
 	
 	rpCondition = np.ones_like(rpData["red"], bool)
 	norpCondition = np.ones_like(norpData["red"], bool)

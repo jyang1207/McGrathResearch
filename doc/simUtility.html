@@ -1,0 +1,155 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module simUtility</title>
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong>simUtility</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/home/imtibbet/Documents/McGrathResearch/src/simUtility.py">/home/imtibbet/Documents/McGrathResearch/src/simUtility.py</a></font></td></tr></table>
+    <p><tt>Author:&nbsp;Ian&nbsp;Tibbetts<br>
+Co-authors:&nbsp;Prof.&nbsp;Elizabeth&nbsp;McGrath,&nbsp;Ariunjargal&nbsp;Bat-Erdene&nbsp;'15,&nbsp;Ryan&nbsp;Cole&nbsp;'15<br>
+Last&nbsp;Edited:&nbsp;3/9/2015<br>
+Colby&nbsp;College&nbsp;Astrophysics&nbsp;Research</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="astropy.io.fits.html">astropy.io.fits</a><br>
+<a href="multiprocessing.html">multiprocessing</a><br>
+</td><td width="25%" valign=top><a href="os.html">os</a><br>
+<a href="pprint.html">pprint</a><br>
+</td><td width="25%" valign=top><a href="sys.html">sys</a><br>
+<a href="time.html">time</a><br>
+</td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="simUtility.html#ModelGenerator">ModelGenerator</a>
+</font></dt></dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="ModelGenerator">class <strong>ModelGenerator</strong></a></font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>The&nbsp;controller&nbsp;class,&nbsp;which&nbsp;holds&nbsp;methods&nbsp;for&nbsp;analyzing&nbsp;simulations<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="ModelGenerator-__init__"><strong>__init__</strong></a>(self, callingDirectory<font color="#909090">=''</font>)</dt><dd><tt>constructor&nbsp;sets&nbsp;some&nbsp;initial&nbsp;field&nbsp;defaults</tt></dd></dl>
+
+<dl><dt><a name="ModelGenerator-defineGalfitFilenames"><strong>defineGalfitFilenames</strong></a>(self, image)</dt></dl>
+
+<dl><dt><a name="ModelGenerator-getCentermostID"><strong>getCentermostID</strong></a>(self, imageHeight, imageWidth, resultFilename)</dt><dd><tt>return&nbsp;the&nbsp;integer&nbsp;ID&nbsp;of&nbsp;the&nbsp;galaxy&nbsp;closest&nbsp;to&nbsp;the&nbsp;images&nbsp;center</tt></dd></dl>
+
+<dl><dt><a name="ModelGenerator-modelImage"><strong>modelImage</strong></a>(self, imageFilename)</dt><dd><tt>models&nbsp;a&nbsp;single&nbsp;image<br>
+&nbsp;<br>
+parameter&nbsp;imageFilename&nbsp;-&nbsp;the&nbsp;filename&nbsp;of&nbsp;the&nbsp;image&nbsp;to&nbsp;be&nbsp;modeled<br>
+&nbsp;<br>
+returns&nbsp;-&nbsp;the&nbsp;log&nbsp;string&nbsp;of&nbsp;the&nbsp;modeling</tt></dd></dl>
+
+<dl><dt><a name="ModelGenerator-parseGalfitOptions"><strong>parseGalfitOptions</strong></a>(self, parser, options)</dt><dd><tt>parses&nbsp;the&nbsp;galfit&nbsp;options&nbsp;from&nbsp;the&nbsp;command&nbsp;line&nbsp;and&nbsp;uses&nbsp;to<br>
+initialize&nbsp;fields&nbsp;of&nbsp;this&nbsp;class&nbsp;instance&nbsp;with&nbsp;options&nbsp;or&nbsp;defaults</tt></dd></dl>
+
+<dl><dt><a name="ModelGenerator-parseSextractorOptions"><strong>parseSextractorOptions</strong></a>(self, parser, realSextractor, sextractorOptions)</dt><dd><tt>parses&nbsp;the&nbsp;sextractor&nbsp;options&nbsp;from&nbsp;the&nbsp;command&nbsp;line&nbsp;and&nbsp;uses&nbsp;to<br>
+initialize&nbsp;fields&nbsp;with&nbsp;options&nbsp;or&nbsp;defaults</tt></dd></dl>
+
+<dl><dt><a name="ModelGenerator-run_galfit"><strong>run_galfit</strong></a>(self, image)</dt><dd><tt>runs&nbsp;galfit&nbsp;on&nbsp;the&nbsp;given&nbsp;image,&nbsp;using&nbsp;the&nbsp;image&nbsp;filename<br>
+to&nbsp;define&nbsp;the&nbsp;filenames&nbsp;of&nbsp;all&nbsp;of&nbsp;the&nbsp;resulting&nbsp;files<br>
+&nbsp;<br>
+parameter&nbsp;image&nbsp;-&nbsp;the&nbsp;image&nbsp;on&nbsp;which&nbsp;galfit&nbsp;will&nbsp;be&nbsp;run</tt></dd></dl>
+
+<dl><dt><a name="ModelGenerator-run_imhead"><strong>run_imhead</strong></a>(self, image)</dt><dd><tt>invokes&nbsp;the&nbsp;iraf&nbsp;method&nbsp;imhead&nbsp;on&nbsp;the&nbsp;given&nbsp;image's&nbsp;filename<br>
+parses&nbsp;the&nbsp;result&nbsp;to&nbsp;be&nbsp;stored&nbsp;in&nbsp;image&nbsp;instance&nbsp;given<br>
+&nbsp;<br>
+parameter&nbsp;image&nbsp;-&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;the&nbsp;image&nbsp;on&nbsp;which&nbsp;to&nbsp;invoke&nbsp;imexam</tt></dd></dl>
+
+<dl><dt><a name="ModelGenerator-run_sextractor"><strong>run_sextractor</strong></a>(self, image, configFilename)</dt><dd><tt>runs&nbsp;sextractor&nbsp;on&nbsp;the&nbsp;given&nbsp;image,&nbsp;producing<br>
+*.cat&nbsp;and&nbsp;*.fits&nbsp;in&nbsp;the&nbsp;destination&nbsp;directory,&nbsp;which&nbsp;<br>
+are&nbsp;galaxy&nbsp;info&nbsp;and&nbsp;the&nbsp;segmentation&nbsp;map,&nbsp;respectively.<br>
+&nbsp;<br>
+Updates&nbsp;the&nbsp;model&nbsp;of&nbsp;the&nbsp;SimImage&nbsp;instance&nbsp;passed&nbsp;by&nbsp;parameter<br>
+Updates&nbsp;segmentation&nbsp;map&nbsp;to&nbsp;remove&nbsp;the&nbsp;galaxy&nbsp;closest&nbsp;to&nbsp;(300,&nbsp;300)<br>
+&nbsp;<br>
+parameter&nbsp;image&nbsp;-<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;the&nbsp;image&nbsp;on&nbsp;which&nbsp;sextractor&nbsp;will&nbsp;be&nbsp;run<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+returns&nbsp;-&nbsp;boolean&nbsp;indicating&nbsp;if&nbsp;a&nbsp;necessary&nbsp;parameter&nbsp;is&nbsp;missing</tt></dd></dl>
+
+<dl><dt><a name="ModelGenerator-write_ds9_reg_file"><strong>write_ds9_reg_file</strong></a>(self, image)</dt><dd><tt>use&nbsp;the&nbsp;image&nbsp;to&nbsp;write&nbsp;a&nbsp;reg&nbsp;file&nbsp;for&nbsp;ds9,&nbsp;named&nbsp;according&nbsp;to&nbsp;the<br>
+image&nbsp;filename&nbsp;and&nbsp;with&nbsp;a&nbsp;circle&nbsp;for&nbsp;each&nbsp;model&nbsp;in&nbsp;the&nbsp;image's&nbsp;list<br>
+of&nbsp;models</tt></dd></dl>
+
+<dl><dt><a name="ModelGenerator-write_galfit_bulge_constraint"><strong>write_galfit_bulge_constraint</strong></a>(self, centerID, bulgeComponentID)</dt><dd><tt>simple&nbsp;method&nbsp;to&nbsp;write&nbsp;the&nbsp;constraint&nbsp;for&nbsp;given&nbsp;components&nbsp;position</tt></dd></dl>
+
+<dl><dt><a name="ModelGenerator-write_galfit_bulge_parameter"><strong>write_galfit_bulge_parameter</strong></a>(self, centerID)</dt><dd><tt>reads&nbsp;the&nbsp;logResults&nbsp;of&nbsp;the&nbsp;first&nbsp;run&nbsp;and&nbsp;writes&nbsp;it&nbsp;to&nbsp;a&nbsp;new&nbsp;file<br>
+with&nbsp;the&nbsp;output&nbsp;and&nbsp;constraint&nbsp;modified&nbsp;for&nbsp;bulge&nbsp;run&nbsp;and&nbsp;the<br>
+new&nbsp;bulge&nbsp;component&nbsp;appended</tt></dd></dl>
+
+<dl><dt><a name="ModelGenerator-write_galfit_parameter"><strong>write_galfit_parameter</strong></a>(self, image, paramFile, ouputFilename)</dt><dd><tt>writes&nbsp;the&nbsp;galfit&nbsp;parameter&nbsp;file&nbsp;for&nbsp;the&nbsp;single&nbsp;component<br>
+&nbsp;<br>
+parameter&nbsp;image&nbsp;-&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;the&nbsp;image&nbsp;on&nbsp;which&nbsp;galfit&nbsp;is&nbsp;being&nbsp;run<br>
+parameter&nbsp;paramFile&nbsp;-&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;the&nbsp;open&nbsp;file&nbsp;object&nbsp;to&nbsp;write&nbsp;parameter&nbsp;file&nbsp;contents&nbsp;to<br>
+parameter&nbsp;outputFilename&nbsp;-&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;the&nbsp;filename&nbsp;of&nbsp;the&nbsp;ouput&nbsp;that&nbsp;GALFIT&nbsp;will&nbsp;produce&nbsp;when&nbsp;running<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;the&nbsp;parameter&nbsp;file&nbsp;written&nbsp;by&nbsp;this&nbsp;method&nbsp;call</tt></dd></dl>
+
+<dl><dt><a name="ModelGenerator-write_sextractor_config_file"><strong>write_sextractor_config_file</strong></a>(self, fname)</dt><dd><tt>writes&nbsp;the&nbsp;sextractor&nbsp;configuration&nbsp;file</tt></dd></dl>
+
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#eeaa77">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Functions</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#eeaa77"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt><a name="-main"><strong>main</strong></a>(args, pb<font color="#909090">=None</font>)</dt><dd><tt>args&nbsp;-&nbsp;equivalent&nbsp;of&nbsp;sys.argv[1:]<br>
+runDir&nbsp;-&nbsp;the&nbsp;directory&nbsp;to&nbsp;set&nbsp;os&nbsp;to&nbsp;while&nbsp;modeling<br>
+callDir&nbsp;-&nbsp;the&nbsp;directory&nbsp;to&nbsp;reset&nbsp;os&nbsp;to&nbsp;upon&nbsp;completion<br>
+pb&nbsp;-&nbsp;optional&nbsp;tk.IntVar&nbsp;tracking&nbsp;progress,&nbsp;incremet&nbsp;after&nbsp;each&nbsp;file<br>
+parses&nbsp;the&nbsp;command&nbsp;line&nbsp;using&nbsp;the&nbsp;optparse&nbsp;package<br>
+NOTE:&nbsp;argparse&nbsp;is&nbsp;the&nbsp;current&nbsp;version&nbsp;as&nbsp;of&nbsp;python&nbsp;2.7,&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;but&nbsp;optparse&nbsp;is&nbsp;used&nbsp;to&nbsp;maintain&nbsp;better&nbsp;backwards&nbsp;compatibility</tt></dd></dl>
+ <dl><dt><a name="-mainExternal"><strong>mainExternal</strong></a>(args, runDir, callDir, pb<font color="#909090">=None</font>)</dt><dd><tt>args&nbsp;-&nbsp;equivalent&nbsp;of&nbsp;sys.argv[1:]<br>
+runDir&nbsp;-&nbsp;the&nbsp;directory&nbsp;to&nbsp;set&nbsp;os&nbsp;to&nbsp;while&nbsp;modeling<br>
+callDir&nbsp;-&nbsp;the&nbsp;directory&nbsp;to&nbsp;reset&nbsp;os&nbsp;to&nbsp;upon&nbsp;completion<br>
+pb&nbsp;-&nbsp;optional&nbsp;progress&nbsp;bar&nbsp;with&nbsp;maximum=num&nbsp;files):</tt></dd></dl>
+ <dl><dt><a name="-runModelGeneratorParallel"><strong>runModelGeneratorParallel</strong></a>(parameterList)</dt><dd><tt>uses&nbsp;the&nbsp;command&nbsp;line&nbsp;inputs&nbsp;gathered&nbsp;in&nbsp;__main__&nbsp;to&nbsp;create&nbsp;an<br>
+instance&nbsp;of&nbsp;the&nbsp;model&nbsp;generator&nbsp;class&nbsp;and&nbsp;invoke&nbsp;its&nbsp;methods<br>
+&nbsp;<br>
+parameter&nbsp;parameterList&nbsp;-<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;wierd&nbsp;way&nbsp;of&nbsp;receiving&nbsp;parameters&nbsp;needed&nbsp;to&nbsp;facilitate&nbsp;parallel<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;the&nbsp;elements&nbsp;are&nbsp;parser,&nbsp;options,&nbsp;sextractorKeywordOptions,&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;callingDirectory,&nbsp;and&nbsp;the&nbsp;image&nbsp;filename&nbsp;to&nbsp;model,&nbsp;respectively</tt></dd></dl>
+ <dl><dt><a name="-runModelGeneratorSerial"><strong>runModelGeneratorSerial</strong></a>(parser, options, sextractorKeywordOptions, callingDirectory, imageFilenames, pb<font color="#909090">=None</font>)</dt><dd><tt>uses&nbsp;the&nbsp;command&nbsp;line&nbsp;inputs&nbsp;gathered&nbsp;in&nbsp;__main__&nbsp;to&nbsp;create&nbsp;an<br>
+instance&nbsp;of&nbsp;the&nbsp;model&nbsp;generator&nbsp;class&nbsp;and&nbsp;invoke&nbsp;its&nbsp;methods<br>
+&nbsp;<br>
+parameter&nbsp;parser<br>
+parameter&nbsp;options<br>
+parameter&nbsp;sextractorKeywordOptions<br>
+parameter&nbsp;callingDirectory<br>
+parameter&nbsp;imageFilename<br>
+&nbsp;<br>
+returns&nbsp;-&nbsp;the&nbsp;list&nbsp;of&nbsp;lines&nbsp;to&nbsp;be&nbsp;written&nbsp;to&nbsp;the&nbsp;log</tt></dd></dl>
+</td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#55aa55">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Data</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#55aa55"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><strong>allowParallel</strong> = False</td></tr></table>
+</body></html>
