@@ -403,11 +403,11 @@ def sum_galfit(resultFilename, models, imageHeader, delim, centerIDs, options):
 	kpcPerPixel = kpcPerPixelCandle = arcsecPerPixel = 0.0
 	timeZ = mass = sfr = ssfr = -99.0
 	if "SCALESIM" in imageHeader:
-		kpcPerPixel = float(imageHeader["SCALESIM"])
-	if "PIX_NEW" in imageHeader:
-		arcsecPerPixel = float(imageHeader["PIX_NEW"])
+		kpcPerPixel = 0.001*float(imageHeader["SCALESIM"])
 	if "SCALENEW" in imageHeader:
 		kpcPerPixelCandle = 0.001*float(imageHeader["SCALENEW"])
+	if "PIX_NEW" in imageHeader:
+		arcsecPerPixel = float(imageHeader["PIX_NEW"])
 	if "REDSHIFT" in imageHeader:
 		timeZ = float(imageHeader["REDSHIFT"])
 	if "MASS" in imageHeader:
