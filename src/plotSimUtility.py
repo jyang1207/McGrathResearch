@@ -436,13 +436,23 @@ def vivianPlot(data, fieldDescriptions, xKey, yKey, galaxyName, redLow=None, red
 	for x in rpData[xKey]:
 		if x == -99.0:
 			e+=1
-	print("rpData errors: %d" % e)
+	print("rpData x errors: %d" % e)
+	e = 0
+	for y in rpData[yKey]:
+		if y == -99.0:
+			e+=1
+	print("rpData y errors: %d" % e)
 	norpData = getGalaxies(fieldDescriptions.keys(), data, "central", galaxyName)
 	e = 0
-	for x in rpData[xKey]:
+	for x in norpData[xKey]:
 		if x == -99.0:
 			e+=1
-	print("norpData errors: %d" % e)
+	print("norpData x errors: %d" % e)
+	e = 0
+	for y in norpData[yKey]:
+		if y == -99.0:
+			e+=1
+	print("norpData y errors: %d" % e)
 	
 	rpCondition = np.ones_like(rpData["red"], bool)
 	norpCondition = np.ones_like(norpData["red"], bool)
