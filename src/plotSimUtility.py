@@ -708,7 +708,8 @@ if __name__ == "__main__":
 	print("\t\t" + fieldDescriptions[xFieldName][1] + 
 			": num elements = " + str(len(data[xFieldName]))
 			+ (", min = %.2f" % np.min(data[xFieldName]))
-			+ (", max = %.2f" % np.max(data[xFieldName])))
+			+ (", max = %.2f" % np.max(data[xFieldName]))
+			+ (", median = %.2f" % np.median(data[xFieldName])))
 	print("\tgalaxy names:")
 	if not options.galaxyNames:
 		for galaxyName in np.unique(data["id"]):
