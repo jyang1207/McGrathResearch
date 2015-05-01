@@ -439,9 +439,11 @@ def vivianPlot(data, fieldDescriptions, xKey, yKey, galaxyName, redLow=None, red
 			e+=1
 	print("rpData x errors: %d" % e)
 	e = 0
-	for y in rpData[yKey]:
+	for i, y in enumerate(rpData[yKey]):
 		if y == -99.0:
 			e+=1
+			print(rpData["ts"][i])
+			print(rpData["cam"][i])
 	print("rpData y errors: %d" % e)
 	norpData = getGalaxies(fieldDescriptions.keys(), data, "central", galaxyName)
 	e = 0
