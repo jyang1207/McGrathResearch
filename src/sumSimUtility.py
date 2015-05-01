@@ -483,8 +483,8 @@ def sum_galfit(resultFilename, models, imageHeader, delim, centerIDs, options):
 	timeZ = str(timeZ)
 	
 	# for computing the radius in kpc from the radius in pixels
+	print kpcPerPixel
 	try:
-		print kpcPerPixel
 		kpcPerPixel = float(kpcPerPixel)
 	except:
 		kpcPerPixel = 0.0
