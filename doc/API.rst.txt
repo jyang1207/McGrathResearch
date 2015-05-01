@@ -12,6 +12,8 @@ Instructions for the GALFIT-SExtractor Modeling Pipeline
   | Joel Primack (UCSC)
   | Greg Snyder (STScI)
 This is a procedure for analyzing real and simulated galaxies using Source Extractor and GALFIT automatically.
+The command line examples are for 'real' images, i.e. appear as though taken by a telescope, which is indicated
+by the presence of the ``-r`` flag. Remove this option if working with high resolution simulation images.
 The pipeline involves `Preprocessing`_, `Modeling`_, `Summarizing`_, then `Plotting`_. There is also a list of
 `TODO`_ at the end, as well as some links on how to edit this document using `reStructuredText`_.
 
