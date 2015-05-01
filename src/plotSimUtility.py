@@ -701,10 +701,14 @@ if __name__ == "__main__":
 	print("\tData read successfully, using y fields:")
 	for yFieldName in yFields:
 		print("\t\t" + fieldDescriptions[yFieldName][1] + 
-				": num elements = " + str(len(data[yFieldName])))
+				": num elements = " + str(len(data[yFieldName]))
+				+ (", min = %.2f" % np.min(data[yFieldName]))
+				+ (", max = %.2f" % np.max(data[yFieldName])))
 	print("\tagainst x field:")
 	print("\t\t" + fieldDescriptions[xFieldName][1] + 
-			": num elements = " + str(len(data[xFieldName])))
+			": num elements = " + str(len(data[xFieldName]))
+			+ (", min = %.2f" % np.min(data[xFieldName]))
+			+ (", max = %.2f" % np.max(data[xFieldName])))
 	print("\tgalaxy names:")
 	if not options.galaxyNames:
 		for galaxyName in np.unique(data["id"]):
