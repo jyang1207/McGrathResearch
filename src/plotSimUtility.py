@@ -431,6 +431,7 @@ def vivianPlot(data, fieldDescriptions, xKey, yKey, galaxyName, redLow=None, red
 				"VELA34":1.8,
 				"VELA35":3.5}
 	
+	print(galaxyName)
 	rpData = getGalaxies(fieldDescriptions.keys(), data, "central", galaxyName +"MRP")
 	e = 0
 	for x in rpData[xKey]:
