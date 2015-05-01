@@ -703,7 +703,8 @@ if __name__ == "__main__":
 		print("\t\t" + fieldDescriptions[yFieldName][1] + 
 				": num elements = " + str(len(data[yFieldName]))
 				+ (", min = %.2f" % np.min(data[yFieldName]))
-				+ (", max = %.2f" % np.max(data[yFieldName])))
+				+ (", max = %.2f" % np.max(data[yFieldName]))
+				+ (", median = %.2f" % np.median(data[yFieldName])))
 	print("\tagainst x field:")
 	print("\t\t" + fieldDescriptions[xFieldName][1] + 
 			": num elements = " + str(len(data[xFieldName]))
