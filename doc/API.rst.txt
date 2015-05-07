@@ -202,7 +202,7 @@ To generate .html files
 
 .. _simUtility: https://github.com/imtibbet/McGrathResearch/blob/master/src/simUtility.py/
 .. _sumSimUtility: https://github.com/imtibbet/McGrathResearch/blob/master/src/sumSimUtility.py/
-.. _plotSimUtility: https://github.com/imtibbet/McGrathResearch/blob/master/src/simUtility.py/
+.. _plotSimUtility: https://github.com/imtibbet/McGrathResearch/blob/master/src/plotSimUtility.py/
 .. _updateHeader: https://github.com/imtibbet/McGrathResearch/blob/master/src/updateHeader.py/
 .. _genSigmaImages: https://github.com/imtibbet/McGrathResearch/blob/master/src/genSigmaImages.py/
 .. _dashboard: https://github.com/imtibbet/McGrathResearch/blob/master/src/dashboard.py/
