@@ -1,0 +1,2911 @@
+%PDF-1.4
+%“Œ‹ž ReportLab Generated PDF document http://www.reportlab.com
+1 0 obj
+<< /F1 2 0 R /F2 3 0 R /F3 4 0 R >>
+endobj
+2 0 obj
+<< /BaseFont /Helvetica /Encoding /WinAnsiEncoding /Name /F1 /Subtype /Type1 /Type /Font >>
+endobj
+3 0 obj
+<< /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding /Name /F2 /Subtype /Type1 /Type /Font >>
+endobj
+4 0 obj
+<< /BaseFont /Courier /Encoding /WinAnsiEncoding /Name /F3 /Subtype /Type1 /Type /Font >>
+endobj
+5 0 obj
+<< /Border [ 0 0 0 ] /Contents () /Dest [ 15 0 R /XYZ 62.69291 495.5236 0 ] /Rect [ 293.0488 540.0236 356.9588 552.0236 ] /Subtype /Link /Type /Annot >>
+endobj
+6 0 obj
+<< /Border [ 0 0 0 ] /Contents () /Dest [ 18 0 R /XYZ 62.69291 729.5236 0 ] /Rect [ 362.9347 540.0236 403.5047 552.0236 ] /Subtype /Link /Type /Annot >>
+endobj
+7 0 obj
+<< /Border [ 0 0 0 ] /Contents () /Dest [ 20 0 R /XYZ 62.69291 255.1236 0 ] /Rect [ 409.4807 540.0236 467.8207 552.0236 ] /Subtype /Link /Type /Annot >>
+endobj
+8 0 obj
+<< /Border [ 0 0 0 ] /Contents () /Dest [ 25 0 R /XYZ 62.69291 614.9236 0 ] /Rect [ 496.4527 540.0236 529.8027 552.0236 ] /Subtype /Link /Type /Annot >>
+endobj
+9 0 obj
+<< /Border [ 0 0 0 ] /Contents () /Dest [ 25 0 R /XYZ 62.69291 149.1236 0 ] /Rect [ 169.47 528.0236 200.4095 540.0236 ] /Subtype /Link /Type /Annot >>
+endobj
+10 0 obj
+<< /Border [ 0 0 0 ] /Contents () /Dest [ 25 0 R /XYZ 62.69291 224.1236 0 ] /Rect [ 62.69291 516.0236 137.1629 528.0236 ] /Subtype /Link /Type /Annot >>
+endobj
+11 0 obj
+<< /Border [ 0 0 0 ] /Contents () /Dest [ 36 0 R /XYZ 62.69291 276.5236 0 ] /Rect [ 126.0529 504.0236 152.7329 516.0236 ] /Subtype /Link /Type /Annot >>
+endobj
+12 0 obj
+<< /A << /S /URI /Type /Action /URI (https://github.com/imtibbet/McGrathResearch/blob/master/src/simUtility.py/) >> /Border [ 0 0 0 ] /Rect [ 258.2428 292.0236 320.6228 304.0236 ] /Subtype /Link /Type /Annot >>
+endobj
+13 0 obj
+<< /A << /S /URI /Type /Action /URI (https://github.com/imtibbet/McGrathResearch/blob/master/src/updateHeader.py/) >> /Border [ 0 0 0 ] /Rect [ 137.9229 166.0236 201.2929 178.0236 ] /Subtype /Link /Type /Annot >>
+endobj
+14 0 obj
+<< /A << /S /URI /Type /Action /URI (https://github.com/imtibbet/McGrathResearch/blob/master/src/genSigmaImages.py/) >> /Border [ 0 0 0 ] /Rect [ 126.2529 87.02362 204.0629 99.02362 ] /Subtype /Link /Type /Annot >>
+endobj
+15 0 obj
+<< /Annots [ 5 0 R 6 0 R 7 0 R 8 0 R 9 0 R 10 0 R 11 0 R 12 0 R 13 0 R 14 0 R ] /Contents 49 0 R /MediaBox [ 0 0 595.2756 841.8898 ] /Parent 48 0 R /Resources << /Font 1 0 R /ProcSet [ /PDF /Text /ImageB /ImageC /ImageI ] >> /Rotate 0 
+  /Trans <<  >> /Type /Page >>
+endobj
+16 0 obj
+<< /A << /S /URI /Type /Action /URI (https://github.com/imtibbet/McGrathResearch/blob/master/src/simUtility.py/) >> /Border [ 0 0 0 ] /Rect [ 355.2529 735.0236 395.2429 747.0236 ] /Subtype /Link /Type /Annot >>
+endobj
+17 0 obj
+<< /A << /S /URI /Type /Action /URI (https://github.com/imtibbet/McGrathResearch/blob/master/src/simUtility.py/) >> /Border [ 0 0 0 ] /Rect [ 84.91291 572.0236 129.9229 584.0236 ] /Subtype /Link /Type /Annot >>
+endobj
+18 0 obj
+<< /Annots [ 16 0 R 17 0 R ] /Contents 50 0 R /MediaBox [ 0 0 595.2756 841.8898 ] /Parent 48 0 R /Resources << /Font 1 0 R /ProcSet [ /PDF /Text /ImageB /ImageC /ImageI ] >> /Rotate 0 
+  /Trans <<  >> /Type /Page >>
+endobj
+19 0 obj
+<< /A << /S /URI /Type /Action /URI (https://github.com/imtibbet/McGrathResearch/blob/master/src/simUtility.py/) >> /Border [ 0 0 0 ] /Rect [ 84.91291 123.6236 151.5929 135.6236 ] /Subtype /Link /Type /Annot >>
+endobj
+20 0 obj
+<< /Annots [ 19 0 R ] /Contents 51 0 R /MediaBox [ 0 0 595.2756 841.8898 ] /Parent 48 0 R /Resources << /Font 1 0 R /ProcSet [ /PDF /Text /ImageB /ImageC /ImageI ] >> /Rotate 0 
+  /Trans <<  >> /Type /Page >>
+endobj
+21 0 obj
+<< /A << /S /URI /Type /Action /URI (https://github.com/imtibbet/McGrathResearch/blob/master/src/simUtility.py/) >> /Border [ 0 0 0 ] /Rect [ 84.91291 572.4236 149.3629 584.4236 ] /Subtype /Link /Type /Annot >>
+endobj
+22 0 obj
+<< /A << /S /URI /Type /Action /URI (https://github.com/ralsina/rst-cheatsheet/blob/master/rst-cheatsheet.rst) >> /Border [ 0 0 0 ] /Rect [ 85.69291 173.3736 398.0429 185.3736 ] /Subtype /Link /Type /Annot >>
+endobj
+23 0 obj
+<< /A << /S /URI /Type /Action /URI (https://gist.github.com/dupuy/1855764) >> /Border [ 0 0 0 ] /Rect [ 85.69291 155.3736 254.6829 167.3736 ] /Subtype /Link /Type /Annot >>
+endobj
+24 0 obj
+<< /A << /S /URI /Type /Action /URI (https://github.com/imtibbet/McGrathResearch/blob/master/src/simUtility.py/) >> /Border [ 0 0 0 ] /Rect [ 140.7029 97.62362 201.2529 109.6236 ] /Subtype /Link /Type /Annot >>
+endobj
+25 0 obj
+<< /Annots [ 21 0 R 22 0 R 23 0 R 24 0 R ] /Contents 52 0 R /MediaBox [ 0 0 595.2756 841.8898 ] /Parent 48 0 R /Resources << /Font 1 0 R /ProcSet [ /PDF /Text /ImageB /ImageC /ImageI ] >> /Rotate 0 
+  /Trans <<  >> /Type /Page >>
+endobj
+26 0 obj
+<< /A << /S /URI /Type /Action /URI (https://github.com/imtibbet/McGrathResearch/blob/master/src/simUtility.py/) >> /Border [ 0 0 0 ] /Rect [ 166.8329 720.0236 206.8229 732.0236 ] /Subtype /Link /Type /Annot >>
+endobj
+27 0 obj
+<< /A << /S /URI /Type /Action /URI (https://github.com/imtibbet/McGrathResearch/blob/master/src/simUtility.py/) >> /Border [ 0 0 0 ] /Rect [ 210.1629 684.0236 250.1529 696.0236 ] /Subtype /Link /Type /Annot >>
+endobj
+28 0 obj
+<< /A << /S /URI /Type /Action /URI (https://github.com/imtibbet/McGrathResearch/blob/master/src/simUtility.py/) >> /Border [ 0 0 0 ] /Rect [ 173.5029 564.0236 213.4929 576.0236 ] /Subtype /Link /Type /Annot >>
+endobj
+29 0 obj
+<< /A << /S /URI /Type /Action /URI (https://github.com/imtibbet/McGrathResearch/blob/master/src/simUtility.py/) >> /Border [ 0 0 0 ] /Rect [ 142.3829 480.0236 200.1629 492.0236 ] /Subtype /Link /Type /Annot >>
+endobj
+30 0 obj
+<< /A << /S /URI /Type /Action /URI (https://github.com/imtibbet/McGrathResearch/blob/master/src/simUtility.py/) >> /Border [ 0 0 0 ] /Rect [ 194.0629 462.0236 251.8429 474.0236 ] /Subtype /Link /Type /Annot >>
+endobj
+31 0 obj
+<< /A << /S /URI /Type /Action /URI (https://github.com/imtibbet/McGrathResearch/blob/master/src/simUtility.py/) >> /Border [ 0 0 0 ] /Rect [ 149.6129 444.0236 207.3929 456.0236 ] /Subtype /Link /Type /Annot >>
+endobj
+32 0 obj
+<< /A << /S /URI /Type /Action /URI (https://github.com/imtibbet/McGrathResearch/blob/master/src/simUtility.py/) >> /Border [ 0 0 0 ] /Rect [ 290.4329 423.0236 350.9829 435.0236 ] /Subtype /Link /Type /Annot >>
+endobj
+33 0 obj
+<< /A << /S /URI /Type /Action /URI (https://github.com/imtibbet/McGrathResearch/blob/master/src/simUtility.py/) >> /Border [ 0 0 0 ] /Rect [ 123.4829 408.0236 163.4729 420.0236 ] /Subtype /Link /Type /Annot >>
+endobj
+34 0 obj
+<< /A << /S /URI /Type /Action /URI (https://github.com/imtibbet/McGrathResearch/blob/master/src/dashboard.py/) >> /Border [ 0 0 0 ] /Rect [ 115.1429 372.0236 162.3929 384.0236 ] /Subtype /Link /Type /Annot >>
+endobj
+35 0 obj
+<< /A << /S /URI /Type /Action /URI (https://github.com/imtibbet/CS251/blob/master/src/display.py/) >> /Border [ 0 0 0 ] /Rect [ 197.4129 318.0236 228.5329 330.0236 ] /Subtype /Link /Type /Annot >>
+endobj
+36 0 obj
+<< /Annots [ 26 0 R 27 0 R 28 0 R 29 0 R 30 0 R 31 0 R 32 0 R 33 0 R 34 0 R 35 0 R ] /Contents 53 0 R /MediaBox [ 0 0 595.2756 841.8898 ] /Parent 48 0 R /Resources << /Font 1 0 R /ProcSet [ /PDF /Text /ImageB /ImageC /ImageI ] >> /Rotate 0 
+  /Trans <<  >> /Type /Page >>
+endobj
+37 0 obj
+<< /Outlines 39 0 R /PageLabels 54 0 R /PageMode /UseNone /Pages 48 0 R /Type /Catalog >>
+endobj
+38 0 obj
+<< /Author () /CreationDate (D:20150507090429+05'00') /Creator (\(unspecified\)) /Keywords () /Producer (ReportLab PDF Library - www.reportlab.com) /Subject (\(unspecified\)) 
+  /Title () >>
+endobj
+39 0 obj
+<< /Count 8 /First 40 0 R /Last 47 0 R /Type /Outlines >>
+endobj
+40 0 obj
+<< /Dest [ 15 0 R /XYZ 62.69291 765.0236 0 ] /Next 41 0 R /Parent 39 0 R /Title (Instructions for the GALFIT-SExtractor Modeling Pipeline) >>
+endobj
+41 0 obj
+<< /Dest [ 15 0 R /XYZ 62.69291 492.0236 0 ] /Next 42 0 R /Parent 39 0 R /Prev 40 0 R /Title (Preprocessing) >>
+endobj
+42 0 obj
+<< /Dest [ 18 0 R /XYZ 62.69291 726.0236 0 ] /Next 43 0 R /Parent 39 0 R /Prev 41 0 R /Title (Modeling) >>
+endobj
+43 0 obj
+<< /Dest [ 20 0 R /XYZ 62.69291 251.6236 0 ] /Next 44 0 R /Parent 39 0 R /Prev 42 0 R /Title (Summarizing) >>
+endobj
+44 0 obj
+<< /Dest [ 25 0 R /XYZ 62.69291 611.4236 0 ] /Next 45 0 R /Parent 39 0 R /Prev 43 0 R /Title (Plotting) >>
+endobj
+45 0 obj
+<< /Dest [ 25 0 R /XYZ 62.69291 220.6236 0 ] /Next 46 0 R /Parent 39 0 R /Prev 44 0 R /Title (reStructuredText) >>
+endobj
+46 0 obj
+<< /Dest [ 25 0 R /XYZ 62.69291 145.6236 0 ] /Next 47 0 R /Parent 39 0 R /Prev 45 0 R /Title (TODO) >>
+endobj
+47 0 obj
+<< /Dest [ 36 0 R /XYZ 62.69291 273.0236 0 ] /Parent 39 0 R /Prev 46 0 R /Title (Pydoc) >>
+endobj
+48 0 obj
+<< /Count 5 /Kids [ 15 0 R 18 0 R 20 0 R 25 0 R 36 0 R ] /Type /Pages >>
+endobj
+49 0 obj
+<< /Length 9037 >>
+stream
+1 0 0 1 0 0 cm  BT /F1 12 Tf 14.4 TL ET
+q
+1 0 0 1 62.69291 723.0236 cm
+q
+BT 1 0 0 1 0 24.5 Tm 21 TL /F2 17.5 Tf 0 0 0 rg (Instructions for the GALFIT-SExtractor Modeling) Tj T* (Pipeline) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 711.0236 cm
+Q
+q
+1 0 0 1 62.69291 654.0236 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 45 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F2 10 Tf 12 TL 31.37937 0 Td (Authors:) Tj T* -31.37937 0 Td ET
+Q
+Q
+q
+1 0 0 1 91.03937 51 cm
+Q
+q
+1 0 0 1 91.03937 39 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (Ian Tibbetts '15) Tj T* ET
+Q
+Q
+q
+1 0 0 1 91.03937 27 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (Jianing Yang '18) Tj T* ET
+Q
+Q
+q
+1 0 0 1 91.03937 15 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (Ryan Cole '15) Tj T* ET
+Q
+Q
+q
+1 0 0 1 91.03937 3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (Elizabeth McGrath) Tj T* ET
+Q
+Q
+q
+1 0 0 1 91.03937 3 cm
+Q
+q
+Q
+Q
+q
+1 0 0 1 62.69291 639.0236 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F2 10 Tf 12 TL 33.02937 0 Td (Version:) Tj T* -33.02937 0 Td ET
+Q
+Q
+q
+1 0 0 1 91.03937 3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (1.0 as of 4/14/2015) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 62.69291 594.0236 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 21 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 14 Tm /F2 10 Tf 12 TL 5.24937 0 Td (Acknowledgm) Tj T* 43.9 0 Td (ents:) Tj T* -49.14937 0 Td ET
+Q
+Q
+q
+1 0 0 1 91.03937 39 cm
+Q
+q
+1 0 0 1 91.03937 27 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (Colby College Astrophysics) Tj T* ET
+Q
+Q
+q
+1 0 0 1 91.03937 15 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (Joel Primack \(UCSC\)) Tj T* ET
+Q
+Q
+q
+1 0 0 1 91.03937 3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (Greg Snyder \(STScI\)) Tj T* ET
+Q
+Q
+q
+1 0 0 1 91.03937 3 cm
+Q
+q
+Q
+Q
+q
+1 0 0 1 62.69291 504.0236 cm
+q
+BT 1 0 0 1 0 74 Tm 2.876412 Tw 12 TL /F1 10 Tf 0 0 0 rg (This is a procedure for analyzing real and simulated galaxies using Source Extractor and GALFIT) Tj T* 0 Tw 2.651318 Tw (automatically. The command line examples are for 'real' images, i.e. appear as though taken by a) Tj T* 0 Tw 1.537633 Tw (telescope, which is indicated by the presence of the ) Tj /F3 10 Tf 0 0 0 rg (-r ) Tj /F1 10 Tf 0 0 0 rg (flag. Remove this option if working with high) Tj T* 0 Tw .415976 Tw (resolution simulation images. The pipeline involves ) Tj 0 0 .501961 rg (Preprocessing) Tj 0 0 0 rg (, ) Tj 0 0 .501961 rg (Modeling) Tj 0 0 0 rg (, ) Tj 0 0 .501961 rg (Summarizing) Tj 0 0 0 rg (, then ) Tj 0 0 .501961 rg (Plotting) Tj 0 0 0 rg (.) Tj T* 0 Tw 2.049513 Tw (There is also a list of ) Tj 0 0 .501961 rg (TODO ) Tj 0 0 0 rg (at the end, as well as some links on how to edit this document using) Tj T* 0 Tw .769269 Tw 0 0 .501961 rg (reStructuredText) Tj 0 0 0 rg (. Finally I have included examples of how to generate the python documentation for the) Tj T* 0 Tw (.py files using ) Tj 0 0 .501961 rg (pydoc) Tj 0 0 0 rg (.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 471.0236 cm
+q
+BT 1 0 0 1 0 3.5 Tm 21 TL /F2 17.5 Tf 0 0 0 rg (Preprocessing) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 417.0236 cm
+q
+BT 1 0 0 1 0 38 Tm .872988 Tw 12 TL /F1 10 Tf 0 0 0 rg (This is only necessary to do when starting to analyze new data, for example a set of images in a folder) Tj T* 0 Tw 1.230888 Tw (called ) Tj /F3 10 Tf 0 0 0 rg (/diskarrays/astro_array1/hydroart/) Tj /F1 10 Tf 0 0 0 rg (. Be sure to modify the code of the files referenced) Tj T* 0 Tw .627356 Tw (here to correctly work for the file naming scheme of your data, or modify the filenames to conform to the) Tj T* 0 Tw (expectations of this code.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 401.0236 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F2 10 Tf 12 TL (Duplicate data before modifying) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 332.0236 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 0 56 Tm  T* ET
+q
+1 0 0 1 20 60 cm
+Q
+q
+1 0 0 1 20 60 cm
+Q
+q
+1 0 0 1 20 36 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 9 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 10.5 0 Td (\177) Tj T* -10.5 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 14 Tm /F1 10 Tf 12 TL .351567 Tw (If you have enough disk space it is a good idea to first make a new directory and duplicate your) Tj T* 0 Tw (data) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 20 30 cm
+Q
+q
+1 0 0 1 20 18 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 10.5 0 Td (\177) Tj T* -10.5 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+BT 1 0 0 1 0 2 Tm 12 TL /F3 10 Tf 0 0 0 rg (mkdir) Tj ( ) Tj (/diskarrays/astro_array1/hydroartMod/) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 20 12 cm
+Q
+q
+1 0 0 1 20 0 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 10.5 0 Td (\177) Tj T* -10.5 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+BT 1 0 0 1 0 2 Tm 12 TL /F3 10 Tf 0 0 0 rg (cp) Tj ( ) Tj (-r) Tj ( ) Tj (/diskarrays/astro_array1/hydroart/*) Tj ( ) Tj (/diskarrays/astro_array1/hydroartMod/) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 20 0 cm
+Q
+q
+Q
+Q
+q
+1 0 0 1 62.69291 316.0236 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F2 10 Tf 12 TL (Update the fits headers) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 127.0236 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 0 176 Tm  T* ET
+q
+1 0 0 1 20 180 cm
+Q
+q
+1 0 0 1 20 180 cm
+Q
+q
+1 0 0 1 20 60 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 105 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 10.5 0 Td (\177) Tj T* -10.5 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 93 cm
+q
+BT 1 0 0 1 0 14 Tm 1.829983 Tw 12 TL /F1 10 Tf 0 0 0 rg (Check the sum_galfit method of ) Tj 0 0 .501961 rg (sumSimUtility ) Tj 0 0 0 rg (to determine what info is expected in the fits) Tj T* 0 Tw (header) Tj T* ET
+Q
+Q
+q
+1 0 0 1 23 87 cm
+Q
+q
+1 0 0 1 23 87 cm
+Q
+q
+1 0 0 1 23 63 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 9 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 10.5 0 Td (\177) Tj T* -10.5 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 14 Tm /F1 10 Tf 12 TL .287674 Tw (GALAXYID, HALOID, AVAL, FILTER, and CAMERA will be parsed from the filename if not) Tj T* 0 Tw (present in header) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 23 57 cm
+Q
+q
+1 0 0 1 23 45 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 10.5 0 Td (\177) Tj T* -10.5 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (If the filename is not in the expected format, these will be set to -99.0 in the summary) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 23 39 cm
+Q
+q
+1 0 0 1 23 27 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 10.5 0 Td (\177) Tj T* -10.5 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (SCALESIM is only for converting distances in high resolution images to kpc) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 23 21 cm
+Q
+q
+1 0 0 1 23 -3 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 9 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 10.5 0 Td (\177) Tj T* -10.5 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 14 Tm /F1 10 Tf 12 TL 1.06811 Tw (REDSHIFT, MASS, SFR, and SSFR will be set to -99.0 in the summary if not present in) Tj T* 0 Tw (header) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+Q
+q
+Q
+Q
+q
+1 0 0 1 20 54 cm
+Q
+q
+1 0 0 1 20 42 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 10.5 0 Td (\177) Tj T* -10.5 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+BT 1 0 0 1 0 2 Tm 12 TL /F1 10 Tf 0 0 0 rg (Modify ) Tj 0 0 .501961 rg (updateHeader ) Tj 0 0 0 rg (to populate any missing fields \(clobber=True to overrwrite\)) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 20 36 cm
+Q
+q
+1 0 0 1 20 0 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 21 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 10.5 0 Td (\177) Tj T* -10.5 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+BT 1 0 0 1 0 26 Tm 12 TL /F1 10 Tf 0 0 0 rg (eg.) Tj T* 1 Tw /F3 10 Tf 0 0 0 rg (python) Tj ( ) Tj (McGrathResearch/src/updateHeader.py) Tj ( ) Tj (run/images/160withMRPsimImages.txt) Tj ( ) Tj (summaries/moody_sim_parameters.cat.txt) Tj T* 0 Tw /F1 10 Tf 0 0 0 rg (to update mass, sfr, ssfr) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 20 0 cm
+Q
+q
+Q
+Q
+q
+1 0 0 1 62.69291 111.0236 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F2 10 Tf 12 TL (Generate sigma images) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 84.02362 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 0 14 Tm  T* ET
+q
+1 0 0 1 20 18 cm
+Q
+q
+1 0 0 1 20 18 cm
+Q
+q
+1 0 0 1 20 6 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 10.5 0 Td (\177) Tj T* -10.5 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+BT 1 0 0 1 0 2 Tm 12 TL /F1 10 Tf 0 0 0 rg (Use ) Tj 0 0 .501961 rg (genSigmaImages ) Tj 0 0 0 rg (to create sigma images for each of the images in your data) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 20 0 cm
+Q
+q
+Q
+Q
+ 
+endstream
+endobj
+50 0 obj
+<< /Length 3166 >>
+stream
+1 0 0 1 0 0 cm  BT /F1 12 Tf 14.4 TL ET
+q
+1 0 0 1 62.69291 738.0236 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 0 14 Tm  T* ET
+q
+1 0 0 1 20 0 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 9 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 10.5 0 Td (\177) Tj T* -10.5 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+BT 1 0 0 1 0 14 Tm .999318 Tw 12 TL /F1 10 Tf 0 0 0 rg (If the GALFIT generated data is good enough, skip this and GALFIT will output the generated) Tj T* 0 Tw (sigma images and include each of them in the results of ) Tj 0 0 .501961 rg (simUtility) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 20 0 cm
+Q
+q
+Q
+Q
+q
+1 0 0 1 62.69291 705.0236 cm
+q
+BT 1 0 0 1 0 3.5 Tm 21 TL /F2 17.5 Tf 0 0 0 rg (Modeling) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 687.0236 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F2 10 Tf 12 TL (Make lists of images) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 588.0236 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 0 86 Tm  T* ET
+q
+1 0 0 1 20 90 cm
+Q
+q
+1 0 0 1 20 90 cm
+Q
+q
+1 0 0 1 20 66 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 9 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 10.5 0 Td (\177) Tj T* -10.5 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+BT 1 0 0 1 0 14 Tm 1.704269 Tw 12 TL /F1 10 Tf 0 0 0 rg (Using ) Tj /F3 10 Tf 0 0 0 rg (echo ) Tj /F1 10 Tf 0 0 0 rg (and piping into ) Tj /F3 10 Tf 0 0 0 rg (xargs) Tj ( ) Tj (ls ) Tj /F1 10 Tf 0 0 0 rg (\(below\) prevents the overflow that can occur when) Tj T* 0 Tw (using ) Tj /F3 10 Tf 0 0 0 rg (ls ) Tj /F1 10 Tf 0 0 0 rg (alone.) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 20 60 cm
+Q
+q
+1 0 0 1 20 48 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 10.5 0 Td (\177) Tj T* -10.5 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+BT 1 0 0 1 0 2 Tm 12 TL /F3 10 Tf 0 0 0 rg (echo) Tj ( ) Tj (/diskarrays/astro_array1/hydroartMod/VELA[01][2345]*/*.[^01]*/images/*F160W*_noise.fits) Tj ( ) Tj (|) Tj ( ) Tj (xargs) Tj ( ) Tj (ls) Tj ( ) Tj (>) Tj ( ) Tj (160noiseImages.txt) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 20 42 cm
+Q
+q
+1 0 0 1 20 18 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 9 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 10.5 0 Td (\177) Tj T* -10.5 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+BT 1 0 0 1 0 14 Tm 2.448555 Tw 12 TL /F1 10 Tf 0 0 0 rg (If regular expressions become too much work, the ) Tj /F3 10 Tf 0 0 0 rg (>) Tj (> ) Tj /F1 10 Tf 0 0 0 rg (\(below\) can be used to repeatedly) Tj T* 0 Tw (append convenient chunks of images.) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 20 12 cm
+Q
+q
+1 0 0 1 20 0 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 10.5 0 Td (\177) Tj T* -10.5 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+BT 1 0 0 1 0 2 Tm 12 TL /F3 10 Tf 0 0 0 rg (echo) Tj ( ) Tj (/diskarrays/astro_array1/hydroartMod/VELA2[678]*/*.[^01]*/images/*F160W*_noise.fits) Tj ( ) Tj (|) Tj ( ) Tj (xargs) Tj ( ) Tj (ls) Tj ( ) Tj (>) Tj (>) Tj ( ) Tj (160noiseImages.txt) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 20 0 cm
+Q
+q
+Q
+Q
+q
+1 0 0 1 62.69291 572.0236 cm
+q
+BT 1 0 0 1 0 2 Tm 12 TL /F2 10 Tf 0 0 0 rg (Run ) Tj 0 0 .501961 rg (simUtility) Tj T* ET
+Q
+Q
+ 
+endstream
+endobj
+51 0 obj
+<< /Length 11041 >>
+stream
+1 0 0 1 0 0 cm  BT /F1 12 Tf 14.4 TL ET
+q
+1 0 0 1 62.69291 263.6236 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 0 488.4 Tm  T* ET
+q
+1 0 0 1 20 492.4 cm
+Q
+q
+1 0 0 1 20 492.4 cm
+Q
+q
+1 0 0 1 20 468.4 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 9 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 10.5 0 Td (\177) Tj T* -10.5 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+BT 1 0 0 1 0 14 Tm 3.172706 Tw 12 TL /F1 10 Tf 0 0 0 rg (Create a directory ) Tj /F3 10 Tf 0 0 0 rg (requiredFiles ) Tj /F1 10 Tf 0 0 0 rg (and put in the files ) Tj /F3 10 Tf 0 0 0 rg (default.nnw) Tj /F1 10 Tf 0 0 0 rg (, ) Tj /F3 10 Tf 0 0 0 rg (sex.conv) Tj /F1 10 Tf 0 0 0 rg (, and) Tj T* 0 Tw /F3 10 Tf 0 0 0 rg (sex.param ) Tj /F1 10 Tf 0 0 0 rg (inside) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 20 462.4 cm
+Q
+q
+1 0 0 1 20 438.4 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 9 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 10.5 0 Td (\177) Tj T* -10.5 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+BT 1 0 0 1 0 14 Tm 13.61122 Tw 12 TL /F1 10 Tf 0 0 0 rg (Navigate to the directory containing the ) Tj /F3 10 Tf 0 0 0 rg (requiredFiles ) Tj /F1 10 Tf 0 0 0 rg (directory, eg.) Tj T* 0 Tw /F3 10 Tf 0 0 0 rg (cd) Tj ( ) Tj (/diskarrays/astro_array1/imtibbet/run/) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 20 432.4 cm
+Q
+q
+1 0 0 1 20 408.4 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 9 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 10.5 0 Td (\177) Tj T* -10.5 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+BT 1 0 0 1 0 14 Tm 2.30936 Tw 12 TL /F1 10 Tf 0 0 0 rg (Use the ) Tj /F3 10 Tf 0 0 0 rg (screen ) Tj /F1 10 Tf 0 0 0 rg (command to make a new terminal session that can later be sent to the) Tj T* 0 Tw (background) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 20 402.4 cm
+Q
+q
+1 0 0 1 20 240.4 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 147 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 10.5 0 Td (\177) Tj T* -10.5 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 147 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (Run the modeling program) Tj T* ET
+Q
+Q
+q
+1 0 0 1 23 141 cm
+Q
+q
+1 0 0 1 23 141 cm
+Q
+q
+1 0 0 1 23 114 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 12 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 10.5 0 Td (\177) Tj T* -10.5 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 12 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F2 10 Tf 12 TL (Candelized) Tj T* ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 0 2 Tm  T* ET
+q
+1 0 0 1 20 0 cm
+q
+BT 1 0 0 1 0 2 Tm 12 TL /F3 10 Tf 0 0 0 rg (python) Tj ( ) Tj (/diskarrays/astro_array1/imtibbet/McGrathResearch/src/simUtility.py) Tj ( ) Tj (160noiseImages.txt) Tj ( ) Tj (-r) Tj ( ) Tj (-p) Tj ( ) Tj (--psf) Tj ( ) Tj (psf/gs_wide_f160w_v0.5_psf.fits) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 23 108 cm
+Q
+q
+1 0 0 1 23 81 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 12 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 10.5 0 Td (\177) Tj T* -10.5 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 12 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F2 10 Tf 12 TL (Simulation) Tj T* ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 0 2 Tm  T* ET
+q
+1 0 0 1 20 0 cm
+q
+BT 1 0 0 1 0 2 Tm 12 TL /F3 10 Tf 0 0 0 rg (python) Tj ( ) Tj (/diskarrays/astro_array1/imtibbet/McGrathResearch/src/simUtility.py) Tj ( ) Tj (160simImages.txt) Tj ( ) Tj (-b) Tj ( ) Tj (-p) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 23 75 cm
+Q
+q
+1 0 0 1 23 51 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 9 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 10.5 0 Td (\177) Tj T* -10.5 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+BT 1 0 0 1 0 14 Tm .231318 Tw 12 TL /F1 10 Tf 0 0 0 rg (Send the command line output to stdout.txt by adding ) Tj /F3 10 Tf 0 0 0 rg (>) Tj ( ) Tj (stdout.txt ) Tj /F1 10 Tf 0 0 0 rg (to the end of either) Tj T* 0 Tw (so it can be searched later \(e.g. ) Tj /F3 10 Tf 0 0 0 rg (grep) Tj ( ) Tj (-i) Tj ( ) Tj (warning) Tj ( ) Tj (stdout.txt) Tj /F1 10 Tf 0 0 0 rg (\)) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 23 45 cm
+Q
+q
+1 0 0 1 23 -3 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 33 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 10.5 0 Td (\177) Tj T* -10.5 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+BT 1 0 0 1 0 38 Tm 1.08229 Tw 12 TL /F1 10 Tf 0 0 0 rg (For high resolution and/or many images, the ) Tj /F3 10 Tf 0 0 0 rg (-p ) Tj /F1 10 Tf 0 0 0 rg (flag is recommended to reduce runtime) Tj T* 0 Tw .90998 Tw (but causes multithreading that is hard to cancel/abort and requires manual cleanup using) Tj T* 0 Tw .107126 Tw (the ) Tj /F3 10 Tf 0 0 0 rg (kill ) Tj /F1 10 Tf 0 0 0 rg (command on the top level python process, after which all child processes should) Tj T* 0 Tw (die as GALFIT finishes) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+Q
+q
+Q
+Q
+q
+1 0 0 1 20 234.4 cm
+Q
+q
+1 0 0 1 20 222.4 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 10.5 0 Td (\177) Tj T* -10.5 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+BT 1 0 0 1 0 2 Tm 12 TL /F1 10 Tf 0 0 0 rg (Ctrl a, d to detatch from screen, ) Tj /F3 10 Tf 0 0 0 rg (screen) Tj ( ) Tj (-r ) Tj /F1 10 Tf 0 0 0 rg (to resume) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 20 216.4 cm
+Q
+q
+1 0 0 1 20 192.4 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 9 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 10.5 0 Td (\177) Tj T* -10.5 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+BT 1 0 0 1 0 14 Tm 11.33543 Tw 12 TL /F1 10 Tf 0 0 0 rg (To see progress, either use ) Tj /F3 10 Tf 0 0 0 rg (top ) Tj /F1 10 Tf 0 0 0 rg (or ) Tj /F3 10 Tf 0 0 0 rg (ps) Tj ( ) Tj (-ef ) Tj /F1 10 Tf 0 0 0 rg (\(running processes\) or) Tj T* 0 Tw /F3 10 Tf 0 0 0 rg (ls) Tj ( ) Tj (_*/*single*param*) Tj ( ) Tj (|) Tj ( ) Tj (wc) Tj ( ) Tj (-l ) Tj /F1 10 Tf 0 0 0 rg (\(number of images processed so far\)) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 20 192.4 cm
+Q
+q
+1 0 0 1 20 177.2 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 3 cm
+q
+q
+1 0 0 1 0 0 cm
+q
+1 0 0 1 .1 .1 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F3 10 Tf 12 TL (-h) Tj T* ET
+Q
+Q
+Q
+Q
+Q
+q
+1 0 0 1 242.7449 3.2 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (show this help message and exit) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 20 150.2 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 14.8 cm
+q
+q
+1 0 0 1 0 0 cm
+q
+1 0 0 1 .1 .1 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F3 10 Tf 12 TL (-b) Tj T* ET
+Q
+Q
+Q
+Q
+Q
+q
+1 0 0 1 242.7449 3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 14 Tm /F1 10 Tf 12 TL 2.21436 Tw (include to run a GALFIT bulge fit after the) Tj T* 0 Tw (initial galaxy fit) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 20 123.2 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 14.8 cm
+q
+q
+1 0 0 1 0 0 cm
+q
+1 0 0 1 .1 .1 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F3 10 Tf 12 TL (-g) Tj T* ET
+Q
+Q
+Q
+Q
+Q
+q
+1 0 0 1 242.7449 3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 14 Tm /F1 10 Tf 12 TL 6.434976 Tw (include to suppress running galfit after) Tj T* 0 Tw (Source-Extractor) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 20 96.2 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 14.8 cm
+q
+q
+1 0 0 1 0 0 cm
+q
+1 0 0 1 .1 .1 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F3 10 Tf 12 TL (-p) Tj T* ET
+Q
+Q
+Q
+Q
+Q
+q
+1 0 0 1 242.7449 3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 14 Tm /F1 10 Tf 12 TL 2.030814 Tw (include to run images in parallel, otherwise) Tj T* 0 Tw (series) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 20 69.2 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 14.8 cm
+q
+q
+1 0 0 1 0 0 cm
+q
+1 0 0 1 .1 .1 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F3 10 Tf 12 TL (-r) Tj T* ET
+Q
+Q
+Q
+Q
+Q
+q
+1 0 0 1 242.7449 3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 14 Tm /F1 10 Tf 12 TL 5.882976 Tw (include to run Source-Extractor for real) Tj T* 0 Tw (images, otherwise sim images assumed) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 20 42.2 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 14.8 cm
+q
+q
+1 0 0 1 0 0 cm
+q
+1 0 0 1 .1 .1 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F3 10 Tf 12 TL (--mpz=MPZ) Tj T* ET
+Q
+Q
+Q
+Q
+Q
+q
+1 0 0 1 242.7449 3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 14 Tm /F1 10 Tf 12 TL 1.654976 Tw (set the magnitude photometric zeropoint for) Tj T* 0 Tw (GALFIT to use [default: 26.23]) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 20 15.2 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 14.8 cm
+q
+q
+1 0 0 1 0 0 cm
+q
+1 0 0 1 .1 .1 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F3 10 Tf 12 TL (--plate=Plate) Tj T* ET
+Q
+Q
+Q
+Q
+Q
+q
+1 0 0 1 242.7449 3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 14 Tm /F1 10 Tf 12 TL .386412 Tw (set the plate scale for GALFIT to use[default:) Tj T* 0 Tw (0.06]) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 20 0 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 3 cm
+q
+q
+1 0 0 1 0 0 cm
+q
+1 0 0 1 .1 .1 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F3 10 Tf 12 TL (--psf=PSF) Tj T* ET
+Q
+Q
+Q
+Q
+Q
+q
+1 0 0 1 242.7449 3.2 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (set the file for GALFIT to use as a PSF) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 62.69291 230.6236 cm
+q
+BT 1 0 0 1 0 3.5 Tm 21 TL /F2 17.5 Tf 0 0 0 rg (Summarizing) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 176.6236 cm
+q
+BT 1 0 0 1 0 38 Tm .729985 Tw 12 TL /F1 10 Tf 0 0 0 rg (This step aggregates all of GALFIT's multiple extension cube outputs into a csv summary file by parsing) Tj T* 0 Tw 3.38311 Tw (the pyfits header. This is also the step where any features not outputted by GALFIT \(e.g. RFF,) Tj T* 0 Tw .277045 Tw (radius\(kpc\), type, etc.\) are calculated. RFF is computed over an elliptical region, which can be shown in a) Tj T* 0 Tw (picture outputted \() Tj /F3 10 Tf 0 0 0 rg (ellipImage) Tj /F1 10 Tf 0 0 0 rg (\).) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 160.6236 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F2 10 Tf 12 TL (Make lists of results) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 139.6236 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 0 8 Tm  T* ET
+q
+1 0 0 1 20 12 cm
+Q
+q
+1 0 0 1 20 12 cm
+Q
+q
+1 0 0 1 20 0 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 10.5 0 Td (\177) Tj T* -10.5 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+BT 1 0 0 1 0 2 Tm 12 TL /F3 10 Tf 0 0 0 rg (echo) Tj ( ) Tj (/diskarrays/astro_array1/imtibbet/results/resultsNoiseMRP/results/*single*multi*) Tj ( ) Tj (|) Tj ( ) Tj (xargs) Tj ( ) Tj (ls) Tj ( ) Tj (>) Tj ( ) Tj (singleMultiFits.txt) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 20 0 cm
+Q
+q
+Q
+Q
+q
+1 0 0 1 62.69291 123.6236 cm
+q
+BT 1 0 0 1 0 2 Tm 12 TL /F2 10 Tf 0 0 0 rg (Run ) Tj 0 0 .501961 rg (sumSimUtility) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 84.62362 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 0 26 Tm  T* ET
+q
+1 0 0 1 20 30 cm
+Q
+q
+1 0 0 1 20 30 cm
+Q
+q
+1 0 0 1 20 6 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 9 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 10.5 0 Td (\177) Tj T* -10.5 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+BT 1 0 0 1 0 14 Tm 1.54332 Tw 12 TL /F1 10 Tf 0 0 0 rg (Note that this takes a while depending on the number of images and if you want to see the) Tj T* 0 Tw (progress include ) Tj /F3 10 Tf 0 0 0 rg (-v ) Tj /F1 10 Tf 0 0 0 rg (on the command line) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 20 0 cm
+Q
+q
+Q
+Q
+ 
+endstream
+endobj
+52 0 obj
+<< /Length 9855 >>
+stream
+1 0 0 1 0 0 cm  BT /F1 12 Tf 14.4 TL ET
+q
+1 0 0 1 62.69291 623.4236 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 0 128.6 Tm  T* ET
+q
+1 0 0 1 20 126.6 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 10.5 0 Td (\177) Tj T* -10.5 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+BT 1 0 0 1 0 2 Tm 12 TL /F3 10 Tf 0 0 0 rg (python) Tj ( ) Tj (McGrathResearch/src/sumSimUtility.py) Tj ( ) Tj (results/resultsNoiseMRP/singleMultiFits.txt) Tj ( ) Tj (-d) Tj ( ) Tj (,) Tj ( ) Tj (-r) Tj ( ) Tj (-o) Tj ( ) Tj (summaries/summaryNoise.csv) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 20 126.6 cm
+Q
+q
+1 0 0 1 20 111.4 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 3 cm
+q
+q
+1 0 0 1 0 0 cm
+q
+1 0 0 1 .1 .1 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F3 10 Tf 12 TL (-h) Tj T* ET
+Q
+Q
+Q
+Q
+Q
+q
+1 0 0 1 242.7449 3.2 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (show this help message and exit) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 20 84.4 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 14.8 cm
+q
+q
+1 0 0 1 0 0 cm
+q
+1 0 0 1 .1 .1 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F3 10 Tf 12 TL (-b) Tj T* ET
+Q
+Q
+Q
+Q
+Q
+q
+1 0 0 1 242.7449 3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 14 Tm /F1 10 Tf 12 TL 2.294983 Tw (if running on results of GALFIT bulge \(two) Tj T* 0 Tw (component\) fit) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 20 57.4 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 14.8 cm
+q
+q
+1 0 0 1 0 0 cm
+q
+1 0 0 1 .1 .1 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F3 10 Tf 12 TL (-d DELIM) Tj T* ET
+Q
+Q
+Q
+Q
+Q
+q
+1 0 0 1 242.7449 3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 14 Tm /F1 10 Tf 12 TL .89436 Tw (set the delimiter to separate the fields of the) Tj T* 0 Tw (summary file [default: ]) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 20 42.2 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 3 cm
+q
+q
+1 0 0 1 0 0 cm
+q
+1 0 0 1 .1 .1 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F3 10 Tf 12 TL (-r) Tj T* ET
+Q
+Q
+Q
+Q
+Q
+q
+1 0 0 1 242.7449 3.2 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (if running on candelized images) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 20 15.2 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 14.8 cm
+q
+q
+1 0 0 1 0 0 cm
+q
+1 0 0 1 .1 .1 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F3 10 Tf 12 TL (-o OUTPUT) Tj T* ET
+Q
+Q
+Q
+Q
+Q
+q
+1 0 0 1 242.7449 3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 14 Tm /F1 10 Tf 12 TL .62784 Tw (set the filename to write the output summary) Tj T* 0 Tw (file [default: summary_04-14-2015.csv]) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 20 0 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 3 cm
+q
+q
+1 0 0 1 0 0 cm
+q
+1 0 0 1 .1 .1 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F3 10 Tf 12 TL (-v) Tj T* ET
+Q
+Q
+Q
+Q
+Q
+q
+1 0 0 1 242.7449 3.2 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (to enable command line printouts of state) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 62.69291 590.4236 cm
+q
+BT 1 0 0 1 0 3.5 Tm 21 TL /F2 17.5 Tf 0 0 0 rg (Plotting) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 572.4236 cm
+q
+BT 1 0 0 1 0 2 Tm 12 TL /F2 10 Tf 0 0 0 rg (Run ) Tj 0 0 .501961 rg (plotSimUtility) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 232.6236 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 0 326.8 Tm  T* ET
+q
+1 0 0 1 20 330.8 cm
+Q
+q
+1 0 0 1 20 330.8 cm
+Q
+q
+1 0 0 1 20 318.8 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 10.5 0 Td (\177) Tj T* -10.5 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+BT 1 0 0 1 0 2 Tm 12 TL /F3 10 Tf 0 0 0 rg (python) Tj ( ) Tj (McGrathResearch/src/plotSimUtility.py) Tj ( ) Tj (summaries/summaryNoise.csv) Tj ( ) Tj (-r) Tj ( ) Tj (-d) Tj ( ) Tj (,) Tj ( ) Tj (-p) Tj ( ) Tj (vivian) Tj ( ) Tj (-x) Tj ( ) Tj (age) Tj ( ) Tj (-y) Tj ( ) Tj (ser) Tj ( ) Tj (-n) Tj ( ) Tj (VELA02) Tj ( ) Tj (VELA03) Tj ( ) Tj (VELA04) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 20 318.8 cm
+Q
+q
+1 0 0 1 20 303.6 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 3 cm
+q
+q
+1 0 0 1 0 0 cm
+q
+1 0 0 1 .1 .1 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F3 10 Tf 12 TL (-h) Tj T* ET
+Q
+Q
+Q
+Q
+Q
+q
+1 0 0 1 242.7449 3.2 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (show this help message and exit) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 20 288.4 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 3 cm
+q
+q
+1 0 0 1 0 0 cm
+q
+1 0 0 1 .1 .1 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F3 10 Tf 12 TL (-m) Tj T* ET
+Q
+Q
+Q
+Q
+Q
+q
+1 0 0 1 242.7449 3.2 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (to plot MRP counterparts adjacent) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 20 261.4 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 14.8 cm
+q
+q
+1 0 0 1 0 0 cm
+q
+1 0 0 1 .1 .1 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F3 10 Tf 12 TL (-r) Tj T* ET
+Q
+Q
+Q
+Q
+Q
+q
+1 0 0 1 242.7449 3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 14 Tm /F1 10 Tf 12 TL 5.656976 Tw (to indicate candelized results are being) Tj T* 0 Tw (plotted) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 20 210.4 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 38.8 cm
+q
+q
+1 0 0 1 0 0 cm
+q
+1 0 0 1 .1 .1 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F3 10 Tf 12 TL (-n) Tj T* ET
+Q
+Q
+Q
+Q
+Q
+q
+1 0 0 1 242.7449 3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 38 Tm /F1 10 Tf 12 TL 1.260697 Tw (the space separated list of galaxy names to) Tj T* 0 Tw 1.424983 Tw (be plotted \(must exist in summary file\). The) Tj T* 0 Tw 5.91748 Tw (default is all unique galaxy ids plotted) Tj T* 0 Tw (separately) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 20 147.4 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 50.8 cm
+q
+q
+1 0 0 1 0 0 cm
+q
+1 0 0 1 .1 .1 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F3 10 Tf 12 TL (-y YFIELDNAMES) Tj T* ET
+Q
+Q
+Q
+Q
+Q
+q
+1 0 0 1 242.7449 3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 50 Tm /F1 10 Tf 12 TL 1.45061 Tw (the space separated list of y field names to) Tj T* 0 Tw .750814 Tw (be plotted, available options are: ['age', 'red',) Tj T* 0 Tw 4.055814 Tw ('px', 'epx', 'py', 'epy', 'mag', 'emag', 'rpix',) Tj T* 0 Tw .070697 Tw ('erpix', 'rad', 'erad', 'ser', 'eser', 'ba', 'eba', 'pa',) Tj T* 0 Tw ('epa', 'rff'], default: ser) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 20 96.4 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 38.8 cm
+q
+q
+1 0 0 1 0 0 cm
+q
+1 0 0 1 .1 .1 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F3 10 Tf 12 TL (-x XFIELDNAME) Tj T* ET
+Q
+Q
+Q
+Q
+Q
+q
+1 0 0 1 242.7449 3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 38 Tm /F1 10 Tf 12 TL 3.722126 Tw (the field name of the x values, available) Tj T* 0 Tw .763555 Tw (options are: ['age', 'red', 'px', 'epx', 'py', 'epy',) Tj T* 0 Tw 1.279147 Tw ('mag', 'emag', 'rpix', 'erpix', 'rad', 'erad', 'ser',) Tj T* 0 Tw ('eser', 'ba', 'eba', 'pa', 'epa', 'rff'], default: red) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 20 69.4 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 14.8 cm
+q
+q
+1 0 0 1 0 0 cm
+q
+1 0 0 1 .1 .1 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F3 10 Tf 12 TL (-t COMPTYPE) Tj T* ET
+Q
+Q
+Q
+Q
+Q
+q
+1 0 0 1 242.7449 3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 14 Tm /F1 10 Tf 12 TL .782126 Tw (the type of component to be plotted \(central,) Tj T* 0 Tw (bulge, disk\), default: central) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 20 18.4 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 38.8 cm
+q
+q
+1 0 0 1 0 0 cm
+q
+1 0 0 1 .1 .1 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F3 10 Tf 12 TL (-p PLOTTYPE) Tj T* ET
+Q
+Q
+Q
+Q
+Q
+q
+1 0 0 1 242.7449 3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 38 Tm /F1 10 Tf 12 TL 5.915814 Tw (the type of plot, available options are:) Tj T* 0 Tw 28.70744 Tw (['default', 'allGalaxies', 'allFields',) Tj T* 0 Tw 6.004961 Tw ('bulgeToTotal', 'mozena', 'barro', 'special',) Tj T* 0 Tw ('vivian'], default: default) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 20 -8.6 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 14.8 cm
+q
+q
+1 0 0 1 0 0 cm
+q
+1 0 0 1 .1 .1 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F3 10 Tf 12 TL (-c CAMERAS) Tj T* ET
+Q
+Q
+Q
+Q
+Q
+q
+1 0 0 1 242.7449 3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 14 Tm /F1 10 Tf 12 TL 1.24561 Tw (specify specific cameras \(e.g. 0 or 1 or... or) Tj T* 0 Tw (all\)) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 20 -35.6 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 14.8 cm
+q
+q
+1 0 0 1 0 0 cm
+q
+1 0 0 1 .1 .1 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F3 10 Tf 12 TL (-d DELIMITER) Tj T* ET
+Q
+Q
+Q
+Q
+Q
+q
+1 0 0 1 242.7449 3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 14 Tm /F1 10 Tf 12 TL .179147 Tw (specify delimiter of data summary file, default) Tj T* 0 Tw (whitespace) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 62.69291 199.6236 cm
+q
+BT 1 0 0 1 0 3.5 Tm 21 TL /F2 17.5 Tf 0 0 0 rg (reStructuredText) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 187.6236 cm
+Q
+q
+1 0 0 1 62.69291 187.6236 cm
+Q
+q
+1 0 0 1 62.69291 175.6236 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 10.5 0 Td (\177) Tj T* -10.5 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+0 0 .501961 rg
+0 0 .501961 RG
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (https://github.com/ralsina/rst-cheatsheet/blob/master/rst-cheatsheet.rst) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 62.69291 169.6236 cm
+Q
+q
+1 0 0 1 62.69291 157.6236 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 10.5 0 Td (\177) Tj T* -10.5 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+0 0 .501961 rg
+0 0 .501961 RG
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (https://gist.github.com/dupuy/1855764) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 62.69291 157.6236 cm
+Q
+q
+1 0 0 1 62.69291 124.6236 cm
+q
+BT 1 0 0 1 0 3.5 Tm 21 TL /F2 17.5 Tf 0 0 0 rg (TODO) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 112.6236 cm
+Q
+q
+1 0 0 1 62.69291 112.6236 cm
+Q
+q
+1 0 0 1 62.69291 94.62362 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 10.5 0 Td (\177) Tj T* -10.5 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 3 cm
+q
+BT 1 0 0 1 0 2 Tm 12 TL /F1 10 Tf 0 0 0 rg (Test RFF in ) Tj 0 0 .501961 rg (sumSimUtility) Tj T* ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+Q
+q
+1 0 0 1 23 -3 cm
+Q
+q
+Q
+Q
+ 
+endstream
+endobj
+53 0 obj
+<< /Length 11365 >>
+stream
+1 0 0 1 0 0 cm  BT /F1 12 Tf 14.4 TL ET
+q
+1 0 0 1 62.69291 741.0236 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 6 11 Tm  T* ET
+q
+1 0 0 1 23 -3 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 9 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 10.5 0 Td (\177) Tj T* -10.5 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 14 Tm /F1 10 Tf 12 TL 1.63248 Tw (Summing over GALFIT, what about Source Extractor radius? What if the sex.param doesn't) Tj T* 0 Tw (have FLUX_RADIUS? Should we make that required like X_IMAGE and Y_IMAGE?) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+Q
+q
+Q
+Q
+q
+1 0 0 1 62.69291 735.0236 cm
+Q
+q
+1 0 0 1 62.69291 705.0236 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 15 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 10.5 0 Td (\177) Tj T* -10.5 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 15 cm
+q
+BT 1 0 0 1 0 2 Tm 12 TL /F1 10 Tf 0 0 0 rg (Sigma Images for ) Tj 0 0 .501961 rg (simUtility) Tj T* ET
+Q
+Q
+q
+1 0 0 1 23 9 cm
+Q
+q
+1 0 0 1 23 9 cm
+Q
+q
+1 0 0 1 23 -3 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 10.5 0 Td (\177) Tj T* -10.5 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (High resolution, using sqrt now, should be same as GALFIT generated, could be ones.fits?) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+Q
+q
+Q
+Q
+q
+1 0 0 1 62.69291 699.0236 cm
+Q
+q
+1 0 0 1 62.69291 585.0236 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 99 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 10.5 0 Td (\177) Tj T* -10.5 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 99 cm
+q
+BT 1 0 0 1 0 2 Tm 12 TL /F1 10 Tf 0 0 0 rg (Required Files Directory for ) Tj 0 0 .501961 rg (simUtility) Tj T* ET
+Q
+Q
+q
+1 0 0 1 23 93 cm
+Q
+q
+1 0 0 1 23 93 cm
+Q
+q
+1 0 0 1 23 81 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 10.5 0 Td (\177) Tj T* -10.5 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (Do we need to have a user populated folder at all?) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 23 75 cm
+Q
+q
+1 0 0 1 23 63 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 10.5 0 Td (\177) Tj T* -10.5 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (sex.conv and default.nnw can be generated, where to save them?) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 23 57 cm
+Q
+q
+1 0 0 1 23 45 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 10.5 0 Td (\177) Tj T* -10.5 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (sex.param can be generated or specified on the command line) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 23 39 cm
+Q
+q
+1 0 0 1 23 27 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 10.5 0 Td (\177) Tj T* -10.5 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (config.sex can be generated or specified on the command line) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 23 21 cm
+Q
+q
+1 0 0 1 23 -3 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 9 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 10.5 0 Td (\177) Tj T* -10.5 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 14 Tm /F1 10 Tf 12 TL 8.31748 Tw (one or the other, not both because the config.sex points to the sex.param) Tj T* 0 Tw (\(PARAMETERS_NAME\)) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+Q
+q
+Q
+Q
+q
+1 0 0 1 62.69291 579.0236 cm
+Q
+q
+1 0 0 1 62.69291 501.0236 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 63 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 10.5 0 Td (\177) Tj T* -10.5 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 63 cm
+q
+BT 1 0 0 1 0 2 Tm 12 TL /F1 10 Tf 0 0 0 rg (Source Extractor in ) Tj 0 0 .501961 rg (simUtility) Tj T* ET
+Q
+Q
+q
+1 0 0 1 23 57 cm
+Q
+q
+1 0 0 1 23 57 cm
+Q
+q
+1 0 0 1 23 33 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 9 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 10.5 0 Td (\177) Tj T* -10.5 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 14 Tm /F1 10 Tf 12 TL .816647 Tw (values for candelized and high resolution: min area, threshold \(detect, deblend, and analysis\),) Tj T* 0 Tw (min contrast, clean bool and param) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 23 27 cm
+Q
+q
+1 0 0 1 23 15 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 10.5 0 Td (\177) Tj T* -10.5 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (number of galaxies, identifying clumps as separate) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 23 9 cm
+Q
+q
+1 0 0 1 23 -3 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 10.5 0 Td (\177) Tj T* -10.5 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (dynamically changing values to work for different time periods/clumpyness/brightness?) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+Q
+q
+Q
+Q
+q
+1 0 0 1 62.69291 495.0236 cm
+Q
+q
+1 0 0 1 62.69291 483.0236 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 10.5 0 Td (\177) Tj T* -10.5 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+BT 1 0 0 1 0 2 Tm 12 TL /F1 10 Tf 0 0 0 rg (Barro plot in ) Tj 0 0 .501961 rg (plotSimUtility) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 62.69291 477.0236 cm
+Q
+q
+1 0 0 1 62.69291 465.0236 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 10.5 0 Td (\177) Tj T* -10.5 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+BT 1 0 0 1 0 2 Tm 12 TL /F1 10 Tf 0 0 0 rg (High Res Vivian plots in ) Tj 0 0 .501961 rg (plotSimUtility) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 62.69291 459.0236 cm
+Q
+q
+1 0 0 1 62.69291 429.0236 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 15 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 10.5 0 Td (\177) Tj T* -10.5 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 15 cm
+q
+BT 1 0 0 1 0 2 Tm 12 TL /F1 10 Tf 0 0 0 rg (Bulge/Total in ) Tj 0 0 .501961 rg (plotSimUtility) Tj T* ET
+Q
+Q
+q
+1 0 0 1 23 9 cm
+Q
+q
+1 0 0 1 23 9 cm
+Q
+q
+1 0 0 1 23 -3 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 10.5 0 Td (\177) Tj T* -10.5 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+BT 1 0 0 1 0 2 Tm 12 TL /F1 10 Tf 0 0 0 rg (Can we make this a column of the csv in ) Tj 0 0 .501961 rg (sumSimUtility ) Tj 0 0 0 rg (\(-99\)) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+Q
+q
+Q
+Q
+q
+1 0 0 1 62.69291 423.0236 cm
+Q
+q
+1 0 0 1 62.69291 393.0236 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 15 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 10.5 0 Td (\177) Tj T* -10.5 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 15 cm
+q
+BT 1 0 0 1 0 2 Tm 12 TL /F1 10 Tf 0 0 0 rg (Pyfits in ) Tj 0 0 .501961 rg (simUtility) Tj T* ET
+Q
+Q
+q
+1 0 0 1 23 9 cm
+Q
+q
+1 0 0 1 23 9 cm
+Q
+q
+1 0 0 1 23 -3 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 10.5 0 Td (\177) Tj T* -10.5 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (currently using IRAF to get image size because Pyfits freezes the processes in parallel) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+Q
+q
+Q
+Q
+q
+1 0 0 1 62.69291 387.0236 cm
+Q
+q
+1 0 0 1 62.69291 339.0236 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 33 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 10.5 0 Td (\177) Tj T* -10.5 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 33 cm
+q
+BT 1 0 0 1 0 2 Tm 12 TL /F1 10 Tf 0 0 0 rg (Fixing ) Tj 0 0 .501961 rg (dashboard) Tj T* ET
+Q
+Q
+q
+1 0 0 1 23 27 cm
+Q
+q
+1 0 0 1 23 27 cm
+Q
+q
+1 0 0 1 23 15 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 10.5 0 Td (\177) Tj T* -10.5 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (GUI for running the pipeline, finicky/need to be able to close easily) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 23 9 cm
+Q
+q
+1 0 0 1 23 -3 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 10.5 0 Td (\177) Tj T* -10.5 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (How could screen work with this?) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+Q
+q
+Q
+Q
+q
+1 0 0 1 62.69291 333.0236 cm
+Q
+q
+1 0 0 1 62.69291 285.0236 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 33 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 10.5 0 Td (\177) Tj T* -10.5 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 33 cm
+q
+BT 1 0 0 1 0 2 Tm 12 TL /F1 10 Tf 0 0 0 rg (Interactive Plotting using ) Tj 0 0 .501961 rg (display) Tj T* ET
+Q
+Q
+q
+1 0 0 1 23 27 cm
+Q
+q
+1 0 0 1 23 27 cm
+Q
+q
+1 0 0 1 23 15 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 10.5 0 Td (\177) Tj T* -10.5 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (Tune the logarithmic scaling of cube images \(right double click\)) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 23 9 cm
+Q
+q
+1 0 0 1 23 -3 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 10.5 0 Td (\177) Tj T* -10.5 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (Button on image display dialog for displaying the fits header) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+Q
+q
+Q
+Q
+q
+1 0 0 1 62.69291 285.0236 cm
+Q
+q
+1 0 0 1 62.69291 252.0236 cm
+q
+BT 1 0 0 1 0 3.5 Tm 21 TL /F2 17.5 Tf 0 0 0 rg (Pydoc) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 234.0236 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F2 10 Tf 12 TL (To view documentation) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 195.0236 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 0 26 Tm  T* ET
+q
+1 0 0 1 20 30 cm
+Q
+q
+1 0 0 1 20 30 cm
+Q
+q
+1 0 0 1 20 18 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 10.5 0 Td (\177) Tj T* -10.5 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+BT 1 0 0 1 0 2 Tm 12 TL /F3 10 Tf 0 0 0 rg (pydoc) Tj ( ) Tj (/diskarrays/astro_array1/imtibbet/McGrathResearch/src/*.py) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 20 12 cm
+Q
+q
+1 0 0 1 20 0 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 10.5 0 Td (\177) Tj T* -10.5 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+BT 1 0 0 1 0 2 Tm 12 TL /F3 10 Tf 0 0 0 rg (pydoc) Tj ( ) Tj (/diskarrays/astro_array1/imtibbet/McGrathResearch/src/sumSimUtility.sum_galfit) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 20 0 cm
+Q
+q
+Q
+Q
+q
+1 0 0 1 62.69291 179.0236 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F2 10 Tf 12 TL (To generate .html files) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 158.0236 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 0 8 Tm  T* ET
+q
+1 0 0 1 20 12 cm
+Q
+q
+1 0 0 1 20 12 cm
+Q
+q
+1 0 0 1 20 0 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 10.5 0 Td (\177) Tj T* -10.5 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+BT 1 0 0 1 0 2 Tm 12 TL /F3 10 Tf 0 0 0 rg (pydoc) Tj ( ) Tj (-h) Tj ( ) Tj (<) Tj (same) Tj ( ) Tj (as) Tj ( ) Tj (above) Tj (>) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 20 0 cm
+Q
+q
+Q
+Q
+ 
+endstream
+endobj
+54 0 obj
+<< /Nums [ 0 55 0 R 1 56 0 R 2 57 0 R 3 58 0 R 4 59 0 R ] >>
+endobj
+55 0 obj
+<< /S /D /St 1 >>
+endobj
+56 0 obj
+<< /S /D /St 2 >>
+endobj
+57 0 obj
+<< /S /D /St 3 >>
+endobj
+58 0 obj
+<< /S /D /St 4 >>
+endobj
+59 0 obj
+<< /S /D /St 5 >>
+endobj
+xref
+0 60
+0000000000 65535 f
+0000000075 00000 n
+0000000129 00000 n
+0000000239 00000 n
+0000000354 00000 n
+0000000462 00000 n
+0000000633 00000 n
+0000000804 00000 n
+0000000975 00000 n
+0000001146 00000 n
+0000001315 00000 n
+0000001487 00000 n
+0000001659 00000 n
+0000001889 00000 n
+0000002121 00000 n
+0000002355 00000 n
+0000002642 00000 n
+0000002872 00000 n
+0000003102 00000 n
+0000003338 00000 n
+0000003568 00000 n
+0000003797 00000 n
+0000004027 00000 n
+0000004255 00000 n
+0000004448 00000 n
+0000004678 00000 n
+0000004928 00000 n
+0000005158 00000 n
+0000005388 00000 n
+0000005618 00000 n
+0000005848 00000 n
+0000006078 00000 n
+0000006308 00000 n
+0000006538 00000 n
+0000006768 00000 n
+0000006997 00000 n
+0000007214 00000 n
+0000007506 00000 n
+0000007615 00000 n
+0000007826 00000 n
+0000007903 00000 n
+0000008064 00000 n
+0000008195 00000 n
+0000008321 00000 n
+0000008450 00000 n
+0000008576 00000 n
+0000008710 00000 n
+0000008832 00000 n
+0000008942 00000 n
+0000009034 00000 n
+0000018128 00000 n
+0000021351 00000 n
+0000032450 00000 n
+0000042362 00000 n
+0000053785 00000 n
+0000053865 00000 n
+0000053902 00000 n
+0000053939 00000 n
+0000053976 00000 n
+0000054013 00000 n
+trailer
+<< /ID 
+ % ReportLab generated PDF document -- digest (http://www.reportlab.com)
+ [(W\327S\265\304\033\012\017_ I\206\360\321\355s) (W\327S\265\304\033\012\017_ I\206\360\321\355s)]
+ /Info 38 0 R /Root 37 0 R /Size 60 >>
+startxref
+54050
+%%EOF
