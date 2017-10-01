@@ -7,6 +7,8 @@ Last Edited: 8/13/2104
 Colby College Astrophysics Research
 '''
 
+import matplotlib as mpl
+mpl.use('Agg')
 import matplotlib.pyplot as plt
 from matplotlib.pylab import genfromtxt
 from matplotlib import ticker
@@ -247,10 +249,10 @@ def getGalaxies(allFieldNames, data, galaxyType="central", galaxyName=""):
 		curCam = 	data['cam'][componentNumber]
 		
 		# if not excluded and of the correct type
-		if (curType == galaxyType) and not([str(curTS), str(curCam)] in exclusionList):
+		if (galaxyType == "all") or ((curType == galaxyType) and not([str(curTS), str(curCam)] in exclusionList)):
 		
 			# if the the galaxy name is not restricted or if it matches
-			if (not galaxyName) or (curName == galaxyName):
+			if (galaxyName == "") or (curName == galaxyName):
 			
 				# append all the data for the current component to the galaxies to be returned
 				for fieldName in allFieldNames:
@@ -561,12 +563,49 @@ def mozenaPlot(data):
 	        verticalalignment='top')#, bbox=props)
 	return
 	
+def fangPlot(data):
+	'''
+	Create plots of axis ratio vs effective radius for three different time steps.
+	Original plots from Jerome Fang's paper
+	'''
+	condition = np.ones_like(data["red"], bool)
+	condition1d = condition & (data["red"] >= 0.5) & (data["red"] < 1.2) & (data["shape"] == "disk")
+	condition1s = condition & (data["red"] >= 0.5) & (data["red"] < 1.2) & (data["shape"] == "spheroid")
+	condition2d = condition & (data["red"] >= 1.2) & (data["red"] < 1.7) & (data["shape"] == "disk")
+	condition2s = condition & (data["red"] >= 1.2) & (data["red"] < 1.7) & (data["shape"] == "spheroid")
+	condition3d = condition & (data["red"] >= 1.7) & (data["red"] < 2.5) & (data["shape"] == "disk")
+	condition3s = condition & (data["red"] >= 1.7) & (data["red"] < 2.5) & (data["shape"] == "spheroid")
+	
+	plt.figure(figsize=(4,10))
+	s = 3
+	plot1 = plt.subplot(311)
+	plot1.plot(data["rad"][condition1d], data["ba"][condition1d], 'b.',
+				data["rad"][condition1s], data["ba"][condition1s], 'r.', ms=s)
+	
+	plot2 = plt.subplot(312)
+	plot2.plot(data["rad"][condition2d], data["ba"][condition2d], 'b.',
+				data["rad"][condition2s], data["ba"][condition2s], 'r.', ms=s)
+	
+	plot3 = plt.subplot(313)
+	plot3.plot(data["rad"][condition3d], data["ba"][condition3d], 'b.',
+				data["rad"][condition3s], data["ba"][condition3s], 'r.', ms=s)
+	
+	for plot in [plot1, plot2, plot3]:
+		plot.set_xlabel("$R_{eff}$ (kpc)")
+		plot.set_xscale("log")
+		plot.set_xlim(10**(-0.7), 10**(0.7))
+		plot.set_xticks([10**(-0.5), 10**0, 10**(0.5)], 
+						("$10^{-0.5}$", "$10^0$", "$10^{0.5}$"))
+		plot.set_ylabel("Axis Ratio")
+		plot.legend(scatterpoints=1)
+	
+	return
 	
 if __name__ == "__main__":
 	
 	# master list of all available plot types
 	plotTypes = ["default", "allGalaxies", "allFields", "bulgeToTotal", 
-				"mozena", "barro", "special", "vivian"]
+				"mozena", "barro", "special", "vivian", "fang"]
 			
 	# dictionary of lists [format, text, lower, upper], one for each field in summary file
 	# careful changing this list, ordered to match the order of columns in summary file
@@ -604,6 +643,8 @@ if __name__ == "__main__":
 	fieldDescriptions['sfr'] = 		['f4', 'SFR']
 	fieldDescriptions['ssfr'] = 	['f4', 'sSFR', 0, 30]
 	fieldDescriptions['mass'] = 	['f4', 'Mass']	
+	fieldDescriptions['comp'] = 	['i4', 'component number', 0, 3]
+	fieldDescriptions['shape'] = 	['a10', 'galaxy shape']
 	
 	# all of the fields for which there are lower and upper bounds for plotting
 	fieldOptions = []
@@ -649,7 +690,7 @@ if __name__ == "__main__":
 	
 	# pass the type of component to plot
 	parser.add_option("-t", "--componentType",
-					  help="the type of component to be plotted (central, bulge, disk), default: %default",
+					  help="the type of component to be plotted (central, bulge, disk, all), default: %default",
 					  default="central")
 	
 	# indicate that a bulge component was run to produce results
@@ -666,6 +707,11 @@ if __name__ == "__main__":
 	parser.add_option("-d", "--delimiter",
 					  help="specify delimiter of data summary file, default whitespace",
 					  default="")
+					  
+	# indicate the output image filename
+	parser.add_option("-o", "--output",
+					  help="specify the output image filename",
+					  default="plot.png")
 	
 	# parse the command line using above parameter rules
 	# options - list with everthing defined above, 
@@ -918,6 +964,14 @@ if __name__ == "__main__":
 		curData = getGalaxies(fieldDescriptions.keys(), data, options.componentType, galaxyName)
 		mozenaPlot(curData)
 		
+	elif plotType == "fang":
+		#print("plot type '" + plotType + "' not yet implemented")
+		#for galaxyName in options.galaxyNames:
+		galaxyName = ""
+		plt.figure(galaxyName+titleSuffix)
+		curData = getGalaxies(fieldDescriptions.keys(), data, options.componentType, galaxyName)
+		fangPlot(curData)
+		
 	elif plotType == "barro":
 		#print("plot type '" + plotType + "' not yet implemented")
 		#for galaxyName in options.galaxyNames:
@@ -983,7 +1037,10 @@ if __name__ == "__main__":
 	else:
 		print("plot type '" + plotType + "' not yet implemented")
 		exit()
-		
+	
+	# save the plot to the output filename
+	plt.savefig(options.output)
+	
 	# display all figures resulting from above calls
 	plt.show()
 
